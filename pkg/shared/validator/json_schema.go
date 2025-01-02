@@ -1,7 +1,9 @@
 package validator
 
 import (
+	"fmt"
 	"os"
+	"pech/es-krake/pkg/shared/utils"
 
 	"github.com/xeipuuv/gojsonschema"
 )
@@ -19,13 +21,38 @@ func NewJsonSchemaValidator() (*JsonSchemaValidator, error) {
 		schemas:  make(map[string]*gojsonschema.Schema),
 	}
 
-	return nil, nil
+	err := validator.loadDirSchemas("")
+	if err != nil {
+		return nil, err
+	}
+
+	return validator, nil
 }
 
 func (validator *JsonSchemaValidator) Validate(
 	schemaFile string,
 	data interface{},
 ) (*gojsonschema.Result, error) {
+	if schemaFile[0] != '/' {
+		schemaFile = "/" + schemaFile
+	}
+
+	schema, exists := validator.schemas[schemaFile]
+	if !exists {
+		return nil, fmt.Errorf("The schema '%v' was not found for json validation", schemaFile)
+	}
+
+	dataLoader := gojsonschema.NewGoLoader(data)
+	res, err := schema.Validate(dataLoader)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(res.Errors()) == 0 {
+		return nil, nil
+	}
+
+	return res, nil
 }
 
 func (validator *JsonSchemaValidator) loadDirSchemas(path string) error {
@@ -64,4 +91,48 @@ func (validator *JsonSchemaValidator) loadDirSchemas(path string) error {
 	}
 
 	return nil
+}
+
+func (validator *JsonSchemaValidator) GetErrorDetails(
+	res gojsonschema.ResultError,
+) map[string]interface{} {
+	return map[string]interface{}{
+		"context":     res.Context(),
+		"description": res.Description(),
+		"details":     res.Details(),
+		"field":       res.Field(),
+		"type":        res.Type(),
+		"value":       res.Value(),
+	}
+}
+
+func (validator *JsonSchemaValidator) GetErrorField(
+	res gojsonschema.ResultError,
+) string {
+	field := res.Field()
+	errorDetails := res.Details()
+	if property, exists := errorDetails["property"]; exists {
+		if propertyStr, ok := property.(string); ok {
+			field = field + "." + propertyStr
+		}
+	}
+	return field
+}
+
+func (validator *JsonSchemaValidator) GetCustomErrorMessage(
+	res gojsonschema.ResultError,
+) string {
+	details := res.Details()
+	format, formatExists := details["format"]
+
+	if res.Type() == "format" && formatExists {
+		switch format {
+		case "email", "idn-email":
+			return utils.ErrEmailFail
+		case "password", "strong-password":
+			return utils.ErrPasswordFail
+		}
+	}
+
+	return utils.ErrInputFail
 }
