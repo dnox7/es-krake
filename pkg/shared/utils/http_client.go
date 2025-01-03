@@ -1,7 +1,10 @@
 package utils
 
 import (
+	"bytes"
 	"context"
+	"fmt"
+	"io"
 	"math"
 	"net/http"
 	"os"
@@ -39,7 +42,53 @@ func (h HttpClient) Do(
 	req *http.Request,
 	cfg HttpClientConfig,
 ) (*http.Response, error) {
+	req = req.WithContext(ctx)
+	logger := h.Logger.
+		WithContext(req.Context()).
+		WithFields(logrus.Fields{
+			"url":      req.URL.String(),
+			"method":   req.Method,
+			"protocol": req.Proto,
+		})
 
+	var (
+		res     *http.Response
+		err     error
+		retries = 0
+	)
+
+	for h.shouldRetry(err, res) && retries <= int(cfg.RetryTimes) {
+		time.Sleep(h.backoff(retries))
+		before := time.Now()
+
+		res, err := h.Client.Do(req)
+		if err != nil {
+			logger.WithError(err).Error("could not get body of response")
+			return nil, err
+		}
+
+		bodyRes, err := io.ReadAll(res.Body)
+		if err != nil {
+			logger.WithError(err).Error("could not read body of response")
+			return nil, err
+		}
+
+		res.Body = io.NopCloser(bytes.NewBuffer(bodyRes))
+		logger = logger.WithFields(logrus.Fields{
+			"duration":  fmt.Sprintf("%vms", time.Since(before).Milliseconds()),
+			"retry_num": retries,
+		})
+
+		if res.StatusCode/100 == 5 {
+			logger.WithError(err).Error("http call failed")
+		} else {
+			logger.WithField("status", res.Status).Info("http call successfully")
+		}
+
+		retries++
+	}
+
+	return res, err
 }
 
 func (h HttpClient) shouldRetry(err error, res *http.Response) bool {
