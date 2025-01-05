@@ -7,4 +7,7 @@ const (
 	ErrPasswordFail = "ERROO4"
 
 	MessageInternalServerError = "Internal server error"
+
+	DefaultPageNo   = 1
+	DefaultPageSize = 30
 )

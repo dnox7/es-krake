@@ -9,9 +9,9 @@ import (
 func NewLogger() *logrus.Logger {
 	log := logrus.New()
 	log.SetOutput(os.Stdout)
+	log.SetFormatter(&logrus.JSONFormatter{})
 
 	if os.Getenv("PE_DEBUG") != "true" {
-		log.SetFormatter(&logrus.JSONFormatter{})
 		switch os.Getenv("LOG_LEVEL") {
 		case "FATAL":
 			log.SetLevel(logrus.FatalLevel)
