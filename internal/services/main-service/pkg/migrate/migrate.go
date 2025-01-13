@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"pech/es-krake/pkg/infrastructure"
 	"sort"
-
-	"github.com/sirupsen/logrus"
 )
 
 var migrationsTables = map[string]string{}
@@ -22,10 +20,10 @@ func getAllMigrationTableKeys() []string {
 	return keys
 }
 
-func MigrateAll(masterDB *sql.DB, logger *logrus.Logger) error {
+func MigrateAll(masterDB *sql.DB) error {
 	keys := getAllMigrationTableKeys()
 	for _, module := range keys {
-		err := infrastructure.Migrate(masterDB, logger, module, migrationsTables[module])
+		err := infrastructure.Migrate(masterDB, module, migrationsTables[module])
 		if err != nil {
 			return fmt.Errorf("Failed to migrate module %v: %w", module, err)
 		}
@@ -33,9 +31,9 @@ func MigrateAll(masterDB *sql.DB, logger *logrus.Logger) error {
 	return nil
 }
 
-func CheckAll(masterDB *sql.DB, logger *logrus.Logger) error {
+func CheckAll(masterDB *sql.DB) error {
 	for module, migrateTable := range migrationsTables {
-		err := infrastructure.CheckDatabaseVersion(masterDB, logger, module, migrateTable)
+		err := infrastructure.CheckDatabaseVersion(masterDB, module, migrateTable)
 		if err != nil {
 			return fmt.Errorf("The migrations for module %v are not up-to-date: %w", module, err)
 		}

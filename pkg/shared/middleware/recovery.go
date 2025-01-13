@@ -5,23 +5,20 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"pech/es-krake/pkg/log"
 	"runtime/debug"
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 )
 
-func Recovery(logger *logrus.Logger) gin.HandlerFunc {
+func Recovery() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
-				logger.WithContext(c).
-					WithFields(logrus.Fields{
-						"stack": string(debug.Stack()),
-						"error": err,
-					}).
-					Error("panic was trigger")
+				log.
+					With("stack", string(debug.Stack())).
+					Error(c.Request.Context(), "panic was trigger", "error", err)
 
 				var brokenPipe bool
 				if ne, ok := err.(*net.OpError); ok {

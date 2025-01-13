@@ -3,45 +3,40 @@ package main
 import (
 	"context"
 	"net/http"
+	"os"
 	"pech/es-krake/pkg/infrastructure"
-	"pech/es-krake/pkg/logging"
-	"pech/es-krake/pkg/logging/hook"
+	"pech/es-krake/pkg/log"
 )
 
 func main() {
-	logger := infrastructure.NewLogger()
+	ctx := context.Background()
+	log.Initialize(ctx, os.Stdout, false, []string{"request-id", "recurringID"})
 
-	ctxKey := logging.NewCtxKeys("request-id", "recurringID")
-	hook := hook.NewHookWithFallback(ctxKey)
-
-	logger.AddHook(hook)
-
-	db, master, slave, err := infrastructure.NewDatabase(logger)
+	db, master, slave, err := infrastructure.NewDatabase()
 	if err != nil {
-		logger.Fatalln("Failed to connect to PostgreSQL", err)
+		log.Fatal(ctx, "Failed to connect to PostgreSQL", err)
 		return
 	}
-	defer infrastructure.CloseDB(logger, master, slave)
+	defer infrastructure.CloseDB(master, slave)
 
-	dbLogEntry := logger.WithField("service", "database")
-	stopMasterLogger := infrastructure.StartLoggingPoolSize(master, dbLogEntry.WithField("pool", "master"))
+	stopMasterLogger := infrastructure.StartLoggingPoolSize(master, "master")
 	defer stopMasterLogger()
 
-	stopSlaveLogger := infrastructure.StartLoggingPoolSize(slave, dbLogEntry.WithField("pool", "slave"))
+	stopSlaveLogger := infrastructure.StartLoggingPoolSize(slave, "slave")
 	defer stopSlaveLogger()
 
-	router := infrastructure.NewServer(db, logger)
+	router := infrastructure.NewServer(db)
 	server := &http.Server{
 		Addr:    ":8080",
 		Handler: router,
 	}
 
-	infrastructure.OnShutdown(logger, func() error {
+	infrastructure.OnShutdown(func() error {
 		return server.Shutdown(context.Background())
 	})
 
 	err = server.ListenAndServe()
 	if err != nil && err != http.ErrServerClosed {
-		logger.Fatalln("An error happened while starting the HTTP server: ", err)
+		log.Fatal(ctx, "An error happened while starting the HTTP server: ", err)
 	}
 }

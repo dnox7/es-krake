@@ -8,19 +8,18 @@ import (
 	"net/http"
 	"os"
 	"pech/es-krake/pkg/dto"
+	"pech/es-krake/pkg/log"
 	"pech/es-krake/pkg/shared/utils"
 	"pech/es-krake/pkg/shared/validator"
 	wraperror "pech/es-krake/pkg/shared/wrap-error"
 
 	"github.com/gin-gonic/gin"
 	"github.com/graphql-go/graphql/gqlerrors"
-	"github.com/sirupsen/logrus"
 	"github.com/xeipuuv/gojsonschema"
 	"gorm.io/gorm"
 )
 
 type BaseHTTPHandler struct {
-	Logger    *logrus.Logger
 	Validator *validator.JsonSchemaValidator
 }
 
@@ -217,8 +216,7 @@ func (h *BaseHTTPHandler) SetInternalErrorResponse(c *gin.Context, err error) {
 	if os.Getenv("PE_DEBUG") == "true" {
 		debugInfo = err.Error()
 	} else {
-		logger := h.Logger.WithContext(c)
-		logger.Errorf("Unexpected error: %+v", err)
+		log.Error(c, "Unexpected error", "error", err)
 
 		data := &dto.BaseErrorResponse{
 			Error: &dto.ErrorResponse{

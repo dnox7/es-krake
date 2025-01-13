@@ -3,9 +3,8 @@ package utils
 import (
 	"io"
 	"net/http"
+	"pech/es-krake/pkg/log"
 	"time"
-
-	"github.com/sirupsen/logrus"
 )
 
 type LoggedHttpTransportType string
@@ -17,17 +16,18 @@ const (
 
 type LoggedHttpTransport struct {
 	http.RoundTripper
-	logger *logrus.Entry
+	logger *log.Logger
 	Type   LoggedHttpTransportType
 }
 
 func NewLoggedHttpTransport(
-	logger *logrus.Entry,
+	logFieldKey string,
+	logFieldVal string,
 	transportType LoggedHttpTransportType,
 ) http.RoundTripper {
 	return LoggedHttpTransport{
 		http.DefaultTransport,
-		logger,
+		log.With(logFieldKey, logFieldVal),
 		transportType,
 	}
 }
@@ -37,13 +37,13 @@ func (t LoggedHttpTransport) RoundTrip(req *http.Request) (*http.Response, error
 	logger := t.logger.WithContext(req.Context())
 	res, err := t.RoundTripper.RoundTrip(req)
 
-	loggerRes := logger.WithFields(logrus.Fields{
-		"url":      req.URL.String(),
-		"method":   req.Method,
-		"protocol": req.Proto,
-	})
+	loggerRes := logger.With(
+		"url", req.URL.String(),
+		"method", req.Method,
+		"protocol", req.Proto,
+	)
 	if err != nil {
-		loggerRes.Errorf("could not get response: %v", err)
+		loggerRes.Error(req.Context(), "could not get response", "error", err)
 		return nil, err
 	}
 
@@ -52,13 +52,13 @@ func (t LoggedHttpTransport) RoundTrip(req *http.Request) (*http.Response, error
 	if req.Body != nil {
 		bodyReq, err := req.GetBody()
 		if err != nil {
-			loggerRes.Errorf("could not get request body: %v", err)
+			loggerRes.Error(req.Context(), "could not get request body", "error", err)
 			return nil, err
 		}
 
 		body, err = io.ReadAll(io.LimitReader(bodyReq, 1024))
 		if err != nil {
-			loggerRes.Errorf("could not read body of request: %v", err)
+			loggerRes.Error(req.Context(), "could not read body of request", "error", err)
 			return nil, err
 		}
 
@@ -67,21 +67,21 @@ func (t LoggedHttpTransport) RoundTrip(req *http.Request) (*http.Response, error
 
 	bodyRes, err := io.ReadAll(res.Body)
 	if err != nil {
-		loggerRes.Errorf("could not get body of response: %v", err)
+		loggerRes.Error(req.Context(), "could not get body of response", "error", err)
 		return nil, err
 	}
 
-	loggerRes = loggerRes.WithFields(logrus.Fields{
-		"duration":       after.Sub(before).String(),
-		"body_request":   string(body),
-		"body_response":  string(bodyRes),
-		"request_params": req.URL.Query(),
-	})
+	loggerRes = loggerRes.With(
+		"duration", after.Sub(before).String(),
+		"body_request", string(body),
+		"body_response", string(bodyRes),
+		"request_params", req.URL.Query(),
+	)
 
 	if res.StatusCode/100 == 5 {
-		loggerRes.WithField("rootcause", t.Type).Errorln(err)
+		loggerRes.With("rootcause", t.Type).Error(req.Context(), err.Error())
 	} else {
-		loggerRes.WithField("status", res.Status).Info()
+		loggerRes.With("status", res.Status).Info(req.Context(), "")
 	}
 
 	return res, err

@@ -1,17 +1,17 @@
 package repository
 
 import (
+	"log"
 	"pech/es-krake/pkg/shared/utils"
 
-	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
 type BaseRepository struct {
-	Logger *logrus.Logger
+	Logger *log.Logger
 }
 
-func NewBaseRepository(logger *logrus.Logger) *BaseRepository {
+func NewBaseRepository(logger *log.Logger) *BaseRepository {
 	return &BaseRepository{Logger: logger}
 }
 

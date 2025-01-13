@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"net/http"
 	"pech/es-krake/pkg/dto"
+	"pech/es-krake/pkg/log"
 	"runtime"
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 )
 
-func GinCustomRecovery(logger *logrus.Logger) gin.HandlerFunc {
+func GinCustomRecovery() gin.HandlerFunc {
 	return gin.CustomRecovery(
 		func(c *gin.Context, recovered any) {
 			var errMsg string
@@ -21,15 +21,14 @@ func GinCustomRecovery(logger *logrus.Logger) gin.HandlerFunc {
 			}
 			stackTrace := stack()
 
-			ctxLogger := logger.WithContext(c)
-
-			ctxLogger.WithFields(logrus.Fields{
-				"error":       errMsg,
-				"path":        c.Request.URL.Path,
-				"method":      c.Request.Method,
-				"client_ip":   c.ClientIP(),
-				"stack_trace": stackTrace,
-			}).Errorln("Panic occured")
+			log.Error(
+				c.Request.Context(), "Panic occured",
+				"error", errMsg,
+				"path", c.Request.URL.Path,
+				"method", c.Request.Method,
+				"client_ip", c.ClientIP(),
+				"stack_trace", stackTrace,
+			)
 
 			errDto := &dto.BaseErrorResponse{
 				Error: &dto.ErrorResponse{

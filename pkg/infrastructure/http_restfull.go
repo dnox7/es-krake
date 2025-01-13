@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"pech/es-krake/pkg/log"
 	"pech/es-krake/pkg/shared/utils"
 	"strings"
 
@@ -28,7 +29,7 @@ type Request struct {
 type restfullHttpClient struct {
 	baseUrl string
 	client  http.Client
-	logger  *logrus.Entry
+	logger  *log.Logger
 }
 
 type RestfullHttpClientConfig struct {

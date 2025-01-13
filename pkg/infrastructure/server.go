@@ -5,11 +5,10 @@ import (
 	"pech/es-krake/pkg/shared/middleware"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
-func NewServer(db *gorm.DB, logger *logrus.Logger) *gin.Engine {
+func NewServer(db *gorm.DB) *gin.Engine {
 	if os.Getenv("PE_DEBUG") == "true" {
 		gin.SetMode(gin.DebugMode)
 	} else {
@@ -18,9 +17,9 @@ func NewServer(db *gorm.DB, logger *logrus.Logger) *gin.Engine {
 
 	router := gin.New()
 	router.Use(
-		middleware.Recovery(logger),
+		middleware.Recovery(),
 		middleware.AccessControlHeaders(),
-		middleware.GinCustomRecovery(logger),
+		middleware.GinCustomRecovery(),
 	)
 
 	router.GET("/", func(c *gin.Context) {

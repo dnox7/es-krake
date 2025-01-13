@@ -1,11 +1,13 @@
 package infrastructure
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"os"
 	customsource "pech/es-krake/pkg/infrastructure/custom-source"
-	"pech/es-krake/pkg/logging/hook"
+	"pech/es-krake/pkg/log"
+	"pech/es-krake/pkg/log/hook"
 	wraperror "pech/es-krake/pkg/shared/wrap-error"
 	"strconv"
 	"time"
@@ -13,7 +15,6 @@ import (
 	"github.com/golang-migrate/migrate"
 	"github.com/golang-migrate/migrate/database/postgres"
 	"github.com/golang-migrate/migrate/source"
-	"github.com/sirupsen/logrus"
 	postgresDriver "gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -30,14 +31,14 @@ func GetGormConfig() *gorm.Config {
 	}
 }
 
-func NewDatabase(baseLogger *logrus.Logger) (
+func NewDatabase() (
 	db *gorm.DB,
 	master *sql.DB,
 	slave *sql.DB,
 	err error,
 ) {
 	gormConf := GetGormConfig()
-	gormConf.Logger = hook.DefaultGormLogger(baseLogger).LogMode(logger.Info)
+	gormConf.Logger = hook.DefaultGormLogger().LogMode(logger.Info)
 	gormConf.SkipDefaultTransaction = true
 
 	connMaster, err := sql.Open("postgres", os.Getenv("POSTGRES_MASTER_CONNECTION_STRING"))
@@ -103,19 +104,20 @@ func Ping(db *gorm.DB) error {
 	return postgresDB.Ping()
 }
 
-func CloseDB(l *logrus.Logger, master *sql.DB, slave *sql.DB) {
-	l.Info("Closing the master DB connection pool")
+func CloseDB(master *sql.DB, slave *sql.DB) {
+	log.Info(context.Background(), "Closing the master DB connection pool")
 	if err := master.Close(); err != nil {
-		l.Errorf("Error while closing the master DB connection pool: %v", err)
+		log.Error(context.Background(), "Error while closing the master DB connection pool: %v", err)
 	}
 
-	l.Info("Closing the slave DB connection pool")
+	log.Info(context.Background(), "Closing the slave DB connection pool")
 	if err := slave.Close(); err != nil {
-		l.Errorf("Error while closing the slave DB connection pool: %v", err)
+		log.Error(context.Background(), "Error while closing the slave DB connection pool: %v", err)
 	}
 }
 
-func StartLoggingPoolSize(pool *sql.DB, l *logrus.Entry) func() {
+func StartLoggingPoolSize(pool *sql.DB, poolName string) func() {
+	logger := log.With("serivce", "database").With("pool", poolName)
 	stop := make(chan bool)
 	go func() {
 		previousOpened := 0
@@ -123,11 +125,11 @@ func StartLoggingPoolSize(pool *sql.DB, l *logrus.Entry) func() {
 			time.Sleep(time.Second)
 			select {
 			case <-stop:
-				logPoolSize(pool.Stats(), l)
+				logPoolSize(pool.Stats(), logger)
 			default:
 				current := pool.Stats()
 				if previousOpened != current.OpenConnections {
-					logPoolSize(current, l)
+					logPoolSize(current, logger)
 					previousOpened = current.OpenConnections
 				}
 			}
@@ -139,18 +141,17 @@ func StartLoggingPoolSize(pool *sql.DB, l *logrus.Entry) func() {
 	}
 }
 
-func logPoolSize(stats sql.DBStats, l *logrus.Entry) {
-	l.WithFields(logrus.Fields{
-		"inUse":  stats.InUse,
-		"idle":   stats.Idle,
-		"opened": stats.OpenConnections,
-	}).Infof("Current number of opened connections in the pool")
+func logPoolSize(stats sql.DBStats, logger *log.Logger) {
+	logger.With("inUse", stats.InUse).
+		With("idle", stats.Idle).
+		With("opened", stats.OpenConnections).
+		Info(context.Background(), "Current number of opened connections in the pool")
 }
 
 // migrationLogger: this type is required to implement
 // the Logger interface of golang-migrate
 type migrationLogger struct {
-	*logrus.Logger
+	*log.Logger
 }
 
 func (l migrationLogger) Verbose() bool {
@@ -158,14 +159,14 @@ func (l migrationLogger) Verbose() bool {
 }
 
 func (l migrationLogger) Printf(fmt string, v ...interface{}) {
-	l.WithField("service", "database").Infof(fmt, v...)
+	l.With("service", "database").Info(context.Background(), fmt, v...)
 }
 
 func getMigrationPath(module string) string {
 	return "file://" + os.Getenv("PE_MIGRATIONS_PATH") + "/" + module
 }
 
-func Migrate(masterDB *sql.DB, l *logrus.Logger, module string, migrationsTable string) error {
+func Migrate(masterDB *sql.DB, module string, migrationsTable string) error {
 	postgres.DefaultMigrationsTable = migrationsTable
 	driver, err := postgres.WithInstance(masterDB, &postgres.Config{})
 	if err != nil {
@@ -178,7 +179,7 @@ func Migrate(masterDB *sql.DB, l *logrus.Logger, module string, migrationsTable 
 		return err
 	}
 
-	m.Log = migrationLogger{l}
+	m.Log = migrationLogger{log.With()}
 	f := customsource.File{}
 	fileSysMigrations, err := f.Open(os.Getenv("PE_MIGRATIONS_PATH") + "/" + module)
 	if err != nil {
@@ -206,7 +207,7 @@ func Migrate(masterDB *sql.DB, l *logrus.Logger, module string, migrationsTable 
 	return nil
 }
 
-func CheckDatabaseVersion(masterDB *sql.DB, l *logrus.Logger, module string, migrationsTable string) error {
+func CheckDatabaseVersion(masterDB *sql.DB, module string, migrationsTable string) error {
 	postgres.DefaultMigrationsTable = migrationsTable
 	driver, err := postgres.WithInstance(masterDB, &postgres.Config{})
 	if err != nil {
@@ -219,7 +220,7 @@ func CheckDatabaseVersion(masterDB *sql.DB, l *logrus.Logger, module string, mig
 		return err
 	}
 
-	m.Log = migrationLogger{l}
+	m.Log = migrationLogger{log.With()}
 	ver, dirty, err := m.Version()
 	if err != nil {
 		return err
