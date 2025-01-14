@@ -2,7 +2,7 @@ package repository
 
 import (
 	"log"
-	"pech/es-krake/pkg/shared/utils"
+	"pech/es-krake/pkg/utils"
 
 	"gorm.io/gorm"
 )

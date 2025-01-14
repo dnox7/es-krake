@@ -3,7 +3,7 @@ package mount
 import (
 	"fmt"
 	"pech/es-krake/internal/services/main-service/pkg/container"
-	"pech/es-krake/pkg/shared/validator"
+	"pech/es-krake/pkg/validator"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"

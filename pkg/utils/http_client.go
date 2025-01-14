@@ -8,9 +8,8 @@ import (
 	"math"
 	"net/http"
 	"os"
+	"pech/es-krake/pkg/log"
 	"time"
-
-	"github.com/sirupsen/logrus"
 )
 
 type HttpClientNativeInterface interface {
@@ -19,7 +18,7 @@ type HttpClientNativeInterface interface {
 
 type HttpClient struct {
 	Client HttpClientNativeInterface
-	Logger *logrus.Entry
+	Logger *log.Logger
 }
 
 type HttpClientInterface interface {
@@ -30,10 +29,10 @@ type HttpClientConfig struct {
 	RetryTimes uint
 }
 
-func NewHttpClient(logger *logrus.Entry) HttpClientInterface {
+func NewHttpClient(serviceName string) HttpClientInterface {
 	return &HttpClient{
 		Client: &http.Client{},
-		Logger: logger,
+		Logger: log.With("service", serviceName),
 	}
 }
 
@@ -44,12 +43,11 @@ func (h HttpClient) Do(
 ) (*http.Response, error) {
 	req = req.WithContext(ctx)
 	logger := h.Logger.
-		WithContext(req.Context()).
-		WithFields(logrus.Fields{
-			"url":      req.URL.String(),
-			"method":   req.Method,
-			"protocol": req.Proto,
-		})
+		With(
+			"url", req.URL.String(),
+			"method", req.Method,
+			"protocol", req.Proto,
+		)
 
 	var (
 		res     *http.Response
@@ -63,26 +61,35 @@ func (h HttpClient) Do(
 
 		res, err := h.Client.Do(req)
 		if err != nil {
-			logger.WithError(err).Error("could not get body of response")
+			logger.Error(
+				ctx, "could not get body of response",
+				"error", err,
+			)
 			return nil, err
 		}
 
 		bodyRes, err := io.ReadAll(res.Body)
 		if err != nil {
-			logger.WithError(err).Error("could not read body of response")
+			logger.Error(
+				ctx, "could not read body of response",
+				"error", err,
+			)
 			return nil, err
 		}
 
 		res.Body = io.NopCloser(bytes.NewBuffer(bodyRes))
-		logger = logger.WithFields(logrus.Fields{
-			"duration":  fmt.Sprintf("%vms", time.Since(before).Milliseconds()),
-			"retry_num": retries,
-		})
+		logger = logger.With(
+			"duration", fmt.Sprintf("%vms", time.Since(before).Milliseconds()),
+			"retry_num", retries,
+		)
 
 		if res.StatusCode/100 == 5 {
-			logger.WithError(err).Error("http call failed")
+			logger.Error(
+				ctx, "http call failed",
+				"error", err,
+			)
 		} else {
-			logger.WithField("status", res.Status).Info("http call successfully")
+			logger.With("status", res.Status).Info(ctx, "http call successfully")
 		}
 
 		retries++

@@ -2,7 +2,7 @@ package infrastructure
 
 import (
 	"os"
-	"pech/es-krake/pkg/shared/middleware"
+	"pech/es-krake/pkg/middleware"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"

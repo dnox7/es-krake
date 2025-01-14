@@ -8,10 +8,8 @@ import (
 	"net/http"
 	"net/url"
 	"pech/es-krake/pkg/log"
-	"pech/es-krake/pkg/shared/utils"
+	"pech/es-krake/pkg/utils"
 	"strings"
-
-	"github.com/sirupsen/logrus"
 )
 
 type RestfullHttpClient interface {
@@ -38,15 +36,13 @@ type RestfullHttpClientConfig struct {
 }
 
 func NewRestfullHttpClient(conf RestfullHttpClientConfig) RestfullHttpClient {
-	logger := NewLogger()
-	logger.SetFormatter(&logrus.JSONFormatter{})
-
 	return restfullHttpClient{
 		baseUrl: conf.BaseUrl,
-		logger:  logrus.WithField("service", conf.TagName+"-api"),
+		logger:  log.With("service", conf.TagName+"-api"),
 		client: http.Client{
 			Transport: utils.NewLoggedHttpTransport(
-				logger.WithField("service", conf.TagName+"-api"),
+				"transport",
+				conf.TagName+"-api",
 				utils.HttpTransportExternalType,
 			),
 		},

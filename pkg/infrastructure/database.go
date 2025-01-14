@@ -8,7 +8,7 @@ import (
 	customsource "pech/es-krake/pkg/infrastructure/custom-source"
 	"pech/es-krake/pkg/log"
 	"pech/es-krake/pkg/log/hook"
-	wraperror "pech/es-krake/pkg/shared/wrap-error"
+	wraperror "pech/es-krake/pkg/wrap-error"
 	"strconv"
 	"time"
 

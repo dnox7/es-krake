@@ -9,9 +9,9 @@ import (
 	"os"
 	"pech/es-krake/pkg/dto"
 	"pech/es-krake/pkg/log"
-	"pech/es-krake/pkg/shared/utils"
-	"pech/es-krake/pkg/shared/validator"
-	wraperror "pech/es-krake/pkg/shared/wrap-error"
+	"pech/es-krake/pkg/utils"
+	"pech/es-krake/pkg/validator"
+	wraperror "pech/es-krake/pkg/wrap-error"
 
 	"github.com/gin-gonic/gin"
 	"github.com/graphql-go/graphql/gqlerrors"
@@ -220,7 +220,7 @@ func (h *BaseHTTPHandler) SetInternalErrorResponse(c *gin.Context, err error) {
 
 		data := &dto.BaseErrorResponse{
 			Error: &dto.ErrorResponse{
-				Message:   utils.MessageInternalServerError,
+				Message:   utils.InternalServerErrorMsg,
 				DebugInfo: debugInfo,
 			},
 		}

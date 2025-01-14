@@ -3,7 +3,7 @@ package validator
 import (
 	"fmt"
 	"os"
-	"pech/es-krake/pkg/shared/utils"
+	"pech/es-krake/pkg/utils"
 
 	"github.com/xeipuuv/gojsonschema"
 )

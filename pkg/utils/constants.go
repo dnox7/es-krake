@@ -1,0 +1,21 @@
+package utils
+
+const (
+	ErrInputFail    = "ERR001"
+	ErrInputRequire = "ERR002"
+	ErrEmailFail    = "ERR003"
+	ErrPasswordFail = "ERROO4"
+
+	InternalServerErrorMsg = "Internal server error"
+
+	DefaultPageNo   = 1
+	DefaultPageSize = 30
+
+	FormatYearISO     = "2006"
+	FormatDateISO     = "2006-01-02"
+	FormatTimeHHMM    = "15:04"
+	FormatTimeHHMMSS  = "15:04:05"
+	FormatDateTimeISO = "2006-01-02T15:04:05Z07:00"
+	FormatDateTimeSQL = "2006-01-02 15:04:05"
+	FormatDateCompact = "20060102150405"
+)
