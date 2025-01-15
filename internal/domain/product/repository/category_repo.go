@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"pech/es-krake/internal/domain/category/entity"
+	"pech/es-krake/internal/domain/product/entity"
 	"pech/es-krake/internal/domain/utils"
 )
 
