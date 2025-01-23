@@ -1,0 +1,22 @@
+application:
+  name: es_krake_server
+  version: 0.0.1
+
+logger:
+  level: DEBUG
+  format: json
+
+server:
+  port: 8080
+
+rdb:
+  driver: postgres
+  host: postgres
+  port: 5432
+  username: admin
+  password: 1234
+  name: es_krake
+  max_open_conns: 10
+  max_idle_conns: 3
+  max_life_time: 10
+  max_idle_time: 10

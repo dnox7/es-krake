@@ -3,52 +3,24 @@ package log
 import (
 	"io"
 	"log/slog"
-	"os"
 	"sync"
 	"time"
 
 	"golang.org/x/net/context"
 )
 
+type loggerCtxKey struct{}
+
+const messageKey = "message"
+
 type Logger struct {
 	logger *slog.Logger
 }
 
-type defaultHandler struct {
-	slog.Handler
-}
-
 var (
-	keys []string
-	_    slog.Handler = &defaultHandler{}
+	keys         []string
+	logMapCtxKey = loggerCtxKey{}
 )
-
-func (t *defaultHandler) Handle(ctx context.Context, r slog.Record) error {
-	if v, ok := ctx.Value(logMapCtxKey).(*sync.Map); ok {
-		v.Range(func(key, value any) bool {
-			if key, ok := key.(string); ok {
-				r.AddAttrs(slog.Any(key, value))
-			}
-			return true
-		})
-	}
-	for _, key := range keys {
-		if ctx.Value(key) != nil {
-			r.AddAttrs(slog.Any(key, ctx.Value(key)))
-		}
-	}
-	return t.Handler.Handle(ctx, r)
-}
-
-func (t *defaultHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
-	return &defaultHandler{
-		Handler: t.Handler.WithAttrs(attrs),
-	}
-}
-
-type loggerCtxKey struct{}
-
-var logMapCtxKey loggerCtxKey = loggerCtxKey{}
 
 // CtxWithValue: adds a key-val pair to the context in sync.Map for thread safely
 // this value automatically added to the log record with defaultHandler
@@ -61,7 +33,15 @@ func CtxWithValue(ctx context.Context, key string, val interface{}) context.Cont
 	return context.WithValue(ctx, logMapCtxKey, m)
 }
 
-const messageKey = "message"
+func With(args ...any) *Logger {
+	return &Logger{
+		logger: slog.With(args...),
+	}
+}
+
+func Group(key string, args ...any) slog.Attr {
+	return slog.Group(key, args...)
+}
 
 // Initialize: initializes the logger with default handler
 // if is deDebug is false, it sets the log level to [LevelDebug] otherwise [LevelInfo]
@@ -74,7 +54,8 @@ func Initialize(ctx context.Context, w io.Writer, isDebug bool, keyInput []strin
 	if isDebug {
 		level = slog.LevelDebug
 	}
-	slog.SetDefault(slog.New(&defaultHandler{
+
+	handler := &customHandler{
 		Handler: slog.NewJSONHandler(w, &slog.HandlerOptions{
 			Level: level,
 			ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
@@ -88,24 +69,41 @@ func Initialize(ctx context.Context, w io.Writer, isDebug bool, keyInput []strin
 				return a
 			},
 		}),
-	}))
+	}
+	slog.SetDefault(slog.New(handler))
 	return context.WithValue(ctx, logMapCtxKey, &sync.Map{})
 }
 
-func (l *Logger) Info(ctx context.Context, msg string, args ...any) {
+func (l *Logger) InfoContext(ctx context.Context, msg string, args ...any) {
 	l.logger.InfoContext(ctx, msg, args...)
 }
 
-func (l *Logger) Debug(ctx context.Context, msg string, args ...any) {
+func (l *Logger) DebugContext(ctx context.Context, msg string, args ...any) {
 	l.logger.DebugContext(ctx, msg, args...)
 }
 
-func (l *Logger) Warn(ctx context.Context, msg string, args ...any) {
+func (l *Logger) WarnContext(ctx context.Context, msg string, args ...any) {
 	l.logger.WarnContext(ctx, msg, args...)
 }
 
-func (l *Logger) Error(ctx context.Context, msg string, args ...any) {
+func (l *Logger) ErrorContext(ctx context.Context, msg string, args ...any) {
 	l.logger.ErrorContext(ctx, msg, args...)
+}
+
+func (l *Logger) Info(msg string, args ...any) {
+	l.logger.Info(msg, args...)
+}
+
+func (l *Logger) Debug(msg string, args ...any) {
+	l.logger.Debug(msg, args...)
+}
+
+func (l *Logger) Warn(msg string, args ...any) {
+	l.logger.Warn(msg, args...)
+}
+
+func (l *Logger) Error(msg string, args ...any) {
+	l.logger.Error(msg, args...)
 }
 
 func (l *Logger) With(args ...any) *Logger {
@@ -130,35 +128,4 @@ func (l *Logger) WithContext(ctx context.Context) *Logger {
 		}
 	}
 	return newLogger
-}
-
-func Info(ctx context.Context, msg string, args ...any) {
-	slog.InfoContext(ctx, msg, args...)
-}
-
-func Debug(ctx context.Context, msg string, args ...any) {
-	slog.DebugContext(ctx, msg, args...)
-}
-
-func Warn(ctx context.Context, msg string, args ...any) {
-	slog.WarnContext(ctx, msg, args...)
-}
-
-func Error(ctx context.Context, msg string, args ...any) {
-	slog.ErrorContext(ctx, msg, args...)
-}
-
-func Fatal(ctx context.Context, msg string, args ...any) {
-	slog.ErrorContext(ctx, msg, args...)
-	os.Exit(1)
-}
-
-func With(args ...any) *Logger {
-	return &Logger{
-		logger: slog.With(args...),
-	}
-}
-
-func Group(key string, args ...any) slog.Attr {
-	return slog.Group(key, args...)
 }
