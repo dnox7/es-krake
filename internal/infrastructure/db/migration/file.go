@@ -1,4 +1,4 @@
-package customsource
+package migration
 
 import (
 	"net/url"
@@ -6,19 +6,19 @@ import (
 	"path/filepath"
 )
 
-type File struct {
+type file struct {
 	partialDriver
 	url  string
 	path string
 }
 
-func (f *File) Open(urlStr string) (*File, error) {
+func (f *file) Open(urlStr string) (*file, error) {
 	p, err := parseUrl(urlStr)
 	if err != nil {
 		return nil, err
 	}
 
-	nf := &File{
+	nf := &file{
 		url:  urlStr,
 		path: p,
 	}
@@ -29,7 +29,7 @@ func (f *File) Open(urlStr string) (*File, error) {
 	return nf, nil
 }
 
-func (f *File) GetLastestIndex() uint {
+func (f *file) GetLastestIndex() uint {
 	return f.migrations.index[len(f.migrations.index)-1]
 }
 

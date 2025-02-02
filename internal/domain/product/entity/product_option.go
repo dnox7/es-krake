@@ -1,11 +1,11 @@
 package entity
 
-import "pech/es-krake/internal/domain/utils"
+import "pech/es-krake/internal/domain"
 
 type ProductOption struct {
-	ID              int     // Unique identifier for the product option
-	ProductID       int     // The ID of the product that this option belongs to
-	Name            string  // The name of the option (e.g., "Size", "Color")
-	Description     *string // Optional description of the option (e.g., "Select the size of the product")
-	utils.BaseModel         // Common fields like created_at, updated_at for auditing and versioning
+	ID          int     `json:"id" db:"id"`                   // Unique identifier for the product option
+	ProductID   int     `json:"product_id" db:"product_id"`   // The ID of the product that this option belongs to
+	Name        string  `json:"name" db:"name"`               // The name of the option (e.g., "Size", "Color")
+	Description *string `json:"description" db:"description"` // Optional description of the option (e.g., "Select the size of the product")
+	domain.BaseModel
 }

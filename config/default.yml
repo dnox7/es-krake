@@ -4,19 +4,20 @@ application:
 
 logger:
   level: DEBUG
-  format: json
+  format: JSON
 
 server:
   port: 8080
 
 rdb:
   driver: postgres
-  host: postgres
+  host: localhost
   port: 5432
-  username: admin
-  password: 1234
-  name: es_krake
+  username: postgres
+  password: 123456
+  name: ek_t1
   max_open_conns: 10
   max_idle_conns: 3
-  max_life_time: 10
-  max_idle_time: 10
+  max_life_time: 100000000
+  max_idle_time: 100000
+  # migrations_path: migrations

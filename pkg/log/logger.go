@@ -3,6 +3,7 @@ package log
 import (
 	"io"
 	"log/slog"
+	"pech/es-krake/config"
 	"sync"
 	"time"
 
@@ -48,30 +49,38 @@ func Group(key string, args ...any) slog.Attr {
 // it uses JSONHandler for logging and automatically adds the key-value pair to the log record
 // using the CtxWithValue function.
 // The fields in the keys are used to retrieve their values from the context and write them to the logger
-func Initialize(ctx context.Context, w io.Writer, isDebug bool, keyInput []string) context.Context {
+func Initialize(ctx context.Context, w io.Writer, cfg *config.Config, keyInput []string) (*Logger, context.Context) {
 	keys = append(keys, keyInput...)
 	level := slog.LevelInfo
-	if isDebug {
+	if cfg.Log.Level == "DEBUG" {
 		level = slog.LevelDebug
 	}
 
-	handler := &customHandler{
-		Handler: slog.NewJSONHandler(w, &slog.HandlerOptions{
-			Level: level,
-			ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
-				if v, ok := a.Value.Any().(time.Duration); ok {
-					a.Value = slog.StringValue(v.String())
-				}
-				if a.Key != slog.MessageKey {
-					return a
-				}
-				a.Key = messageKey
+	opt := &slog.HandlerOptions{
+		Level: level,
+		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+			if v, ok := a.Value.Any().(time.Duration); ok {
+				a.Value = slog.StringValue(v.String())
+			}
+			if a.Key != slog.MessageKey {
 				return a
-			},
-		}),
+			}
+			a.Key = messageKey
+			return a
+		},
 	}
-	slog.SetDefault(slog.New(handler))
-	return context.WithValue(ctx, logMapCtxKey, &sync.Map{})
+
+	h := &customHandler{}
+	if cfg.Log.Format == "TEXT" {
+		h.Handler = slog.NewTextHandler(w, opt)
+	} else {
+		h.Handler = slog.NewJSONHandler(w, opt)
+	}
+
+	l := slog.New(h)
+	slog.SetDefault(l)
+
+	return &Logger{l}, context.WithValue(ctx, logMapCtxKey, &sync.Map{})
 }
 
 func (l *Logger) InfoContext(ctx context.Context, msg string, args ...any) {

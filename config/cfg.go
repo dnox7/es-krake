@@ -20,34 +20,36 @@ type (
 	}
 
 	App struct {
-		Name    string `env-required:"true" yaml:"name" env:"APP_NAME"`
-		Version string `env-required:"true" yaml:"version" env:"APP_VERSION"`
+		Name    string `yaml:"name" env:"APP_NAME" env-required:"true"`
+		Version string `yaml:"version" env:"APP_VERSION" env-required:"true"`
 	}
 
 	Server struct {
-		Port string `env-required:"true" yaml:"port" env:"SERVER_PORT"`
+		Port string `yaml:"port" env:"SERVER_PORT" env-required:"true"`
 	}
 
 	Log struct {
-		Level  string `env-required:"true" yaml:"level" env:"LOG_LEVEL"`
-		Format string `env-required:"true" yaml:"format" env:"LOG_FORMAT"`
+		Level  string `yaml:"level" env:"LOG_LEVEL" env-required:"true"`
+		Format string `yaml:"format" env:"LOG_FORMAT" env-required:"true"`
 	}
 
 	RDB struct {
-		Driver   string `env-required:"true" yaml:"driver" env:"DB_DRIVER"`
-		Host     string `env-required:"true" yaml:"host" env:"DB_HOST"`
-		Port     string `env-required:"true" yaml:"port" env:"DB_PORT"`
-		Username string `env-required:"true" yaml:"username" env:"DB_USERNAME"`
-		Password string `env-required:"true" yaml:"password" env:"DB_PASSWORD"`
-		Name     string `env-required:"true" yaml:"name" env:"DB_NAME"`
+		Driver   string `yaml:"driver" env:"DB_DRIVER" env-required:"true"`
+		Host     string `yaml:"host" env:"DB_HOST" env-required:"true"`
+		Port     string `yaml:"port" env:"DB_PORT" env-required:"true"`
+		Username string `yaml:"username" env:"DB_USERNAME" env-required:"true"`
+		Password string `yaml:"password" env:"DB_PASSWORD" env-required:"true"`
+		Name     string `yaml:"name" env:"DB_NAME" env-required:"true"`
 		SSLMode  string `yaml:"ssl_mode" env:"DB_SSLMODE" env-default:"disable"`
 
-		MaxOpenConns int `env-required:"true" yaml:"max_open_conns" env:"DB_MAX_OPEN_CONNS"`
-		MaxIdleConns int `env-required:"true" yaml:"max_idle_conns" env:"DB_MAX_IDLE_CONNS"`
-		MaxLifeTime  int `env-required:"true" yaml:"max_life_time" env:"DB_MAX_LIFE_TIME"`
-		MaxIdleTime  int `env-required:"true" yaml:"max_idle_time" env:"DB_MAX_IDLE_TIME"`
-		ConnTimeout  int `yaml:"conn_timeout" env:"DB_CONN_TIMEOUT" env-default:"1000"`
+		MaxOpenConns int `yaml:"max_open_conns" env:"DB_MAX_OPEN_CONNS" env-required:"true"`
+		MaxIdleConns int `yaml:"max_idle_conns" env:"DB_MAX_IDLE_CONNS" env-required:"true"`
+		MaxLifeTime  int `yaml:"max_life_time" env:"DB_MAX_LIFE_TIME" env-required:"true"`
+		MaxIdleTime  int `yaml:"max_idle_time" env:"DB_MAX_IDLE_TIME" env-required:"true"`
+		ConnTimeout  int `yaml:"conn_timeout" env:"DB_CONN_TIMEOUT" env-default:"10000"`
 		ConnAttempts int `yaml:"conn_attempts" env:"DB_CONN_ATTEMPTS" env-default:"10"`
+
+		MigrationsPath string `yaml:"migrations_path" env:"DB_MIGRATIONS_PATH" env-required:"true"`
 	}
 )
 
@@ -67,7 +69,6 @@ func loadCfgFile(cfgFilePath string, cfg *Config) error {
 	envFileExists := checkFileExists(cfgFilePath)
 	if envFileExists {
 		err := cleanenv.ReadConfig(cfgFilePath, cfg)
-		fmt.Println("ok")
 		if err != nil {
 			return fmt.Errorf("config error: %w", err)
 		}
@@ -75,7 +76,7 @@ func loadCfgFile(cfgFilePath string, cfg *Config) error {
 		err := cleanenv.ReadEnv(cfg)
 		if err != nil {
 			if _, statErr := os.Stat(cfgFilePath); statErr != nil {
-				return fmt.Errorf("missing environment variables: %w", err)
+				return fmt.Errorf("missing environment variable: %w", err)
 			}
 			return err
 		}

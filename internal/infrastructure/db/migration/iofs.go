@@ -1,4 +1,4 @@
-package customsource
+package migration
 
 import (
 	"fmt"

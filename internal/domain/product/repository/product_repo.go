@@ -1,4 +1,4 @@
 package repository
 
-type ProductRepository interface {
+type IProductRepository interface {
 }
