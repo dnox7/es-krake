@@ -88,6 +88,7 @@ func (r *attributeRepository) CreateWithTx(ctx context.Context, attributes map[s
 		Insert(domainRepo.AttributeTableName).
 		Columns("name", "description", "attribute_type_id", "is_required", "display_order").
 		Values(attributeEntity.Name, attributeEntity.Description, attributeEntity.AttributeTypeID, attributeEntity.IsRequired, attributeEntity.DisplayOrder).
+		Suffix("RETURNING *").
 		ToSql()
 
 	if err != nil {
@@ -95,5 +96,30 @@ func (r *attributeRepository) CreateWithTx(ctx context.Context, attributes map[s
 		return attributeEntity, err
 	}
 
-	r.pg.DB.Unsafe().Beginx()
+	tx, err := r.pg.DB.Beginx()
+	if err != nil {
+		return entity.Attribute{}, err
+	}
+
+	committed := false
+	defer (func() {
+		if !committed {
+			err := tx.Rollback()
+			if err != nil {
+				r.logger.Error("Cannot rollback transaction", "method", "attribute_repo - create_with_tx", "detail", err)
+			}
+		}
+	})()
+
+	err = tx.QueryRowx(sql, args...).StructScan(&attributeEntity)
+	if err != nil {
+		return entity.Attribute{}, err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return entity.Attribute{}, err
+	}
+
+	return attributeEntity, nil
 }
