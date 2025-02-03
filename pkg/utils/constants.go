@@ -6,7 +6,8 @@ const (
 	ErrEmailFail    = "ERR003"
 	ErrPasswordFail = "ERROO4"
 
-	InternalServerErrorMsg = "Internal server error"
+	ErrInternalServerMsg     = "Internal server error"
+	ErrQueryBuilderFailedMsg = "The query builder failed"
 
 	DefaultPageNo   = 1
 	DefaultPageSize = 30

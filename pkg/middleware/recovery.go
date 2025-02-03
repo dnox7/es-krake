@@ -2,10 +2,10 @@ package middleware
 
 import (
 	"errors"
+	"log/slog"
 	"net"
 	"net/http"
 	"os"
-	"pech/es-krake/pkg/log"
 	"runtime/debug"
 	"strings"
 
@@ -16,9 +16,9 @@ func Recovery() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
-				log.
+				slog.
 					With("stack", string(debug.Stack())).
-					Error(c.Request.Context(), "panic was trigger", "error", err)
+					ErrorContext(c.Request.Context(), "panic was trigger", "error", err)
 
 				var brokenPipe bool
 				if ne, ok := err.(*net.OpError); ok {

@@ -61,7 +61,7 @@ func (h HttpClient) Do(
 
 		res, err := h.Client.Do(req)
 		if err != nil {
-			logger.Error(
+			logger.ErrorContext(
 				ctx, "could not get body of response",
 				"error", err,
 			)
@@ -70,7 +70,7 @@ func (h HttpClient) Do(
 
 		bodyRes, err := io.ReadAll(res.Body)
 		if err != nil {
-			logger.Error(
+			logger.ErrorContext(
 				ctx, "could not read body of response",
 				"error", err,
 			)
@@ -84,12 +84,12 @@ func (h HttpClient) Do(
 		)
 
 		if res.StatusCode/100 == 5 {
-			logger.Error(
+			logger.ErrorContext(
 				ctx, "http call failed",
 				"error", err,
 			)
 		} else {
-			logger.With("status", res.Status).Info(ctx, "http call successfully")
+			logger.With("status", res.Status).InfoContext(ctx, "http call successfully")
 		}
 
 		retries++

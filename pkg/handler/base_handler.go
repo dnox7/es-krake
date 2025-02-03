@@ -5,10 +5,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 	"os"
 	"pech/es-krake/pkg/dto"
-	"pech/es-krake/pkg/log"
 	"pech/es-krake/pkg/utils"
 	"pech/es-krake/pkg/validator"
 	wraperror "pech/es-krake/pkg/wrap-error"
@@ -216,11 +216,11 @@ func (h *BaseHTTPHandler) SetInternalErrorResponse(c *gin.Context, err error) {
 	if os.Getenv("PE_DEBUG") == "true" {
 		debugInfo = err.Error()
 	} else {
-		log.Error(c, "Unexpected error", "error", err)
+		slog.ErrorContext(c, "Unexpected error", "error", err)
 
 		data := &dto.BaseErrorResponse{
 			Error: &dto.ErrorResponse{
-				Message:   utils.InternalServerErrorMsg,
+				Message:   utils.ErrInternalServerMsg,
 				DebugInfo: debugInfo,
 			},
 		}

@@ -49,14 +49,14 @@ func Group(key string, args ...any) slog.Attr {
 // it uses JSONHandler for logging and automatically adds the key-value pair to the log record
 // using the CtxWithValue function.
 // The fields in the keys are used to retrieve their values from the context and write them to the logger
-func Initialize(ctx context.Context, w io.Writer, cfg *config.Config, keyInput []string) (*Logger, context.Context) {
+func Initialize(ctx context.Context, w io.Writer, cfg *config.Config, keyInput []string) context.Context {
 	keys = append(keys, keyInput...)
 	level := slog.LevelInfo
 	if cfg.Log.Level == "DEBUG" {
 		level = slog.LevelDebug
 	}
 
-	opt := &slog.HandlerOptions{
+	opts := &slog.HandlerOptions{
 		Level: level,
 		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
 			if v, ok := a.Value.Any().(time.Duration); ok {
@@ -72,15 +72,15 @@ func Initialize(ctx context.Context, w io.Writer, cfg *config.Config, keyInput [
 
 	h := &customHandler{}
 	if cfg.Log.Format == "TEXT" {
-		h.Handler = slog.NewTextHandler(w, opt)
+		h.Handler = slog.NewTextHandler(w, opts)
 	} else {
-		h.Handler = slog.NewJSONHandler(w, opt)
+		h.Handler = slog.NewJSONHandler(w, opts)
 	}
 
 	l := slog.New(h)
 	slog.SetDefault(l)
 
-	return &Logger{l}, context.WithValue(ctx, logMapCtxKey, &sync.Map{})
+	return context.WithValue(ctx, logMapCtxKey, &sync.Map{})
 }
 
 func (l *Logger) InfoContext(ctx context.Context, msg string, args ...any) {

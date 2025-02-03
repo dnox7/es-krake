@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"net/http"
 	"pech/es-krake/pkg/dto"
-	"pech/es-krake/pkg/log"
 	"runtime"
 	"strings"
+
+	"log/slog"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,7 +22,7 @@ func GinCustomRecovery() gin.HandlerFunc {
 			}
 			stackTrace := stack()
 
-			log.Error(
+			slog.ErrorContext(
 				c.Request.Context(), "Panic occured",
 				"error", errMsg,
 				"path", c.Request.URL.Path,

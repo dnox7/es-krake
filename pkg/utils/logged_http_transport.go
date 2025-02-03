@@ -43,7 +43,7 @@ func (t LoggedHttpTransport) RoundTrip(req *http.Request) (*http.Response, error
 		"protocol", req.Proto,
 	)
 	if err != nil {
-		loggerRes.Error(req.Context(), "could not get response", "error", err)
+		loggerRes.ErrorContext(req.Context(), "could not get response", "error", err)
 		return nil, err
 	}
 
@@ -52,13 +52,13 @@ func (t LoggedHttpTransport) RoundTrip(req *http.Request) (*http.Response, error
 	if req.Body != nil {
 		bodyReq, err := req.GetBody()
 		if err != nil {
-			loggerRes.Error(req.Context(), "could not get request body", "error", err)
+			loggerRes.ErrorContext(req.Context(), "could not get request body", "error", err)
 			return nil, err
 		}
 
 		body, err = io.ReadAll(io.LimitReader(bodyReq, 1024))
 		if err != nil {
-			loggerRes.Error(req.Context(), "could not read body of request", "error", err)
+			loggerRes.ErrorContext(req.Context(), "could not read body of request", "error", err)
 			return nil, err
 		}
 
@@ -67,7 +67,7 @@ func (t LoggedHttpTransport) RoundTrip(req *http.Request) (*http.Response, error
 
 	bodyRes, err := io.ReadAll(res.Body)
 	if err != nil {
-		loggerRes.Error(req.Context(), "could not get body of response", "error", err)
+		loggerRes.ErrorContext(req.Context(), "could not get body of response", "error", err)
 		return nil, err
 	}
 
@@ -79,9 +79,9 @@ func (t LoggedHttpTransport) RoundTrip(req *http.Request) (*http.Response, error
 	)
 
 	if res.StatusCode/100 == 5 {
-		loggerRes.With("rootcause", t.Type).Error(req.Context(), err.Error())
+		loggerRes.With("rootcause", t.Type).ErrorContext(req.Context(), "err", err)
 	} else {
-		loggerRes.With("status", res.Status).Info(req.Context(), "")
+		loggerRes.With("status", res.Status).InfoContext(req.Context(), "")
 	}
 
 	return res, err

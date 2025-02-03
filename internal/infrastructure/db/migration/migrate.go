@@ -44,11 +44,10 @@ func getSortedMigrationTableKeys() []string {
 func MigrateAll(
 	cfg *config.Config,
 	db *sql.DB,
-	logger *log.Logger,
 ) error {
 	keys := getSortedMigrationTableKeys()
 	for _, module := range keys {
-		if err := migrateSingleModule(cfg, db, logger, module, migrationTables[module]); err != nil {
+		if err := migrateSingleModule(cfg, db, module, migrationTables[module]); err != nil {
 			return fmt.Errorf("Failed to migrate module %v: %w", module, err)
 		}
 	}
@@ -58,10 +57,9 @@ func MigrateAll(
 func CheckAll(
 	cfg *config.Config,
 	db *sql.DB,
-	logger *log.Logger,
 ) error {
 	for moduleName, mt := range migrationTables {
-		if err := checkDatabaseVersion(cfg, db, logger, moduleName, mt); err != nil {
+		if err := checkDatabaseVersion(cfg, db, moduleName, mt); err != nil {
 			return fmt.Errorf("The migrations for module %v are not up-to-date: %w", moduleName, err)
 		}
 	}
@@ -71,7 +69,6 @@ func CheckAll(
 func migrateSingleModule(
 	cfg *config.Config,
 	db *sql.DB,
-	logger *log.Logger,
 	moduleName string,
 	migrationTable string,
 ) error {
@@ -92,7 +89,7 @@ func migrateSingleModule(
 		return err
 	}
 
-	m.Log = migrationLogger{logger}
+	m.Log = migrationLogger{log.With()}
 	f := file{}
 	fileSystemMigrations, err := f.Open(cfg.RDB.MigrationsPath + "/" + moduleName)
 	if err != nil {
@@ -123,7 +120,6 @@ func migrateSingleModule(
 func checkDatabaseVersion(
 	cfg *config.Config,
 	db *sql.DB,
-	logger *log.Logger,
 	moduleName string,
 	migrationsTable string,
 ) error {
@@ -144,7 +140,7 @@ func checkDatabaseVersion(
 		return err
 	}
 
-	m.Log = migrationLogger{logger}
+	m.Log = migrationLogger{log.With()}
 	ver, dirty, err := m.Version()
 	if err != nil {
 		return err

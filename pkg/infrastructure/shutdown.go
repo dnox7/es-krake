@@ -2,9 +2,9 @@ package infrastructure
 
 import (
 	"context"
+	"log/slog"
 	"os"
 	"os/signal"
-	"pech/es-krake/pkg/log"
 )
 
 func OnShutdown(callback func() error) {
@@ -12,10 +12,10 @@ func OnShutdown(callback func() error) {
 		signals := make(chan os.Signal, 1)
 		signal.Notify(signals, os.Interrupt, os.Kill)
 		s := <-signals
-		log.Info(context.Background(), "Received signal '%v'. Shutting down...", s.String())
+		slog.InfoContext(context.Background(), "Received signal '%v'. Shutting down...", "s", s.String())
 
 		if err := callback(); err != nil {
-			log.Error(context.Background(), "Error during graceful shutdown: %v", err)
+			slog.ErrorContext(context.Background(), "Error during graceful shutdown", "detail", err)
 		}
 	})()
 }

@@ -6,6 +6,8 @@ import (
 	domainRepo "pech/es-krake/internal/domain/product/repository"
 	"pech/es-krake/internal/infrastructure/db"
 	"pech/es-krake/pkg/log"
+
+	sq "github.com/Masterminds/squirrel"
 )
 
 type attributeTypeRepository struct {
@@ -13,9 +15,9 @@ type attributeTypeRepository struct {
 	pg     *db.PostgreSQL
 }
 
-func NewAttributeTypeRepository(l *log.Logger, pg *db.PostgreSQL) domainRepo.IAttributeTypeRepository {
+func NewAttributeTypeRepository(pg *db.PostgreSQL) domainRepo.IAttributeTypeRepository {
 	return &attributeTypeRepository{
-		logger: l,
+		logger: log.With("repo", "attribute_type_repo"),
 		pg:     pg,
 	}
 }
@@ -25,8 +27,8 @@ func (r *attributeTypeRepository) TakeByID(ctx context.Context, ID int) (entity.
 
 	sql, args, err := r.pg.Builder.
 		Select("id, name, created_at, updated_at").
-		From(attributeType.TableName()).
-		Where("id", ID).
+		From(domainRepo.AttributeTypeTableName).
+		Where(sq.Eq{"id": ID}).
 		ToSql()
 
 	if err != nil {
@@ -43,7 +45,7 @@ func (r *attributeTypeRepository) GetAsDictionary(ctx context.Context) (map[int]
 
 	sql, args, err := r.pg.Builder.
 		Select("id", "name").
-		From("attributes").
+		From(domainRepo.AttributeTypeTableName).
 		ToSql()
 
 	if err != nil {
