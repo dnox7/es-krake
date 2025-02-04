@@ -1,1 +1,1 @@
-export DB_MIGRTIONS_PATH="$(pwd)/migrations"
+export DB_MIGRATIONS_PATH="$(pwd)/migrations"

@@ -43,12 +43,22 @@ func main() {
 		return
 	}
 
-	attributeTypeRepo := repository.NewAttributeTypeRepository(pg)
-	dict, err := attributeTypeRepo.GetAsDictionary(ctx)
+	attributeRepo := repository.NewAttributeRepository(pg)
+
+	desc := "The size of a object"
+	input := map[string]interface{}{
+		"name":              "Size",
+		"description":       &desc,
+		"attribute_type_id": 2,
+		"is_required":       true,
+		"display_order":     1,
+	}
+
+	attribute, err := attributeRepo.Create(ctx, input)
 	if err != nil {
 		slog.Error("wtf ?", "detail", err)
 	} else {
-		fmt.Println(dict)
+		fmt.Printf("%+v\n", attribute)
 	}
 
 	fmt.Println("OK!")

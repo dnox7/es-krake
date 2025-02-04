@@ -9,6 +9,7 @@ import (
 	"pech/es-krake/pkg/utils"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/jmoiron/sqlx"
 )
 
 type attributeRepository struct {
@@ -77,7 +78,7 @@ func (r *attributeRepository) FindByConditions(ctx context.Context, conditions m
 	return attributes, err
 }
 
-func (r *attributeRepository) CreateWithTx(ctx context.Context, attributes map[string]interface{}) (entity.Attribute, error) {
+func (r *attributeRepository) Create(ctx context.Context, attributes map[string]interface{}) (entity.Attribute, error) {
 	var attributeEntity entity.Attribute
 
 	if err := utils.MapToStruct(attributes, &attributeEntity); err != nil {
@@ -96,27 +97,48 @@ func (r *attributeRepository) CreateWithTx(ctx context.Context, attributes map[s
 		return attributeEntity, err
 	}
 
-	tx, err := r.pg.DB.Beginx()
+	err = utils.Transaction(ctx, r.logger, r.pg.DB, nil, func(tx *sqlx.Tx) error {
+		return tx.QueryRowxContext(ctx, sql, args...).StructScan(&attributeEntity)
+	})
+
 	if err != nil {
 		return entity.Attribute{}, err
 	}
 
-	committed := false
-	defer (func() {
-		if !committed {
-			err := tx.Rollback()
-			if err != nil {
-				r.logger.Error("Cannot rollback transaction", "method", "attribute_repo - create_with_tx", "detail", err)
-			}
-		}
-	})()
+	return attributeEntity, nil
+}
 
-	err = tx.QueryRowx(sql, args...).StructScan(&attributeEntity)
+func (r *attributeRepository) Update(
+	ctx context.Context,
+	attributeEntity entity.Attribute,
+	attributesToUpdate map[string]interface{},
+) (entity.Attribute, error) {
+	if err := utils.MapToStruct(attributesToUpdate, &attributeEntity); err != nil {
+		return attributeEntity, err
+	}
+
+	sql, args, err := r.pg.Builder.
+		Update(domainRepo.AttributeTableName).
+		SetMap(map[string]interface{}{
+			"name":              attributeEntity.Name,
+			"description":       attributeEntity.Description,
+			"attribute_type_id": attributeEntity.AttributeTypeID,
+			"is_required":       attributeEntity.IsRequired,
+			"display_order":     attributeEntity.DisplayOrder,
+		}).
+		Where(sq.Eq{"id": attributeEntity.ID}).
+		Suffix("RETURNING *").
+		ToSql()
+
 	if err != nil {
+		r.logger.ErrorContext(ctx, utils.ErrQueryBuilderFailedMsg, "detail", err)
 		return entity.Attribute{}, err
 	}
 
-	err = tx.Commit()
+	err = utils.Transaction(ctx, r.logger, r.pg.DB, nil, func(tx *sqlx.Tx) error {
+		return tx.QueryRowxContext(ctx, sql, args...).StructScan(&attributeEntity)
+	})
+
 	if err != nil {
 		return entity.Attribute{}, err
 	}

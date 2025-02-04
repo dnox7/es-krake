@@ -6,9 +6,9 @@ CREATE TABLE IF NOT EXISTS attributes (
     is_required boolean NOT NULL,
     display_order integer NOT NULL,
     created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    deleted_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_attribute_type
-        FOREIGN KEY (attribute_type_id) REFERENCES attributes(id)
+        FOREIGN KEY (attribute_type_id) REFERENCES attribute_types(id)
             ON DELETE RESTRICT
             ON UPDATE RESTRICT
 );
