@@ -3,7 +3,6 @@ CREATE TABLE IF NOT EXISTS attributes (
     name varchar(10) NOT NULL,
     description text,
     attribute_type_id smallint NOT NULL,
-    is_required boolean NOT NULL,
     display_order integer NOT NULL,
     created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,

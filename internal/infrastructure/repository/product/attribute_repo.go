@@ -29,7 +29,7 @@ func (r *attributeRepository) TakeByID(ctx context.Context, ID int) (entity.Attr
 	var attribute entity.Attribute
 
 	sql, args, err := r.pg.Builder.
-		Select("id", "name", "description", "is_required", "display_order", "created_at", "updated_at").
+		Select("id", "name", "description", "display_order", "created_at", "updated_at").
 		From(domainRepo.AttributeTableName).
 		Where(sq.Eq{"id": ID}).
 		ToSql()
@@ -47,7 +47,7 @@ func (r *attributeRepository) TakeByConditions(ctx context.Context, conditions m
 	var attribute entity.Attribute
 
 	sql, args, err := r.pg.Builder.
-		Select("id", "name", "description", "is_required", "display_order", "created_at", "updated_at").
+		Select("id", "name", "description", "display_order", "created_at", "updated_at").
 		From(domainRepo.AttributeTableName).
 		Where(sq.Eq(conditions)).
 		ToSql()
@@ -65,7 +65,7 @@ func (r *attributeRepository) FindByConditions(ctx context.Context, conditions m
 	attributes := []entity.Attribute{}
 
 	sql, args, err := r.pg.Builder.
-		Select("id", "name", "description", "is_required", "display_order", "created_at", "updated_at").
+		Select("id", "name", "description", "display_order", "created_at", "updated_at").
 		From(domainRepo.AttributeTableName).
 		Where(sq.Eq(conditions)).
 		ToSql()
@@ -88,8 +88,8 @@ func (r *attributeRepository) Create(ctx context.Context, attributes map[string]
 
 	query, args, err := r.pg.Builder.
 		Insert(domainRepo.AttributeTableName).
-		Columns("name", "description", "attribute_type_id", "is_required", "display_order").
-		Values(attributeEntity.Name, attributeEntity.Description, attributeEntity.AttributeTypeID, attributeEntity.IsRequired, attributeEntity.DisplayOrder).
+		Columns("name", "description", "attribute_type_id", "display_order").
+		Values(attributeEntity.Name, attributeEntity.Description, attributeEntity.AttributeTypeID, attributeEntity.DisplayOrder).
 		Suffix("RETURNING *").
 		ToSql()
 
@@ -129,7 +129,6 @@ func (r *attributeRepository) Update(
 			"name":              attributeEntity.Name,
 			"description":       attributeEntity.Description,
 			"attribute_type_id": attributeEntity.AttributeTypeID,
-			"is_required":       attributeEntity.IsRequired,
 			"display_order":     attributeEntity.DisplayOrder,
 		}).
 		Where(sq.Eq{"id": attributeEntity.ID}).
