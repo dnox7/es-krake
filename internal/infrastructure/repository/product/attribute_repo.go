@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	"pech/es-krake/internal/domain/product/entity"
 	domainRepo "pech/es-krake/internal/domain/product/repository"
 	"pech/es-krake/internal/infrastructure/db"
@@ -85,7 +86,7 @@ func (r *attributeRepository) Create(ctx context.Context, attributes map[string]
 		return attributeEntity, err
 	}
 
-	sql, args, err := r.pg.Builder.
+	query, args, err := r.pg.Builder.
 		Insert(domainRepo.AttributeTableName).
 		Columns("name", "description", "attribute_type_id", "is_required", "display_order").
 		Values(attributeEntity.Name, attributeEntity.Description, attributeEntity.AttributeTypeID, attributeEntity.IsRequired, attributeEntity.DisplayOrder).
@@ -97,8 +98,13 @@ func (r *attributeRepository) Create(ctx context.Context, attributes map[string]
 		return attributeEntity, err
 	}
 
-	err = utils.Transaction(ctx, r.logger, r.pg.DB, nil, func(tx *sqlx.Tx) error {
-		return tx.QueryRowxContext(ctx, sql, args...).StructScan(&attributeEntity)
+	txOpts := &sql.TxOptions{
+		Isolation: sql.LevelWriteCommitted,
+		ReadOnly:  false,
+	}
+
+	err = utils.Transaction(ctx, r.logger, r.pg.DB, txOpts, func(tx *sqlx.Tx) error {
+		return tx.QueryRowxContext(ctx, query, args...).StructScan(&attributeEntity)
 	})
 
 	if err != nil {
@@ -117,7 +123,7 @@ func (r *attributeRepository) Update(
 		return attributeEntity, err
 	}
 
-	sql, args, err := r.pg.Builder.
+	query, args, err := r.pg.Builder.
 		Update(domainRepo.AttributeTableName).
 		SetMap(map[string]interface{}{
 			"name":              attributeEntity.Name,
@@ -135,8 +141,13 @@ func (r *attributeRepository) Update(
 		return entity.Attribute{}, err
 	}
 
-	err = utils.Transaction(ctx, r.logger, r.pg.DB, nil, func(tx *sqlx.Tx) error {
-		return tx.QueryRowxContext(ctx, sql, args...).StructScan(&attributeEntity)
+	txOpts := &sql.TxOptions{
+		Isolation: sql.LevelWriteCommitted,
+		ReadOnly:  false,
+	}
+
+	err = utils.Transaction(ctx, r.logger, r.pg.DB, txOpts, func(tx *sqlx.Tx) error {
+		return tx.QueryRowxContext(ctx, query, args...).StructScan(&attributeEntity)
 	})
 
 	if err != nil {
