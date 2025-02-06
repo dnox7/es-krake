@@ -1,6 +1,5 @@
 CREATE TABLE IF NOT EXISTS categories (
     id serial PRIMARY KEY,
-    parent_id integer,
     name varchar(20) NOT NULL,
     slug varchar(50) NOT NULL UNIQUE,
     description varchar(50),
