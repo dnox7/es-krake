@@ -18,5 +18,8 @@ type Product struct {
 	TaxClassID            int64   `json:"tax_class_id" db:"tax_class_id"`                       // Identifier for the tax class applied to the product
 	MetaTitle             *string `json:"meta_title" db:"meta_title"`                           // SEO title for the product, used in search engine optimization
 	MetaKeyword           *string `json:"meta_keyword" db:"meta_keyword"`                       // SEO keywords for the product, used for search optimization
+	Options               []*ProductOption
+	Attributes            []*ProductAttributeValue
+	Categories            []*Category
 	domain.BaseModel
 }
