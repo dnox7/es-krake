@@ -5,6 +5,8 @@ import (
 	"pech/es-krake/internal/domain/product/entity"
 )
 
+const ProductOptionTableName = "product_options"
+
 type IProductOptionRepository interface {
 	TakeByConditions(ctx context.Context, conditions map[string]interface{}) (entity.ProductOption, error)
 

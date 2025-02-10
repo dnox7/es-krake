@@ -18,6 +18,4 @@ type ICategoryRepository interface {
 	CreateWithTx(ctx context.Context, attributes map[string]interface{}) (entity.Category, error)
 
 	UpdateWithTx(ctx context.Context, category entity.Category, attributesToUpdate map[string]interface{}) (entity.Category, error)
-
-	DeleteByConditionsWithTx(ctx context.Context, conditions map[string]interface{}) error
 }
