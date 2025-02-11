@@ -3,14 +3,15 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"math"
 	"pech/es-krake/internal/domain"
 	"pech/es-krake/internal/domain/product/entity"
 	domainRepo "pech/es-krake/internal/domain/product/repository"
 	"pech/es-krake/internal/infrastructure/db"
 	"pech/es-krake/pkg/log"
 	"pech/es-krake/pkg/utils"
+	"sync"
 
-	"github.com/Masterminds/squirrel"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
 )
@@ -30,13 +31,13 @@ func NewProductAttributeValueRepository(pg *db.PostgreSQL) domainRepo.IProductAt
 func (r *productAttributeValueRepository) TakeByConditions(ctx context.Context, conditions map[string]interface{}) (entity.ProductAttributeValue, error) {
 	var prodAttrVal entity.ProductAttributeValue
 
-	query, args, err := r.getProdAttrValQueryBuilder(conditions)
+	query, args, err := r.buildSelectQuery(conditions)
 	if err != nil {
 		r.logger.ErrorContext(ctx, utils.ErrQueryBuilderFailedMsg)
 		return prodAttrVal, err
 	}
 
-	row := r.pg.DB.QueryRowxContext(ctx, query, args)
+	row := r.pg.DB.QueryRowxContext(ctx, query, args...)
 	err = row.Err()
 	if err == sql.ErrNoRows {
 		err = domain.ErrRecordNotFound
@@ -71,13 +72,13 @@ func (r *productAttributeValueRepository) FindByConditions(
 ) ([]entity.ProductAttributeValue, error) {
 	var pavList []entity.ProductAttributeValue
 
-	query, args, err := r.getProdAttrValQueryBuilder(conditions)
+	query, args, err := r.buildSelectQuery(conditions)
 	if err != nil {
 		r.logger.ErrorContext(ctx, utils.ErrQueryBuilderFailedMsg)
 		return nil, err
 	}
 
-	rows, err := r.pg.DB.QueryxContext(ctx, query, args)
+	rows, err := r.pg.DB.QueryxContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -108,9 +109,9 @@ func (r *productAttributeValueRepository) FindByConditions(
 	return pavList, nil
 }
 
-func (r *productAttributeValueRepository) getProdAttrValQueryBuilder(
+func (r *productAttributeValueRepository) buildSelectQuery(
 	conditions map[string]interface{},
-) (string, interface{}, error) {
+) (string, []interface{}, error) {
 	return r.pg.Builder.
 		Select(
 			"pav.id",
@@ -141,25 +142,155 @@ func (r *productAttributeValueRepository) Create(
 		return pav, err
 	}
 
-	sql, args, err := r.pg.Builder.
-		Insert(domainRepo.ProductAttributeValueTableName).
-		Columns("product_id", "attribute_id", "value").
-		Values(pav.ProductID, pav.AttributeID, pav.Value).
-		Suffix("RETURNING *").
-		ToSql()
+	sql, args, err := r.buildInsertSingleQuery(&pav)
 	if err != nil {
 		r.logger.ErrorContext(ctx, utils.ErrQueryBuilderFailedMsg)
+		return pav, err
+	}
+
+	err = r.pg.DB.QueryRowxContext(ctx, sql, args...).StructScan(&pav)
+	return pav, err
+}
+
+func (r *productAttributeValueRepository) CreateWithTx(
+	ctx context.Context,
+	attributes map[string]interface{},
+) (entity.ProductAttributeValue, error) {
+	var pav entity.ProductAttributeValue
+
+	if err := utils.MapToStruct(attributes, &pav); err != nil {
+		return pav, err
+	}
+
+	sql, args, err := r.buildInsertSingleQuery(&pav)
+	if err != nil {
+		r.logger.Error(utils.ErrQueryBuilderFailedMsg)
 		return pav, err
 	}
 
 	err = utils.Transaction(ctx, r.logger, r.pg.DB, nil, func(tx *sqlx.Tx) error {
 		return tx.QueryRowxContext(ctx, sql, args...).StructScan(&pav)
 	})
-
 	return pav, err
 }
 
-func (r *productAttributeValueRepository) Update(
+func (r *productAttributeValueRepository) buildInsertSingleQuery(att *entity.ProductAttributeValue) (string, []interface{}, error) {
+	return r.pg.Builder.
+		Insert(domainRepo.ProductAttributeValueTableName).
+		Columns("product_id", "attribute_id", "value").
+		Values(att.ProductID, att.AttributeID, att.Value).
+		Suffix("RETURNING *").
+		ToSql()
+}
+
+func (r *productAttributeValueRepository) CreateBatch(
+	ctx context.Context,
+	attributeValues []map[string]interface{},
+	batchSize int,
+) ([]entity.ProductAttributeValue, error) {
+	if batchSize == 0 {
+		batchSize = len(attributeValues)
+	}
+	k := int(math.Ceil(float64(len(attributeValues)) / float64(batchSize)))
+
+	var (
+		wg      sync.WaitGroup
+		mu      sync.Mutex
+		results []entity.ProductAttributeValue
+		errs    []error
+		ch      = make(chan []entity.ProductAttributeValue, k)
+		errCh   = make(chan error, k)
+	)
+
+	for i := 0; i < k; i++ {
+		start := i * batchSize
+		end := start + batchSize
+		if end > len(attributeValues) {
+			end = len(attributeValues)
+		}
+
+		batch := attributeValues[start:end]
+
+		wg.Add(1)
+		go func(batch []map[string]interface{}) {
+			defer wg.Done()
+
+			insertedValues, err := r.insertBatch(ctx, batch)
+			if err != nil {
+				errCh <- err
+				return
+			}
+			ch <- insertedValues
+		}(batch)
+	}
+
+	go func() {
+		wg.Wait()
+		close(ch)
+		close(errCh)
+	}()
+
+	for res := range ch {
+		mu.Lock()
+		results = append(results, res...)
+		mu.Unlock()
+	}
+
+	for err := range errCh {
+		mu.Lock()
+		errs = append(errs, err)
+		mu.Unlock()
+	}
+
+	if len(errs) > 0 {
+		r.logger.Error("batch insert failed", "detail", errs)
+		return nil, errs[0]
+	}
+	return results, nil
+}
+
+func (r *productAttributeValueRepository) insertBatch(
+	ctx context.Context,
+	batch []map[string]interface{},
+) ([]entity.ProductAttributeValue, error) {
+	builder := r.pg.Builder.
+		Insert(domainRepo.ProductAttributeValueTableName).
+		Columns("product_id", "attribute_id", "product_option_id", "value")
+
+	for _, input := range batch {
+		var pav entity.ProductAttributeValue
+		if err := utils.MapToStruct(input, &pav); err != nil {
+			return nil, err
+		}
+
+		builder = builder.Values(pav.ProductID, pav.AttributeID, pav.ProductOptionID, pav.Value)
+	}
+
+	sql, args, err := builder.ToSql()
+	if err != nil {
+		r.logger.Error(utils.ErrQueryBuilderFailedMsg)
+		return nil, err
+	}
+
+	rows, err := r.pg.DB.QueryxContext(ctx, sql, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	var results []entity.ProductAttributeValue
+	for rows.Next() {
+		pav := entity.ProductAttributeValue{}
+		err = rows.Scan(&pav)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, pav)
+	}
+
+	return results, nil
+}
+
+func (r *productAttributeValueRepository) UpdateWithTx(
 	ctx context.Context,
 	pav entity.ProductAttributeValue,
 	attributesToUpdate map[string]interface{},
@@ -188,27 +319,4 @@ func (r *productAttributeValueRepository) Update(
 	})
 
 	return pav, err
-}
-
-func (r *productAttributeValueRepository) DeleteByConditions(ctx context.Context, conditions map[string]interface{}) error {
-	sql, args, err := r.pg.Builder.
-		Delete(domainRepo.ProductAttributeValueTableName).
-		Where(squirrel.Eq(conditions)).
-		ToSql()
-	if err != nil {
-		r.logger.ErrorContext(ctx, utils.ErrQueryBuilderFailedMsg)
-		return err
-	}
-
-	return utils.Transaction(ctx, r.logger, r.pg.DB, nil, func(tx *sqlx.Tx) error {
-		res, err := tx.ExecContext(ctx, sql, args...)
-		r.logger.WarnContext(ctx, "Deleting productAttributeValue")
-		if err != nil {
-			return err
-		}
-
-		rowsAffected, err := res.RowsAffected()
-		r.logger.WarnContext(ctx, "Deleted productAttributeValue", rowsAffected)
-		return err
-	})
 }

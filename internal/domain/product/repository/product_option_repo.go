@@ -14,7 +14,5 @@ type IProductOptionRepository interface {
 
 	Create(ctx context.Context, attributes map[string]interface{}) (entity.ProductOption, error)
 
-	Update(ctx context.Context, po entity.ProductOption, attributesToUpdate map[string]interface{}) (entity.ProductOption, error)
-
-	DeleteByConditions(ctx context.Context, conditions map[string]interface{}) error
+	UpdateWithTx(ctx context.Context, option entity.ProductOption, attributesToUpdate map[string]interface{}) (entity.ProductOption, error)
 }

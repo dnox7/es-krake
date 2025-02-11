@@ -14,7 +14,9 @@ type IProductAttributeValueRepository interface {
 
 	Create(ctx context.Context, attributes map[string]interface{}) (entity.ProductAttributeValue, error)
 
-	Update(ctx context.Context, attributeValue entity.ProductAttributeValue, attributesToUpdate map[string]interface{}) (entity.ProductAttributeValue, error)
+	CreateWithTx(ctx context.Context, attributes map[string]interface{}) (entity.ProductAttributeValue, error)
 
-	DeleteByConditions(ctx context.Context, conditions map[string]interface{}) error
+	CreateBatch(ctx context.Context, attributeValues []map[string]interface{}, batchSize int) ([]entity.ProductAttributeValue, error)
+
+	UpdateWithTx(ctx context.Context, attributeValue entity.ProductAttributeValue, attributesToUpdate map[string]interface{}) (entity.ProductAttributeValue, error)
 }
