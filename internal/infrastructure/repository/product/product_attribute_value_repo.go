@@ -266,7 +266,7 @@ func (r *productAttributeValueRepository) insertBatch(
 		builder = builder.Values(pav.ProductID, pav.AttributeID, pav.ProductOptionID, pav.Value)
 	}
 
-	sql, args, err := builder.ToSql()
+	sql, args, err := builder.Suffix("RETURNING *").ToSql()
 	if err != nil {
 		r.logger.Error(utils.ErrQueryBuilderFailedMsg)
 		return nil, err
