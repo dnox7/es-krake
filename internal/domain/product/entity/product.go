@@ -8,7 +8,7 @@ type Product struct {
 	SKU                   string  `json:"sku"`                                                  // Stock Keeping Unit, unique code for inventory tracking
 	Description           string  `json:"description"`                                          // Detailed description of the product
 	Price                 float32 `json:"price"`                                                // Price of the product
-	HasOptions            bool    `json:"has_options" db:"has_options`                          // Indicates if the product has options (e.g., size, color)
+	HasOptions            bool    `json:"has_options" db:"has_options"`                         // Indicates if the product has options (e.g., size, color)
 	IsAllowedToOrder      bool    `json:"is_allowed_to_order" db:"is_allowed_to_order"`         // Determines if the product can be ordered
 	IsPublished           bool    `json:"is_published" db:"is_published"`                       // Indicates if the product is published and visible to customers
 	IsFeatured            bool    `json:"is_featured" db:"is_featured"`                         // Marks the product as a featured item for promotions
