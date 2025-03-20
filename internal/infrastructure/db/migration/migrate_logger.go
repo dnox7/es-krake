@@ -1,6 +1,7 @@
 package migration
 
 import (
+	"context"
 	"fmt"
 	"pech/es-krake/pkg/log"
 )
@@ -15,5 +16,5 @@ func (l migrationLogger) Verbose() bool {
 }
 
 func (l migrationLogger) Printf(format string, v ...interface{}) {
-	l.With("service", "database").Info(fmt.Sprintf(format, v...))
+	l.With("service", "database").Info(context.Background(), fmt.Sprintf(format, v...))
 }

@@ -33,7 +33,7 @@ func (r *productAttributeValueRepository) TakeByConditions(ctx context.Context, 
 
 	query, args, err := r.buildSelectQuery(conditions)
 	if err != nil {
-		r.logger.ErrorContext(ctx, utils.ErrQueryBuilderFailedMsg)
+		r.logger.Error(ctx, utils.ErrQueryBuilderFailedMsg)
 		return prodAttrVal, err
 	}
 
@@ -74,7 +74,7 @@ func (r *productAttributeValueRepository) FindByConditions(
 
 	query, args, err := r.buildSelectQuery(conditions)
 	if err != nil {
-		r.logger.ErrorContext(ctx, utils.ErrQueryBuilderFailedMsg)
+		r.logger.Error(ctx, utils.ErrQueryBuilderFailedMsg)
 		return nil, err
 	}
 
@@ -144,7 +144,7 @@ func (r *productAttributeValueRepository) Create(
 
 	sql, args, err := r.buildInsertSingleQuery(&pav)
 	if err != nil {
-		r.logger.ErrorContext(ctx, utils.ErrQueryBuilderFailedMsg)
+		r.logger.Error(ctx, utils.ErrQueryBuilderFailedMsg)
 		return pav, err
 	}
 
@@ -164,7 +164,7 @@ func (r *productAttributeValueRepository) CreateWithTx(
 
 	sql, args, err := r.buildInsertSingleQuery(&pav)
 	if err != nil {
-		r.logger.Error(utils.ErrQueryBuilderFailedMsg)
+		r.logger.Error(ctx, utils.ErrQueryBuilderFailedMsg)
 		return pav, err
 	}
 
@@ -243,7 +243,7 @@ func (r *productAttributeValueRepository) CreateBatch(
 	}
 
 	if len(errs) > 0 {
-		r.logger.Error("batch insert failed", "detail", errs)
+		r.logger.Error(ctx, "batch insert failed", "detail", errs)
 		return nil, errs[0]
 	}
 	return results, nil
@@ -268,7 +268,7 @@ func (r *productAttributeValueRepository) insertBatch(
 
 	sql, args, err := builder.Suffix("RETURNING *").ToSql()
 	if err != nil {
-		r.logger.Error(utils.ErrQueryBuilderFailedMsg)
+		r.logger.Error(ctx, utils.ErrQueryBuilderFailedMsg)
 		return nil, err
 	}
 
@@ -310,7 +310,7 @@ func (r *productAttributeValueRepository) UpdateWithTx(
 		Suffix("RETURNING *").
 		ToSql()
 	if err != nil {
-		r.logger.ErrorContext(ctx, utils.ErrQueryBuilderFailedMsg)
+		r.logger.Error(ctx, utils.ErrQueryBuilderFailedMsg)
 		return pav, err
 	}
 

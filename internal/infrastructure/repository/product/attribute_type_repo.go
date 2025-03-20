@@ -32,7 +32,7 @@ func (r *attributeTypeRepository) TakeByID(ctx context.Context, ID int) (entity.
 		ToSql()
 
 	if err != nil {
-		r.logger.Error("Query build failed", "detail", err)
+		r.logger.Error(ctx, "Query build failed", "detail", err)
 		return attributeType, err
 	}
 
@@ -49,7 +49,7 @@ func (r *attributeTypeRepository) GetAsDictionary(ctx context.Context) (map[int]
 		ToSql()
 
 	if err != nil {
-		r.logger.Error("Query build failed", "detail", err)
+		r.logger.Error(ctx, "Query build failed", "detail", err)
 		return nil, err
 	}
 

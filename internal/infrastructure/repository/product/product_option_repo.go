@@ -37,7 +37,7 @@ func (r *productOptionRepository) TakeByConditions(
 		ToSql()
 
 	if err != nil {
-		r.logger.Error(utils.ErrQueryBuilderFailedMsg)
+		r.logger.Error(ctx, utils.ErrQueryBuilderFailedMsg)
 		return productOption, err
 	}
 
@@ -63,7 +63,7 @@ func (r *productOptionRepository) FindByConditions(
 		ToSql()
 
 	if err != nil {
-		r.logger.Error(utils.ErrQueryBuilderFailedMsg)
+		r.logger.Error(ctx, utils.ErrQueryBuilderFailedMsg)
 		return nil, err
 	}
 
@@ -121,7 +121,7 @@ func (r *productOptionRepository) Create(
 		Suffix("RETURNING *").
 		ToSql()
 	if err != nil {
-		r.logger.Error(utils.ErrQueryBuilderFailedMsg)
+		r.logger.Error(ctx, utils.ErrQueryBuilderFailedMsg)
 		return opt, err
 	}
 
@@ -149,7 +149,7 @@ func (r *productOptionRepository) UpdateWithTx(
 		Suffix("RETURNING *").
 		ToSql()
 	if err != nil {
-		r.logger.Error(utils.ErrQueryBuilderFailedMsg)
+		r.logger.Error(ctx, utils.ErrQueryBuilderFailedMsg)
 		return option, err
 	}
 

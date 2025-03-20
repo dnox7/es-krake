@@ -48,7 +48,7 @@ func (r *productRepository) TakeByConditions(ctx context.Context, conditions map
 		Where(sq.Eq(conditions)).
 		ToSql()
 	if err != nil {
-		r.logger.Error(utils.ErrQueryBuilderFailedMsg)
+		r.logger.Error(ctx, utils.ErrQueryBuilderFailedMsg)
 		return prod, err
 	}
 

@@ -83,36 +83,20 @@ func Initialize(ctx context.Context, w io.Writer, cfg *config.Config, keyInput [
 	return context.WithValue(ctx, logMapCtxKey, &sync.Map{})
 }
 
-func (l *Logger) InfoContext(ctx context.Context, msg string, args ...any) {
+func (l *Logger) Info(ctx context.Context, msg string, args ...any) {
 	l.logger.InfoContext(ctx, msg, args...)
 }
 
-func (l *Logger) DebugContext(ctx context.Context, msg string, args ...any) {
+func (l *Logger) Debug(ctx context.Context, msg string, args ...any) {
 	l.logger.DebugContext(ctx, msg, args...)
 }
 
-func (l *Logger) WarnContext(ctx context.Context, msg string, args ...any) {
+func (l *Logger) Warn(ctx context.Context, msg string, args ...any) {
 	l.logger.WarnContext(ctx, msg, args...)
 }
 
-func (l *Logger) ErrorContext(ctx context.Context, msg string, args ...any) {
+func (l *Logger) Error(ctx context.Context, msg string, args ...any) {
 	l.logger.ErrorContext(ctx, msg, args...)
-}
-
-func (l *Logger) Info(msg string, args ...any) {
-	l.logger.Info(msg, args...)
-}
-
-func (l *Logger) Debug(msg string, args ...any) {
-	l.logger.Debug(msg, args...)
-}
-
-func (l *Logger) Warn(msg string, args ...any) {
-	l.logger.Warn(msg, args...)
-}
-
-func (l *Logger) Error(msg string, args ...any) {
-	l.logger.Error(msg, args...)
 }
 
 func (l *Logger) With(args ...any) *Logger {

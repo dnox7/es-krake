@@ -17,7 +17,7 @@ func Transaction(
 ) error {
 	tx, err := db.BeginTxx(ctx, opts)
 	if err != nil {
-		l.ErrorContext(ctx, "Failed to begin a transaction")
+		l.Error(ctx, "Failed to begin a transaction")
 		return err
 	}
 
@@ -26,18 +26,18 @@ func Transaction(
 		if !committed {
 			err := tx.Rollback()
 			if err != nil {
-				l.ErrorContext(ctx, "Failed to rollback transaction")
+				l.Error(ctx, "Failed to rollback transaction")
 			}
 		}
 	})()
 
 	if err := callback(tx); err != nil {
-		l.ErrorContext(ctx, "An error occurred while executing the callback")
+		l.Error(ctx, "An error occurred while executing the callback")
 		return err
 	}
 
 	if err := tx.Commit(); err != nil {
-		l.ErrorContext(ctx, "Failed to commit the transaction")
+		l.Error(ctx, "Failed to commit the transaction")
 		return err
 	}
 

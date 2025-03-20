@@ -35,7 +35,7 @@ func (r *attributeRepository) TakeByID(ctx context.Context, ID int) (entity.Attr
 		ToSql()
 
 	if err != nil {
-		r.logger.ErrorContext(ctx, utils.ErrQueryBuilderFailedMsg, "detail", err)
+		r.logger.Error(ctx, utils.ErrQueryBuilderFailedMsg, "detail", err)
 		return attribute, err
 	}
 
@@ -53,7 +53,7 @@ func (r *attributeRepository) TakeByConditions(ctx context.Context, conditions m
 		ToSql()
 
 	if err != nil {
-		r.logger.ErrorContext(ctx, utils.ErrQueryBuilderFailedMsg, "detail", err)
+		r.logger.Error(ctx, utils.ErrQueryBuilderFailedMsg, "detail", err)
 		return attribute, err
 	}
 
@@ -71,7 +71,7 @@ func (r *attributeRepository) FindByConditions(ctx context.Context, conditions m
 		ToSql()
 
 	if err != nil {
-		r.logger.ErrorContext(ctx, utils.ErrQueryBuilderFailedMsg, "detail", err)
+		r.logger.Error(ctx, utils.ErrQueryBuilderFailedMsg, "detail", err)
 		return attributes, err
 	}
 
@@ -94,7 +94,7 @@ func (r *attributeRepository) Create(ctx context.Context, attributes map[string]
 		ToSql()
 
 	if err != nil {
-		r.logger.ErrorContext(ctx, utils.ErrQueryBuilderFailedMsg, "detail", err)
+		r.logger.Error(ctx, utils.ErrQueryBuilderFailedMsg, "detail", err)
 		return attributeEntity, err
 	}
 
@@ -136,7 +136,7 @@ func (r *attributeRepository) Update(
 		ToSql()
 
 	if err != nil {
-		r.logger.ErrorContext(ctx, utils.ErrQueryBuilderFailedMsg, "detail", err)
+		r.logger.Error(ctx, utils.ErrQueryBuilderFailedMsg, "detail", err)
 		return entity.Attribute{}, err
 	}
 

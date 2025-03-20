@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"log/slog"
 	"os"
 	"pech/es-krake/config"
 	"pech/es-krake/internal/infrastructure/db"
 	"pech/es-krake/internal/infrastructure/db/migration"
-	repository "pech/es-krake/internal/infrastructure/repository/product"
+	"pech/es-krake/internal/infrastructure/repository"
+	"pech/es-krake/internal/initializer"
 	"pech/es-krake/pkg/log"
 )
 
@@ -43,13 +43,7 @@ func main() {
 		return
 	}
 
-	attributeRepo := repository.NewAttributeRepository(pg)
-	attributes, err := attributeRepo.FindByConditions(ctx, nil)
-	if err != nil {
-		slog.Error("Find by conditions error")
-		panic(err)
-	}
+	repositories := repository.NewRepositoriesContainer(pg)
+	err = initializer.MountAll(repositories, pg)
 
-	fmt.Println(attributes)
-	fmt.Println("OK!")
 }
