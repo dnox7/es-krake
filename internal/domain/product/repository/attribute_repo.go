@@ -7,7 +7,7 @@ import (
 
 const AttributeTableName = "attributes"
 
-type IAttributeRepository interface {
+type AttributeRepository interface {
 	TakeByID(ctx context.Context, ID int) (entity.Attribute, error)
 
 	TakeByConditions(ctx context.Context, conditions map[string]interface{}) (entity.Attribute, error)

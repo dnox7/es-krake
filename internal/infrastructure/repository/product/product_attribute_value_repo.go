@@ -21,7 +21,7 @@ type productAttributeValueRepository struct {
 	pg     *db.PostgreSQL
 }
 
-func NewProductAttributeValueRepository(pg *db.PostgreSQL) domainRepo.IProductAttributeValueRepository {
+func NewProductAttributeValueRepository(pg *db.PostgreSQL) domainRepo.ProductAttributeValueRepository {
 	return &productAttributeValueRepository{
 		logger: log.With("repo", "product_attribute_value_repo"),
 		pg:     pg,

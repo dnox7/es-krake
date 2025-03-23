@@ -5,10 +5,9 @@ import (
 	"pech/es-krake/pkg/middleware"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
-func NewServer(db *gorm.DB) *gin.Engine {
+func NewServer() *gin.Engine {
 	if os.Getenv("PE_DEBUG") == "true" {
 		gin.SetMode(gin.DebugMode)
 	} else {

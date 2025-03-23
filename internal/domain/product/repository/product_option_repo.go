@@ -7,7 +7,7 @@ import (
 
 const ProductOptionTableName = "product_options"
 
-type IProductOptionRepository interface {
+type ProductOptionRepository interface {
 	TakeByConditions(ctx context.Context, conditions map[string]interface{}) (entity.ProductOption, error)
 
 	FindByConditions(ctx context.Context, conditions map[string]interface{}) ([]entity.ProductOption, error)

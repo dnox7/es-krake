@@ -15,7 +15,7 @@ type attributeTypeRepository struct {
 	pg     *db.PostgreSQL
 }
 
-func NewAttributeTypeRepository(pg *db.PostgreSQL) domainRepo.IAttributeTypeRepository {
+func NewAttributeTypeRepository(pg *db.PostgreSQL) domainRepo.AttributeTypeRepository {
 	return &attributeTypeRepository{
 		logger: log.With("repo", "attribute_type_repo"),
 		pg:     pg,

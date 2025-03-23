@@ -7,7 +7,7 @@ import (
 
 const ProductAttributeValueTableName = "product_attribute_values"
 
-type IProductAttributeValueRepository interface {
+type ProductAttributeValueRepository interface {
 	TakeByConditions(ctx context.Context, conditions map[string]interface{}) (entity.ProductAttributeValue, error)
 
 	FindByConditions(ctx context.Context, conditions map[string]interface{}) ([]entity.ProductAttributeValue, error)

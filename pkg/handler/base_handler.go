@@ -16,7 +16,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/graphql-go/graphql/gqlerrors"
 	"github.com/xeipuuv/gojsonschema"
-	"gorm.io/gorm"
 )
 
 type BaseHTTPHandler struct {
@@ -114,13 +113,13 @@ func (h *BaseHTTPHandler) SetGenericErrorResponse(c *gin.Context, finalErr error
 		}
 		c.JSON(apiErr.HttpStatus(), data)
 
-	case errors.Is(originalErr, gorm.ErrRecordNotFound) || originalErr.Error() == gorm.ErrRecordNotFound.Error():
-		data := dto.BaseErrorResponse{
-			Error: &dto.ErrorResponse{
-				Message: originalErr.Error(),
-			},
-		}
-		c.JSON(http.StatusNotFound, data)
+	// case errors.Is(originalErr, gorm.ErrRecordNotFound) || originalErr.Error() == gorm.ErrRecordNotFound.Error():
+	// 	data := dto.BaseErrorResponse{
+	// 		Error: &dto.ErrorResponse{
+	// 			Message: originalErr.Error(),
+	// 		},
+	// 	}
+	// 	c.JSON(http.StatusNotFound, data)
 
 	case errors.As(originalErr, &jsonErr):
 		data := &dto.BaseErrorResponse{

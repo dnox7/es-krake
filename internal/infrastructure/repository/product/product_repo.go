@@ -16,7 +16,7 @@ type productRepository struct {
 	pg     *db.PostgreSQL
 }
 
-func NewProductRepository(pg *db.PostgreSQL) domainRepo.IProductRepository {
+func NewProductRepository(pg *db.PostgreSQL) domainRepo.ProductRepository {
 	return &productRepository{
 		logger: log.With("repo", "product_repo"),
 		pg:     pg,

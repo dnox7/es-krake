@@ -11,8 +11,8 @@ type categoryRepository struct {
 	pg     *db.PostgreSQL
 }
 
-func NewCategoryRepository(pg *db.PostgreSQL) domainRepo.ICategoryRepository {
-	return &cctegoryRepository{
+func NewCategoryRepository(pg *db.PostgreSQL) domainRepo.CategoryRepository {
+	return &categoryRepository{
 		logger: log.With("repo", "category_repo"),
 		pg:     pg,
 	}

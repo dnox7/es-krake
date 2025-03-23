@@ -6,7 +6,7 @@ import (
 	"pech/es-krake/internal/domain/product/entity"
 )
 
-type ICategoryRepository interface {
+type CategoryRepository interface {
 	TakeByID(ctx context.Context, ID int) (entity.Category, error)
 
 	TakeByConditions(ctx context.Context, conditions map[string]interface{}) (entity.Category, error)
