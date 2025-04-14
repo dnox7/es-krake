@@ -17,8 +17,8 @@ type (
 		Log    `yaml:"logger"`
 		Server `yaml:"server"`
 		RDB    `yaml:"rdb"`
-		Redis  `yaml:"redis"`
-		ES     `yaml:"elastic_search"`
+		// Redis  `yaml:"redis"`
+		// ES     `yaml:"elastic_search"`
 	}
 
 	App struct {
