@@ -24,6 +24,7 @@ type (
 	App struct {
 		Name    string `yaml:"name" env:"APP_NAME" env-required:"true"`
 		Version string `yaml:"version" env:"APP_VERSION" env-required:"true"`
+		Env     string `yaml:"env" env:"APP_ENV" env-required:"true"`
 	}
 
 	Server struct {

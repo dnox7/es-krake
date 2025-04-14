@@ -19,4 +19,8 @@ const (
 	FormatDateTimeISO = "2006-01-02T15:04:05Z07:00"
 	FormatDateTimeSQL = "2006-01-02 15:04:05"
 	FormatDateCompact = "20060102150405"
+
+	ProdEnv    = "prod"
+	DevEnv     = "dev"
+	TestingEnv = "testing"
 )

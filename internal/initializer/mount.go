@@ -1,8 +1,6 @@
 package initializer
 
 import (
-	"fmt"
-	"pech/es-krake/internal/application/graphql"
 	"pech/es-krake/internal/infrastructure/db"
 	"pech/es-krake/internal/infrastructure/repository"
 )
@@ -12,9 +10,9 @@ func MountAll(
 	pg *db.PostgreSQL,
 ) error {
 
-	graphqlSchema, err := graphql.NewGraphQLSchema(repositories)
-	if err != nil {
-		return fmt.Errorf("Failed to create GraphQL schema: %v", err)
-	}
+	// graphqlSchema, err := graphql.NewGraphQLSchema(repositories)
+	// if err != nil {
+	// 	return fmt.Errorf("Failed to create GraphQL schema: %v", err)
+	// }
 	return nil
 }
