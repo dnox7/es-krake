@@ -1,4 +1,4 @@
-package db
+package es
 
 import (
 	"pech/es-krake/config"
