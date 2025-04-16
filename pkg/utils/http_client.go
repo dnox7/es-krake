@@ -12,37 +12,50 @@ import (
 	"time"
 )
 
-type HttpClientNativeInterface interface {
-	Do(req *http.Request) (*http.Response, error)
-}
+type (
+	HttpClient interface {
+		Do(ctx context.Context, req *http.Request, cfg HttpClientConfig) (*http.Response, error)
+	}
 
-type HttpClient struct {
-	Client HttpClientNativeInterface
-	Logger *log.Logger
-}
+	httpClient struct {
+		client *http.Client
+		logger *log.Logger
+	}
 
-type HttpClientInterface interface {
-	Do(ctx context.Context, req *http.Request, cfg HttpClientConfig) (*http.Response, error)
-}
+	ReqOpt struct {
+		CanLog                      bool
+		CanLogRequestBody           bool
+		CanLogResponseBody          bool
+		CanLogRequestBodyOnlyError  bool
+		CanLogResponseBodyOnlyError bool
+		LoggedRequestBody           []string
+		LoggedResponseBody          []string
+		markedQueryParamKeys        []string
+	}
 
-type HttpClientConfig struct {
-	RetryTimes uint
-}
+	ClientOpt struct {
+		RetryTimes            uint
+		MaxIdleConnsPerHost   int
+		Timeout               time.Duration
+		ResponseHeaderTimeout time.Duration
+		ServiceName           *string
+	}
+)
 
-func NewHttpClient(serviceName string) HttpClientInterface {
-	return &HttpClient{
-		Client: &http.Client{},
-		Logger: log.With("service", serviceName),
+func NewHttpClient(serviceName string) HttpClient {
+	return &httpClient{
+		client: &http.Client{},
+		logger: log.With("service", serviceName),
 	}
 }
 
-func (h HttpClient) Do(
+func (h *httpClient) Do(
 	ctx context.Context,
 	req *http.Request,
 	cfg HttpClientConfig,
 ) (*http.Response, error) {
 	req = req.WithContext(ctx)
-	logger := h.Logger.
+	logger := h.logger.
 		With(
 			"url", req.URL.String(),
 			"method", req.Method,
@@ -59,7 +72,7 @@ func (h HttpClient) Do(
 		time.Sleep(h.backoff(retries))
 		before := time.Now()
 
-		res, err := h.Client.Do(req)
+		res, err := h.client.Do(req)
 		if err != nil {
 			logger.Error(
 				ctx, "could not get body of response",
@@ -98,7 +111,7 @@ func (h HttpClient) Do(
 	return res, err
 }
 
-func (h HttpClient) shouldRetry(err error, res *http.Response) bool {
+func (h *httpClient) shouldRetry(err error, res *http.Response) bool {
 	if res == nil ||
 		res.StatusCode == http.StatusBadGateway ||
 		res.StatusCode == http.StatusServiceUnavailable ||
@@ -112,6 +125,21 @@ func (h HttpClient) shouldRetry(err error, res *http.Response) bool {
 	return false
 }
 
-func (h HttpClient) backoff(retries int) time.Duration {
+func (h *httpClient) backoff(retries int) time.Duration {
 	return time.Duration(math.Pow(2, float64(retries))) * time.Second
+}
+
+func (h *httpClient) outputLog(ctx context.Context, statusCode int, err error, fields map[string]interface{}) {
+	args := make([]interface{}, 0, len(fields)*2)
+	for k, v := range fields {
+		args = append(args, k, v)
+	}
+
+	if err != nil || statusCode/100 == 5 {
+		h.logger.With(args...).Error(ctx, err.Error())
+		return
+	}
+
+	msg := "Request completed with HttpClient"
+	log.With(args...).Info(ctx, msg)
 }
