@@ -296,5 +296,5 @@ func (h *httpClient) outputLog(ctx context.Context, statusCode int, err error, f
 	}
 
 	msg := "Request completed with HttpClient"
-	log.With(args...).Info(ctx, msg)
+	h.logger.With(args...).Info(ctx, msg)
 }
