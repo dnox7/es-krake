@@ -3,12 +3,11 @@ package entity
 import "pech/es-krake/internal/domain"
 
 type ProductAttributeValue struct {
-	ID              int    `json:"id"`                             // Unique identifier for the product attribute value
-	ProductID       int    `json:"product_id" db:"product_id"`     // The ID of the product this attribute value is associated with
-	AttributeID     int    `json:"attribute_id" db:"attribute_id"` // The ID of the attribute that this value corresponds to (e.g., "Color", "Size")
-	ProductOptionID *int   `json:"product_option_id" db:"product_option_id"`
-	Value           string `json:"value"` // The actual value of the attribute (e.g., "Red", "Large")
-	Attribute       *Attribute
-	Type            *AttributeType
+	ID              int        `gorm:"column:id;primaryKey;type:bigint;autoIncrement;not null" json:"id"`
+	ProductID       int        `gorm:"column:product_id;type:bigint;not null"                  json:"product_id"`
+	AttributeID     int        `gorm:"column:attribute_id;type:bigint;not null"                json:"attribute_id"`
+	ProductOptionID *int       `gorm:"column:product_option_id;type:bigint"                    json:"product_option_id"`
+	Value           string     `gorm:"column:value;type:varchar(50);not null"                  json:"value"`
+	Attribute       *Attribute `gorm:"<-:false;foreignKey:AttributeID"`
 	domain.BaseModel
 }

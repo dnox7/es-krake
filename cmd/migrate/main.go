@@ -7,8 +7,6 @@ import (
 	"pech/es-krake/config"
 	"pech/es-krake/internal/infrastructure/db"
 	"pech/es-krake/internal/infrastructure/db/migration"
-	"pech/es-krake/internal/infrastructure/repository"
-	"pech/es-krake/internal/initializer"
 	"pech/es-krake/pkg/log"
 )
 
@@ -29,13 +27,9 @@ func main() {
 		return
 	}
 
-	err := migration.CheckAll(cfg, pg.Conn())
+	err := migration.MigrateAll(cfg, pg.Conn())
 	if err != nil {
-		slog.Error("The database is not up-to-date: %v", "detail", err)
-		return
+		slog.Error("cannot migrate database", "detail", err)
+		os.Exit(1)
 	}
-
-	repositories := repository.NewRepositoriesContainer(pg)
-	err = initializer.MountAll(repositories, pg)
-
 }

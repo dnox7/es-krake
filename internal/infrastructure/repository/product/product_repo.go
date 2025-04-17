@@ -7,8 +7,6 @@ import (
 	"pech/es-krake/internal/infrastructure/db"
 	"pech/es-krake/pkg/log"
 	"pech/es-krake/pkg/utils"
-
-	sq "github.com/Masterminds/squirrel"
 )
 
 type productRepository struct {
@@ -23,51 +21,27 @@ func NewProductRepository(pg *db.PostgreSQL) domainRepo.ProductRepository {
 	}
 }
 
-func (r *productRepository) TakeByConditions(ctx context.Context, conditions map[string]interface{}) (entity.Product, error) {
-	var prod entity.Product
-
-	sql, args, err := r.pg.Builder.
-		Select(
-			"id",
-			"name",
-			"sku",
-			"description",
-			"price",
-			"has_options",
-			"is_allowed_to_order",
-			"is_publised",
-			"is_featured",
-			"is_visible_individually",
-			"stock_tracking_enabled",
-			"stock_quantity",
-			"tax_class_id",
-			"meta_title",
-			"meta_keyword",
-		).
-		From(domainRepo.ProductTableName).
-		Where(sq.Eq(conditions)).
-		ToSql()
-	if err != nil {
-		r.logger.Error(ctx, utils.ErrQueryBuilderFailedMsg)
-		return prod, err
-	}
-
-	err = r.pg.DB.GetContext(ctx, &prod, sql, args...)
-	return prod, err
+// Create implements repository.ProductRepository.
+func (p *productRepository) Create(ctx context.Context, attributes map[string]interface{}) (entity.Product, error) {
+	panic("unimplemented")
 }
 
-func (r *productRepository) FindByConditions(ctx context.Context, conditions map[string]interface{}) ([]entity.Product, error) {
-	return nil, nil
+// CreateWithTx implements repository.ProductRepository.
+func (p *productRepository) CreateWithTx(ctx context.Context, attributes map[string]interface{}) (entity.Product, error) {
+	panic("unimplemented")
 }
 
-func (r *productRepository) Create(ctx context.Context, attributes map[string]interface{}) (entity.Product, error) {
-	return entity.Product{}, nil
+// FindByConditions implements repository.ProductRepository.
+func (p *productRepository) FindByConditions(ctx context.Context, conditions map[string]interface{}, scopes ...utils.Scope) ([]entity.Product, error) {
+	panic("unimplemented")
 }
 
-func (r *productRepository) CreateWithTx(ctx context.Context, attributes map[string]interface{}) (entity.Product, error) {
-	panic("lmao")
+// TakeByConditions implements repository.ProductRepository.
+func (p *productRepository) TakeByConditions(ctx context.Context, conditions map[string]interface{}, scopes ...utils.Scope) (entity.Product, error) {
+	panic("unimplemented")
 }
 
-func (r *productRepository) UpdateWithTx(ctx context.Context, prod entity.Product, attributesToUpdate map[string]interface{}) (entity.Product, error) {
-	panic("lmao")
+// UpdateWithTx implements repository.ProductRepository.
+func (p *productRepository) UpdateWithTx(ctx context.Context, product entity.Product, attributesToUpdate map[string]interface{}) (entity.Product, error) {
+	panic("unimplemented")
 }

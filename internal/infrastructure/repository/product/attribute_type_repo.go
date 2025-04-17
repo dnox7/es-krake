@@ -6,8 +6,6 @@ import (
 	domainRepo "pech/es-krake/internal/domain/product/repository"
 	"pech/es-krake/internal/infrastructure/db"
 	"pech/es-krake/pkg/log"
-
-	sq "github.com/Masterminds/squirrel"
 )
 
 type attributeTypeRepository struct {
@@ -22,45 +20,30 @@ func NewAttributeTypeRepository(pg *db.PostgreSQL) domainRepo.AttributeTypeRepos
 	}
 }
 
+// TakeByID implements repository.AttributeTypeRepository.
 func (r *attributeTypeRepository) TakeByID(ctx context.Context, ID int) (entity.AttributeType, error) {
-	var attributeType entity.AttributeType
-
-	sql, args, err := r.pg.Builder.
-		Select("id, name, created_at, updated_at").
-		From(domainRepo.AttributeTypeTableName).
-		Where(sq.Eq{"id": ID}).
-		ToSql()
-
-	if err != nil {
-		r.logger.Error(ctx, "Query build failed", "detail", err)
-		return attributeType, err
-	}
-
-	err = r.pg.DB.GetContext(ctx, &attributeType, sql, args...)
-	return attributeType, err
+	attrType := entity.AttributeType{}
+	db := r.pg.DB.WithContext(ctx)
+	err := db.Take(&attrType, ID).Error
+	return attrType, err
 }
 
+// GetAsDictionary implements repository.AttributeTypeRepository.
 func (r *attributeTypeRepository) GetAsDictionary(ctx context.Context) (map[int]string, error) {
-	var attributeTypes []entity.AttributeType
+	var attrTypes []entity.AttributeType
 
-	sql, args, err := r.pg.Builder.
+	err := r.pg.DB.
+		WithContext(ctx).
+		Table(domainRepo.AttributeTypeTableName).
 		Select("id", "name").
-		From(domainRepo.AttributeTypeTableName).
-		ToSql()
-
-	if err != nil {
-		r.logger.Error(ctx, "Query build failed", "detail", err)
-		return nil, err
-	}
-
-	err = r.pg.DB.SelectContext(ctx, &attributeTypes, sql, args...)
+		Find(&attrTypes).Error
 	if err != nil {
 		return nil, err
 	}
 
 	dict := make(map[int]string)
-	for _, attributeType := range attributeTypes {
-		dict[attributeType.ID] = attributeType.Name
+	for _, attrType := range attrTypes {
+		dict[attrType.ID] = attrType.Name
 	}
 	return dict, nil
 }

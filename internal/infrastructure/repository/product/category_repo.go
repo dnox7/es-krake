@@ -2,11 +2,11 @@ package repository
 
 import (
 	"context"
-	"pech/es-krake/internal/domain"
 	"pech/es-krake/internal/domain/product/entity"
 	domainRepo "pech/es-krake/internal/domain/product/repository"
 	"pech/es-krake/internal/infrastructure/db"
 	"pech/es-krake/pkg/log"
+	"pech/es-krake/pkg/utils"
 )
 
 type categoryRepository struct {
@@ -32,7 +32,7 @@ func (c *categoryRepository) FindByConditions(ctx context.Context, conditions ma
 }
 
 // FindByConditionsWithScope implements repository.CategoryRepository.
-func (c *categoryRepository) FindByConditionsWithScope(ctx context.Context, conditions map[string]interface{}, scopes ...domain.Scope) ([]entity.Category, error) {
+func (c *categoryRepository) FindByConditionsWithScope(ctx context.Context, conditions map[string]interface{}, scopes ...utils.Scope) ([]entity.Category, error) {
 	panic("unimplemented")
 }
 

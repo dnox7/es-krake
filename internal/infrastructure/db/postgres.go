@@ -2,19 +2,25 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log/slog"
 	"pech/es-krake/config"
+	"pech/es-krake/pkg/log"
+	gormlog "pech/es-krake/pkg/log/gorm"
+	wraperror "pech/es-krake/pkg/wrap-error"
 	"sync"
 	"time"
 
-	"github.com/Masterminds/squirrel"
-	"github.com/jmoiron/sqlx"
+	pgDriver "gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+	"gorm.io/gorm/schema"
 )
 
 type PostgreSQL struct {
-	DB      *sqlx.DB
-	Builder squirrel.StatementBuilderType
+	DB   *gorm.DB
+	conn *sql.DB
 
 	maxOpenConns int
 	maxIdleConns int
@@ -40,18 +46,6 @@ func NewOrGetSingleton(cfg *config.Config) *PostgreSQL {
 	return postgresInstance
 }
 
-func (pg *PostgreSQL) Close() error {
-	return pg.DB.Close()
-}
-
-func (pg *PostgreSQL) Ping() error {
-	return pg.DB.Ping()
-}
-
-func (pg *PostgreSQL) PingContext(ctx context.Context) error {
-	return pg.DB.PingContext(ctx)
-}
-
 func initPostgres(cfg *config.Config) (*PostgreSQL, error) {
 	pg := &PostgreSQL{
 		maxOpenConns: cfg.RDB.MaxOpenConns,
@@ -62,23 +56,17 @@ func initPostgres(cfg *config.Config) (*PostgreSQL, error) {
 		connAttempts: cfg.RDB.ConnAttempts,
 	}
 
-	pg.Builder = squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
-
-	dsn, err := buildDSN(cfg)
+	dsn, err := pg.buildDSN(cfg)
 	if err != nil {
 		slog.Error("Error while building data source name", "detail", err.Error())
 		return nil, err
 	}
 
-	for pg.connAttempts > 0 {
-		xdb, err := sqlx.Open(cfg.RDB.Driver, dsn)
-		if err == nil {
-			xdb.DB.SetMaxOpenConns(pg.maxOpenConns)
-			xdb.DB.SetMaxIdleConns(pg.maxIdleConns)
-			xdb.DB.SetConnMaxLifetime(pg.maxLifeTime)
-			xdb.DB.SetConnMaxIdleTime(pg.maxIdleTime)
+	gormCfg := pg.getGormConfig()
 
-			pg.DB = xdb
+	for pg.connAttempts > 0 {
+		err = pg.retryConn(dsn, cfg.RDB.Driver, gormCfg)
+		if err == nil {
 			break
 		}
 
@@ -94,7 +82,87 @@ func initPostgres(cfg *config.Config) (*PostgreSQL, error) {
 	return pg, nil
 }
 
-func buildDSN(cfg *config.Config) (string, error) {
+func (pg *PostgreSQL) Ping(ctx context.Context) error {
+	pgDB, err := pg.DB.DB()
+	if err != nil {
+		return nil
+	}
+	return pgDB.PingContext(ctx)
+}
+
+func (pg *PostgreSQL) Close() {
+	slog.Info("Closing the DB connaction pool")
+	if err := pg.conn.Close(); err != nil {
+		slog.Error("Error while closing the DB connactio pool")
+	}
+}
+
+func (pg *PostgreSQL) Conn() *sql.DB {
+	return pg.conn
+}
+
+func (pg *PostgreSQL) StartLoggingPoolSize() func() {
+	logger := log.With("service", "database")
+	stop := make(chan bool)
+	go func() {
+		previousOpened := 0
+		for {
+			time.Sleep(time.Second)
+			select {
+			case <-stop:
+				pg.logPoolSize(pg.conn.Stats(), logger)
+				return
+			default:
+				curr := pg.conn.Stats()
+				if previousOpened != curr.OpenConnections {
+					pg.logPoolSize(curr, logger)
+					previousOpened = curr.OpenConnections
+				}
+			}
+		}
+	}()
+
+	return func() {
+		stop <- true
+	}
+}
+
+func (pg *PostgreSQL) logPoolSize(stats sql.DBStats, logger *log.Logger) {
+	logger.With("inUse", stats.InUse).
+		With("idle", stats.Idle).
+		With("opened", stats.OpenConnections).
+		Info(context.Background(), "Current  number of opened connections in the pool")
+}
+
+func (pg *PostgreSQL) retryConn(dsn string, driverName string, gormCfg *gorm.Config) error {
+	conn, err := sql.Open(driverName, dsn)
+	if err != nil {
+		slog.Error("failed to open sql conn", "detail", err.Error())
+		return err
+	}
+
+	conn.SetMaxOpenConns(pg.maxOpenConns)
+	conn.SetMaxIdleConns(pg.maxIdleConns)
+	conn.SetConnMaxLifetime(pg.maxLifeTime)
+	conn.SetConnMaxIdleTime(pg.maxIdleTime)
+
+	driver := pgDriver.New(pgDriver.Config{
+		WithoutQuotingCheck: true,
+		Conn:                conn,
+	})
+
+	db, err := gorm.Open(driver, gormCfg)
+	if err != nil {
+		err = wraperror.WithTrace(err, nil, nil)
+		slog.Error(err.Error())
+	}
+
+	pg.conn = conn
+	pg.DB = db
+	return nil
+}
+
+func (pg *PostgreSQL) buildDSN(cfg *config.Config) (string, error) {
 	if cfg.RDB.Driver != "postgres" {
 		return "", fmt.Errorf("Database driver is invalid")
 	}
@@ -110,4 +178,16 @@ func buildDSN(cfg *config.Config) (string, error) {
 	)
 
 	return dsn, nil
+}
+
+func (pg *PostgreSQL) getGormConfig() *gorm.Config {
+	gormLogger := gormlog.DefaultGormLogger().LogMode(logger.Info)
+	return &gorm.Config{
+		DisableAutomaticPing:   true,
+		SkipDefaultTransaction: true,
+		Logger:                 gormLogger,
+		NamingStrategy: schema.NamingStrategy{
+			SingularTable: true,
+		},
+	}
 }
