@@ -23,4 +23,15 @@ const (
 	ProdEnv    = "prod"
 	DevEnv     = "dev"
 	TestingEnv = "testing"
+
+	ErrorLogRequestBody    = "failed to log request body"
+	ErrorCloseResponseBody = "failed to close response body"
+	ErrorCloseRows         = "failed to close Rows"
+	ErrorCloseReader       = "failed to close reader"
+	ErrorCloseWriter       = "failed to close writer"
+	ErrorCloseFile         = "failed to close file"
+	ErrorCloseSftp         = "failed to close sftp"
+	ErrorParseUrl          = "failed to parse url"
+	ErrorReadBody          = "failed to read body"
+	ErrorDecodeBody        = "failed to decode body"
 )
