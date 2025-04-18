@@ -1,4 +1,4 @@
-package db
+package es
 
 import (
 	"pech/es-krake/config"
@@ -17,12 +17,12 @@ type elasticSeachService struct {
 
 func NewElasticSearchService(cfg *config.Config) (ElasticSeachService, error) {
 	cli, err := elasticsearch.NewClient(elasticsearch.Config{
-		Addresses:         cfg.ES.Addresses,
-		Username:          cfg.ES.Username,
-		Password:          cfg.ES.Password,
-		MaxRetries:        cfg.ES.MaxRetries,
-		EnableMetrics:     cfg.ES.EnableMetrics,
-		EnableDebugLogger: cfg.ES.Debug,
+		// Addresses:         cfg.ES.Addresses,
+		// Username:          cfg.ES.Username,
+		// Password:          cfg.ES.Password,
+		// MaxRetries:        cfg.ES.MaxRetries,
+		// EnableMetrics:     cfg.ES.EnableMetrics,
+		// EnableDebugLogger: cfg.ES.Debug,
 	})
 	if err != nil {
 		return nil, err
