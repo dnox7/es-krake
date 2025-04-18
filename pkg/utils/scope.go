@@ -1,6 +1,8 @@
 package utils
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type Scope func(*gorm.DB) *gorm.DB
 
@@ -43,4 +45,18 @@ func PaginateScope(pageData map[string]int) Scope {
 		offset := (pageNo - 1) * pageSize
 		return db.Offset(offset).Limit(pageSize)
 	}
+}
+
+func PreloadScope(query string, args ...interface{}) Scope {
+	return func(db *gorm.DB) *gorm.DB {
+		return db.Preload(query, args...)
+	}
+}
+
+func ToGormScope(scopes ...Scope) []func(*gorm.DB) *gorm.DB {
+	gormScopes := make([]func(*gorm.DB) *gorm.DB, len(scopes))
+	for i, s := range scopes {
+		gormScopes[i] = s
+	}
+	return gormScopes
 }

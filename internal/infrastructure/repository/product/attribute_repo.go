@@ -21,18 +21,37 @@ func NewAttributeRepository(pg *db.PostgreSQL) domainRepo.AttributeRepository {
 	}
 }
 
-// Create implements repository.AttributeRepository.
-func (a *attributeRepository) Create(ctx context.Context, attributes map[string]interface{}) (entity.Attribute, error) {
-	panic("unimplemented")
+// TakeByConditions implements repository.AttributeRepository.
+func (r *attributeRepository) TakeByConditions(
+	ctx context.Context,
+	conditions map[string]interface{},
+	scopes ...utils.Scope,
+) (entity.Attribute, error) {
+	gormScopes := utils.ToGormScope(scopes...)
+	var attribute entity.Attribute
+	err := r.pg.DB.
+		WithContext(ctx).
+		Scopes(gormScopes...).
+		Where(conditions).
+		Take(&attribute).Error
+	return attribute, err
 }
 
 // FindByConditions implements repository.AttributeRepository.
-func (a *attributeRepository) FindByConditions(ctx context.Context, conditions map[string]interface{}, scopes ...utils.Scope) ([]entity.Attribute, error) {
-	panic("unimplemented")
+func (r *attributeRepository) FindByConditions(ctx context.Context, conditions map[string]interface{}, scopes ...utils.Scope) ([]entity.Attribute, error) {
+	gormScopes := utils.ToGormScope(scopes...)
+	attributes := []entity.Attribute{}
+	err := r.pg.DB.
+		WithContext(ctx).
+		Scopes(gormScopes...).
+		Where(conditions).
+		Find(&attributes).Error
+	return attributes, err
+
 }
 
-// TakeByConditions implements repository.AttributeRepository.
-func (a *attributeRepository) TakeByConditions(ctx context.Context, conditions map[string]interface{}, scopes ...utils.Scope) (entity.Attribute, error) {
+// Create implements repository.AttributeRepository.
+func (a *attributeRepository) Create(ctx context.Context, attributes map[string]interface{}) (entity.Attribute, error) {
 	panic("unimplemented")
 }
 
