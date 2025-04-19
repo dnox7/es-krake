@@ -1,6 +1,6 @@
 package entity
 
-import "pech/es-krake/internal/domain"
+import "pech/es-krake/internal/domain/shared/model"
 
 type Attribute struct {
 	ID              int            `gorm:"column:id;primaryKey;type:bigint;not null;autoIncrement;unique" json:"id"`
@@ -8,5 +8,5 @@ type Attribute struct {
 	Description     *string        `gorm:"column:description;type:text"                                   json:"description"`
 	AttributeTypeID int            `gorm:"column:attribute_type_id;not null;type:smallint"                json:"attribute_type_id"`
 	AttributeType   *AttributeType `gorm:"<-:false;foreignKey:AttributeTypeID"`
-	domain.BaseModel
+	model.BaseModel
 }

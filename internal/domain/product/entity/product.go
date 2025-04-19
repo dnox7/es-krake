@@ -1,6 +1,6 @@
 package entity
 
-import "pech/es-krake/internal/domain"
+import "pech/es-krake/internal/domain/shared/model"
 
 type Product struct {
 	ID                    int                      `gorm:"column:id;primaryKey;type:bigint;not null;autoIncrement"     json:"id"`
@@ -19,5 +19,5 @@ type Product struct {
 	Options               []*ProductOption         `gorm:"-"`
 	Attributes            []*ProductAttributeValue `gorm:"-"`
 	Categories            []*Category              `gorm:"-"`
-	domain.BaseModel
+	model.BaseModel
 }

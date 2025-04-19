@@ -1,6 +1,8 @@
 package entity
 
-import "pech/es-krake/internal/domain"
+import (
+	"pech/es-krake/internal/domain/shared/model"
+)
 
 type Category struct {
 	ID              int         `gorm:"column:id;primaryKey;type:bigint;not null;autoIncrement" json:"id"`
@@ -13,7 +15,7 @@ type Category struct {
 	ThumbnailURL    *string     `gorm:"column:thumbnail_url;type:varchar"                       json:"thumbnail_url"`
 	Children        []*Category `gorm:"-:all"`
 	Parents         []*Category `gorm:"-:all"`
-	domain.BaseModel
+	model.BaseModel
 }
 
 type CategoryParent struct {
@@ -21,5 +23,5 @@ type CategoryParent struct {
 	ParentID int `json:"parent_id"`
 	Child    *Category
 	Parent   *Category
-	domain.BaseModel
+	model.BaseModel
 }

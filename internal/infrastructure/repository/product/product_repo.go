@@ -4,9 +4,9 @@ import (
 	"context"
 	"pech/es-krake/internal/domain/product/entity"
 	domainRepo "pech/es-krake/internal/domain/product/repository"
+	domainScope "pech/es-krake/internal/domain/shared/scope"
 	"pech/es-krake/internal/infrastructure/db"
 	"pech/es-krake/pkg/log"
-	"pech/es-krake/pkg/utils"
 )
 
 type productRepository struct {
@@ -32,12 +32,12 @@ func (p *productRepository) CreateWithTx(ctx context.Context, attributes map[str
 }
 
 // FindByConditions implements repository.ProductRepository.
-func (p *productRepository) FindByConditions(ctx context.Context, conditions map[string]interface{}, scopes ...utils.Scope) ([]entity.Product, error) {
+func (p *productRepository) FindByConditions(ctx context.Context, conditions map[string]interface{}, scopes ...domainScope.Base) ([]entity.Product, error) {
 	panic("unimplemented")
 }
 
 // TakeByConditions implements repository.ProductRepository.
-func (p *productRepository) TakeByConditions(ctx context.Context, conditions map[string]interface{}, scopes ...utils.Scope) (entity.Product, error) {
+func (p *productRepository) TakeByConditions(ctx context.Context, conditions map[string]interface{}, scopes ...domainScope.Base) (entity.Product, error) {
 	panic("unimplemented")
 }
 

@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func SqlTransaction(
+func GormTransaction(
 	ctx context.Context,
 	l *log.Logger,
 	db *gorm.DB,

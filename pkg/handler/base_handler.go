@@ -219,7 +219,7 @@ func (h *BaseHTTPHandler) SetInternalErrorResponse(c *gin.Context, err error) {
 
 		data := &dto.BaseErrorResponse{
 			Error: &dto.ErrorResponse{
-				Message:   utils.ErrInternalServerMsg,
+				Message:   utils.ErrorInternalServer,
 				DebugInfo: debugInfo,
 			},
 		}

@@ -1,7 +1,7 @@
 package entity
 
 import (
-	"pech/es-krake/internal/domain"
+	"pech/es-krake/internal/domain/shared/model"
 )
 
 type ProductCategory struct {
@@ -10,5 +10,5 @@ type ProductCategory struct {
 	CategoryID        int  `gorm:"column:category_id;type:bigint;not null"                     json:"category_id"`
 	DisplayOrder      int  `gorm:"column:display_order;type:int"                               json:"display_order"`
 	IsFeaturedProduct bool `gorm:"column:is_featured_product;type:bool;not null;default:false" json:"is_featured_product"`
-	domain.BaseModel
+	model.BaseModel
 }

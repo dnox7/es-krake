@@ -3,15 +3,15 @@ package repository
 import (
 	"context"
 	"pech/es-krake/internal/domain/product/entity"
-	"pech/es-krake/pkg/utils"
+	"pech/es-krake/internal/domain/shared/scope"
 )
 
 const ProductTableName = "products"
 
 type ProductRepository interface {
-	TakeByConditions(ctx context.Context, conditions map[string]interface{}, scopes ...utils.Scope) (entity.Product, error)
+	TakeByConditions(ctx context.Context, conditions map[string]interface{}, scopes ...scope.Base) (entity.Product, error)
 
-	FindByConditions(ctx context.Context, conditions map[string]interface{}, scopes ...utils.Scope) ([]entity.Product, error)
+	FindByConditions(ctx context.Context, conditions map[string]interface{}, scopes ...scope.Base) ([]entity.Product, error)
 
 	Create(ctx context.Context, attributes map[string]interface{}) (entity.Product, error)
 

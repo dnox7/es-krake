@@ -2,11 +2,17 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"pech/es-krake/internal/domain/product/entity"
 	domainRepo "pech/es-krake/internal/domain/product/repository"
+	domainScope "pech/es-krake/internal/domain/shared/scope"
+	"pech/es-krake/internal/domain/shared/transaction"
 	"pech/es-krake/internal/infrastructure/db"
+	gormScope "pech/es-krake/internal/infrastructure/db/gorm/scope"
 	"pech/es-krake/pkg/log"
 	"pech/es-krake/pkg/utils"
+
+	"gorm.io/gorm"
 )
 
 type productOptionRepository struct {
@@ -21,160 +27,115 @@ func NewProductOptionRepository(pg *db.PostgreSQL) domainRepo.ProductOptionRepos
 	}
 }
 
-// Create implements repository.ProductOptionRepository.
-func (p *productOptionRepository) Create(ctx context.Context, attributes map[string]interface{}) (entity.ProductOption, error) {
-	panic("unimplemented")
+// CreateBatchWithTx implements repository.ProductOptionRepository.
+func (p *productOptionRepository) CreateBatchWithTx(
+	ctx context.Context,
+	tx transaction.Base,
+	attributes []map[string]interface{},
+	batchSize int,
+) error {
+	gormTx, ok := tx.GetTx().(*gorm.DB)
+	if !ok {
+		return fmt.Errorf(utils.ErrorGetTx)
+	}
+
+	var (
+		opt entity.ProductOption
+		err error
+	)
+	optSlice := []entity.ProductOption{}
+	for _, v := range attributes {
+		err = utils.MapToStruct(v, &opt)
+		if err != nil {
+			p.logger.Error(ctx, utils.ErrorMapToStruct, "error", err.Error())
+			return err
+		}
+		optSlice = append(optSlice, opt)
+	}
+
+	return gormTx.CreateInBatches(optSlice, batchSize).Error
+}
+
+// DeleteByConditionWithTx implements repository.ProductOptionRepository.
+func (p *productOptionRepository) DeleteByConditionWithTx(
+	ctx context.Context,
+	tx transaction.Base,
+	conditions map[string]interface{},
+	scopes ...domainScope.Base,
+) error {
+	gormTx, ok := tx.GetTx().(*gorm.DB)
+	if !ok {
+		return fmt.Errorf(utils.ErrorGetTx)
+	}
+
+	gormScopes, err := gormScope.ToGormScopes(scopes...)
+	if err != nil {
+		p.logger.Error(ctx, err.Error())
+		return err
+	}
+	return gormTx.
+		Scopes(gormScopes...).
+		Where(conditions).
+		Delete(&entity.ProductOption{}).Error
 }
 
 // FindByConditions implements repository.ProductOptionRepository.
-func (p *productOptionRepository) FindByConditions(ctx context.Context, conditions map[string]interface{}, scopes ...utils.Scope) ([]entity.ProductOption, error) {
-	panic("unimplemented")
+func (p *productOptionRepository) FindByConditions(
+	ctx context.Context,
+	conditions map[string]interface{},
+	scopes ...domainScope.Base,
+) ([]entity.ProductOption, error) {
+	gormScopes, err := gormScope.ToGormScopes(scopes...)
+	if err != nil {
+		p.logger.Error(ctx, err.Error())
+		return nil, err
+	}
+
+	optSlice := []entity.ProductOption{}
+	err = p.pg.DB.
+		WithContext(ctx).
+		Scopes(gormScopes...).
+		Where(conditions).
+		Find(&optSlice).Error
+	return optSlice, err
 }
 
 // TakeByConditions implements repository.ProductOptionRepository.
-func (p *productOptionRepository) TakeByConditions(ctx context.Context, conditions map[string]interface{}, scopes ...utils.Scope) (entity.ProductOption, error) {
-	panic("unimplemented")
+func (p *productOptionRepository) TakeByConditions(
+	ctx context.Context,
+	conditions map[string]interface{},
+	scopes ...domainScope.Base,
+) (entity.ProductOption, error) {
+	gormScopes, err := gormScope.ToGormScopes(scopes...)
+	if err != nil {
+		p.logger.Error(ctx, err.Error())
+		return entity.ProductOption{}, err
+	}
+
+	opt := entity.ProductOption{}
+	err = p.pg.DB.
+		WithContext(ctx).
+		Scopes(gormScopes...).
+		Where(conditions).
+		Take(&opt).Error
+	return opt, err
 }
 
-// UpdateWithTx implements repository.ProductOptionRepository.
-func (p *productOptionRepository) UpdateWithTx(ctx context.Context, option entity.ProductOption, attributesToUpdate map[string]interface{}) (entity.ProductOption, error) {
-	panic("unimplemented")
-}
+// Update implements repository.ProductOptionRepository.
+func (p *productOptionRepository) Update(
+	ctx context.Context,
+	option entity.ProductOption,
+	attributesToUpdate map[string]interface{},
+) (entity.ProductOption, error) {
+	err := utils.MapToStruct(attributesToUpdate, &option)
+	if err != nil {
+		p.logger.Error(ctx, utils.ErrorMapToStruct, "error", err.Error())
+		return entity.ProductOption{}, err
+	}
 
-// func (r *productOptionRepository) TakeByConditions(
-// 	ctx context.Context,
-// 	conditions map[string]interface{},
-// 	scopes ...utils.Scope,
-// ) (entity.ProductOption, error) {
-// 	var productOption entity.ProductOption
-//
-// 	sql, args, err := r.pg.Builder.
-// 		Select("id", "product_id", "name", "description", "created_at", "updated_at").
-// 		From(domainRepo.ProductOptionTableName).
-// 		Where(sq.Eq(conditions)).
-// 		ToSql()
-//
-// 	if err != nil {
-// 		r.logger.Error(ctx, utils.ErrQueryBuilderFailedMsg)
-// 		return productOption, err
-// 	}
-//
-// 	err = r.pg.DB.GetContext(ctx, &productOption, sql, args...)
-//
-// 	return productOption, err
-// }
-//
-// func (r *productOptionRepository) FindByConditions(
-// 	ctx context.Context,
-// 	conditions map[string]interface{},
-// 	scopes ...utils.Scope,
-// ) ([]entity.ProductOption, error) {
-// 	sql, args, err := r.pg.Builder.
-// 		Select(
-// 			"po.id", "po.product_id", "po.name", "po.description", "po.created_at", "po.updated_at",
-// 			"pav.id", "pav.value",
-// 			"pa.id", "pav.name",
-// 		).
-// 		From(domainRepo.ProductOptionTableName + " AS po").
-// 		InnerJoin(domainRepo.ProductAttributeValueTableName + " AS pav ON pav.product_option_id = po.id").
-// 		InnerJoin(domainRepo.AttributeTableName + " AS pa ON pa.id = pav.attribute_id").
-// 		Where(sq.Eq(conditions)).
-// 		ToSql()
-//
-// 	if err != nil {
-// 		r.logger.Error(ctx, utils.ErrQueryBuilderFailedMsg)
-// 		return nil, err
-// 	}
-//
-// 	rows, err := r.pg.DB.QueryxContext(ctx, sql, args...)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-//
-// 	optionsMap := make(map[int]*entity.ProductOption)
-//
-// 	for rows.Next() {
-// 		opt := entity.ProductOption{}
-// 		attribute := entity.Attribute{}
-// 		attributeValue := entity.ProductAttributeValue{}
-//
-// 		if err := rows.Scan(
-// 			&opt.ID, &opt.ProductID, &opt.Name, &opt.Description, &opt.CreatedAt, &opt.UpdatedAt,
-// 			&attributeValue.ID, &attributeValue.Value,
-// 			&attribute.ID, &attribute.Name,
-// 		); err != nil {
-// 			return nil, err
-// 		}
-//
-// 		attributeValue.Attribute = &attribute
-// 		if _, ok := optionsMap[opt.ID]; !ok {
-// 			opt.Attributes = []*entity.ProductAttributeValue{&attributeValue}
-// 			optionsMap[opt.ID] = &opt
-// 		} else {
-// 			optionsMap[opt.ID].Attributes = append(optionsMap[opt.ID].Attributes, &attributeValue)
-// 		}
-// 	}
-//
-// 	optionsSlice := []entity.ProductOption{}
-// 	for _, opt := range optionsMap {
-// 		optionsSlice = append(optionsSlice, *opt)
-// 	}
-//
-// 	return optionsSlice, nil
-// }
-//
-// func (r *productOptionRepository) Create(
-// 	ctx context.Context,
-// 	attributes map[string]interface{},
-// ) (entity.ProductOption, error) {
-// 	var opt entity.ProductOption
-//
-// 	if err := utils.MapToStruct(attributes, &opt); err != nil {
-// 		return opt, err
-// 	}
-//
-// 	sql, args, err := r.pg.Builder.
-// 		Insert(domainRepo.ProductOptionTableName).
-// 		Columns("name", "description", "product_id").
-// 		Values(opt.Name, opt.Description, opt.ProductID).
-// 		Suffix("RETURNING *").
-// 		ToSql()
-// 	if err != nil {
-// 		r.logger.Error(ctx, utils.ErrQueryBuilderFailedMsg)
-// 		return opt, err
-// 	}
-//
-// 	err = r.pg.DB.QueryRowxContext(ctx, sql, args...).Scan(&opt)
-// 	return opt, err
-// }
-//
-// func (r *productOptionRepository) UpdateWithTx(
-// 	ctx context.Context,
-// 	option entity.ProductOption,
-// 	attributesToUpdate map[string]interface{},
-// ) (entity.ProductOption, error) {
-// 	if err := utils.MapToStruct(attributesToUpdate, &option); err != nil {
-// 		return option, err
-// 	}
-//
-// 	sql, args, err := r.pg.Builder.
-// 		Update(domainRepo.ProductOptionTableName).
-// 		SetMap(map[string]interface{}{
-// 			"name":        option.Name,
-// 			"description": option.Description,
-// 			"product_id":  option.ProductID,
-// 		}).
-// 		Suffix("RETURNING *").
-// 		Where(sq.Eq{"id": option.ID}).
-// 		ToSql()
-// 	if err != nil {
-// 		r.logger.Error(ctx, utils.ErrQueryBuilderFailedMsg)
-// 		return option, err
-// 	}
-//
-// 	err = utils.SqlTransaction(ctx, r.logger, r.pg.DB, nil, func(tx *sqlx.Tx) error {
-// 		return tx.QueryRowxContext(ctx, sql, args...).Scan(&option)
-// 	})
-//
-// 	return option, err
-// }
+	err = p.pg.DB.
+		WithContext(ctx).
+		Model(option).
+		Updates(attributesToUpdate).Error
+	return option, err
+}
