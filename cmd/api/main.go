@@ -16,7 +16,7 @@ func main() {
 	cfg := config.NewConfig()
 
 	ctx := context.Background()
-	log.Initialize(context.Background(), os.Stdout, cfg, []string{"request-id", "recurringID"})
+	log.Initialize(os.Stdout, cfg, []string{"request-id", "recurringID"})
 
 	pg := db.NewOrGetSingleton(cfg)
 	defer pg.Close()
