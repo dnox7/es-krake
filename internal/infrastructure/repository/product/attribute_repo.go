@@ -10,7 +10,7 @@ import (
 	"pech/es-krake/internal/infrastructure/db"
 	gormScope "pech/es-krake/internal/infrastructure/db/gorm/scope"
 	"pech/es-krake/pkg/log"
-	baseUtils "pech/es-krake/pkg/utils"
+	"pech/es-krake/pkg/utils"
 
 	"gorm.io/gorm"
 )
@@ -74,9 +74,9 @@ func (r *attributeRepository) Create(
 	attributes map[string]interface{},
 ) (entity.Attribute, error) {
 	attributeEntity := entity.Attribute{}
-	err := baseUtils.MapToStruct(attributes, &attributeEntity)
+	err := utils.MapToStruct(attributes, &attributeEntity)
 	if err != nil {
-		r.logger.Error(ctx, baseUtils.ErrorMapToStruct, "error", err.Error())
+		r.logger.Error(ctx, utils.ErrorMapToStruct, "error", err.Error())
 		return entity.Attribute{}, err
 	}
 
@@ -92,13 +92,13 @@ func (r *attributeRepository) CreateWithTx(
 ) (entity.Attribute, error) {
 	gormTx, ok := tx.GetTx().(*gorm.DB)
 	if !ok {
-		return entity.Attribute{}, fmt.Errorf(baseUtils.ErrorGetTx)
+		return entity.Attribute{}, fmt.Errorf(utils.ErrorGetTx)
 	}
 
 	attributeEntity := entity.Attribute{}
-	err := baseUtils.MapToStruct(attributes, &attributeEntity)
+	err := utils.MapToStruct(attributes, &attributeEntity)
 	if err != nil {
-		r.logger.Error(ctx, baseUtils.ErrorMapToStruct, "error", err.Error())
+		r.logger.Error(ctx, utils.ErrorMapToStruct, "error", err.Error())
 		return entity.Attribute{}, err
 	}
 
@@ -112,9 +112,9 @@ func (r *attributeRepository) Update(
 	attribute entity.Attribute,
 	attributesToUpdate map[string]interface{},
 ) (entity.Attribute, error) {
-	err := baseUtils.MapToStruct(attributesToUpdate, &attribute)
+	err := utils.MapToStruct(attributesToUpdate, &attribute)
 	if err != nil {
-		r.logger.Error(ctx, baseUtils.ErrorMapToStruct, "error", err.Error())
+		r.logger.Error(ctx, utils.ErrorMapToStruct, "error", err.Error())
 		return entity.Attribute{}, err
 	}
 
@@ -134,12 +134,12 @@ func (r *attributeRepository) UpdateWithTx(
 ) (entity.Attribute, error) {
 	gormTx, ok := tx.GetTx().(*gorm.DB)
 	if !ok {
-		return entity.Attribute{}, fmt.Errorf(baseUtils.ErrorGetTx)
+		return entity.Attribute{}, fmt.Errorf(utils.ErrorGetTx)
 	}
 
-	err := baseUtils.MapToStruct(attributesToUpdate, &attribute)
+	err := utils.MapToStruct(attributesToUpdate, &attribute)
 	if err != nil {
-		r.logger.Error(ctx, baseUtils.ErrorMapToStruct, "error", err.Error())
+		r.logger.Error(ctx, utils.ErrorMapToStruct, "error", err.Error())
 		return entity.Attribute{}, err
 	}
 

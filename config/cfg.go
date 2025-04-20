@@ -32,8 +32,7 @@ type (
 	}
 
 	Log struct {
-		Level  string `yaml:"level" env:"LOG_LEVEL" env-required:"true"`
-		Format string `yaml:"format" env:"LOG_FORMAT" env-required:"true"`
+		Level string `yaml:"level" env:"LOG_LEVEL" env-required:"true"`
 	}
 
 	RDB struct {

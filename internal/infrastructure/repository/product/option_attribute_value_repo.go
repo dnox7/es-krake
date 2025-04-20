@@ -15,30 +15,30 @@ import (
 	"gorm.io/gorm"
 )
 
-type productAttributeValueRepository struct {
+type optionAttributeValueRepository struct {
 	logger *log.Logger
 	pg     *db.PostgreSQL
 }
 
-func NewProductAttributeValueRepository(pg *db.PostgreSQL) domainRepo.ProductAttributeValueRepository {
-	return &productAttributeValueRepository{
+func NewOptionAttributeValueRepository(pg *db.PostgreSQL) domainRepo.OptionAttributeValueRepository {
+	return &optionAttributeValueRepository{
 		logger: log.With("repo", "product_attribute_value_repo"),
 		pg:     pg,
 	}
 }
 
-// TakeByConditions implements repository.ProductAttributeValueRepository.
-func (p *productAttributeValueRepository) TakeByConditions(
+// TakeByConditions implements repository.OptionAttributeValueRepository.
+func (p *optionAttributeValueRepository) TakeByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
 	scopes ...domainScope.Base,
-) (entity.ProductAttributeValue, error) {
+) (entity.OptionAttributeValue, error) {
 	gormScopes, err := gormScope.ToGormScopes(scopes...)
 	if err != nil {
 		p.logger.Error(ctx, err.Error())
-		return entity.ProductAttributeValue{}, err
+		return entity.OptionAttributeValue{}, err
 	}
-	pav := entity.ProductAttributeValue{}
+	pav := entity.OptionAttributeValue{}
 	err = p.pg.DB.
 		WithContext(ctx).
 		Scopes(gormScopes...).
@@ -47,18 +47,18 @@ func (p *productAttributeValueRepository) TakeByConditions(
 	return pav, err
 }
 
-// FindByConditions implements repository.ProductAttributeValueRepository.
-func (p *productAttributeValueRepository) FindByConditions(
+// FindByConditions implements repository.OptionAttributeValueRepository.
+func (p *optionAttributeValueRepository) FindByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
 	scopes ...domainScope.Base,
-) ([]entity.ProductAttributeValue, error) {
+) ([]entity.OptionAttributeValue, error) {
 	gormScopes, err := gormScope.ToGormScopes(scopes...)
 	if err != nil {
 		p.logger.Error(ctx, err.Error())
 		return nil, err
 	}
-	pavSlice := []entity.ProductAttributeValue{}
+	pavSlice := []entity.OptionAttributeValue{}
 	err = p.pg.DB.
 		WithContext(ctx).
 		Scopes(gormScopes...).
@@ -67,8 +67,8 @@ func (p *productAttributeValueRepository) FindByConditions(
 	return pavSlice, err
 }
 
-// CreateBatchWithTx implements repository.ProductAttributeValueRepository.
-func (p *productAttributeValueRepository) CreateBatchWithTx(
+// CreateBatchWithTx implements repository.OptionAttributeValueRepository.
+func (p *optionAttributeValueRepository) CreateBatchWithTx(
 	ctx context.Context,
 	tx transaction.Base,
 	attributeValues []map[string]interface{},
@@ -80,10 +80,10 @@ func (p *productAttributeValueRepository) CreateBatchWithTx(
 	}
 
 	var (
-		pav entity.ProductAttributeValue
+		pav entity.OptionAttributeValue
 		err error
 	)
-	pavSlice := []entity.ProductAttributeValue{}
+	pavSlice := []entity.OptionAttributeValue{}
 	for _, v := range attributeValues {
 		err = utils.MapToStruct(v, &pav)
 		if err != nil {
@@ -96,16 +96,16 @@ func (p *productAttributeValueRepository) CreateBatchWithTx(
 	return gormTx.CreateInBatches(pavSlice, batchSize).Error
 }
 
-// Update implements repository.ProductAttributeValueRepository.
-func (p *productAttributeValueRepository) Update(
+// Update implements repository.OptionAttributeValueRepository.
+func (p *optionAttributeValueRepository) Update(
 	ctx context.Context,
-	attributeValue entity.ProductAttributeValue,
+	attributeValue entity.OptionAttributeValue,
 	attributesToUpdate map[string]interface{},
-) (entity.ProductAttributeValue, error) {
+) (entity.OptionAttributeValue, error) {
 	err := utils.MapToStruct(attributesToUpdate, &attributeValue)
 	if err != nil {
 		p.logger.Error(ctx, utils.ErrorMapToStruct, "error", err.Error())
-		return entity.ProductAttributeValue{}, err
+		return entity.OptionAttributeValue{}, err
 	}
 
 	err = p.pg.DB.
@@ -115,8 +115,8 @@ func (p *productAttributeValueRepository) Update(
 	return attributeValue, err
 }
 
-// DeleteByConditions implements repository.ProductAttributeValueRepository.
-func (p *productAttributeValueRepository) DeleteByConditionsWithTx(
+// DeleteByConditions implements repository.OptionAttributeValueRepository.
+func (p *optionAttributeValueRepository) DeleteByConditionsWithTx(
 	ctx context.Context,
 	tx transaction.Base,
 	conditions map[string]interface{},
@@ -135,5 +135,5 @@ func (p *productAttributeValueRepository) DeleteByConditionsWithTx(
 	return gormTx.
 		Scopes(gormScopes...).
 		Where(conditions).
-		Delete(&entity.ProductAttributeValue{}).Error
+		Delete(&entity.OptionAttributeValue{}).Error
 }

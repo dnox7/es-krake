@@ -4,6 +4,7 @@ import (
 	"context"
 	"pech/es-krake/internal/domain/product/entity"
 	"pech/es-krake/internal/domain/shared/scope"
+	"pech/es-krake/internal/domain/shared/transaction"
 )
 
 const ProductTableName = "products"
@@ -15,7 +16,9 @@ type ProductRepository interface {
 
 	Create(ctx context.Context, attributes map[string]interface{}) (entity.Product, error)
 
-	CreateWithTx(ctx context.Context, attributes map[string]interface{}) (entity.Product, error)
+	CreateWithTx(ctx context.Context, tx transaction.Base, attributes map[string]interface{}) (entity.Product, error)
 
-	UpdateWithTx(ctx context.Context, product entity.Product, attributesToUpdate map[string]interface{}) (entity.Product, error)
+	Update(ctx context.Context, product entity.Product, attributesToUpdate map[string]interface{}) (entity.Product, error)
+
+	UpdateWithTx(ctx context.Context, tx transaction.Base, product entity.Product, attributesToUpdate map[string]interface{}) (entity.Product, error)
 }

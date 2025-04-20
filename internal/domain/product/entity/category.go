@@ -13,15 +13,8 @@ type Category struct {
 	DisplayOrder    *int        `gorm:"column:display_order;type:smallint;"                     json:"display_order"`
 	MetaDescription *string     `gorm:"column:meta_description;type:text"                       json:"meta_description"`
 	ThumbnailURL    *string     `gorm:"column:thumbnail_url;type:varchar"                       json:"thumbnail_url"`
+	ParentID        *int        `gorm:"column:parent_id;type:bigint"                            json:"parent_id"`
 	Children        []*Category `gorm:"-:all"`
-	Parents         []*Category `gorm:"-:all"`
-	model.BaseModel
-}
-
-type CategoryParent struct {
-	ChildID  int `json:"child_id"`
-	ParentID int `json:"parent_id"`
-	Child    *Category
-	Parent   *Category
+	Parent          *Category   `gorm:"-:all"`
 	model.BaseModel
 }

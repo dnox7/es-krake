@@ -7,16 +7,16 @@ import (
 	"pech/es-krake/internal/domain/shared/transaction"
 )
 
-const ProductAttributeValueTableName = "product_attribute_values"
+const OptionAttributeValueTableName = "option_attribute_values"
 
-type ProductAttributeValueRepository interface {
-	TakeByConditions(ctx context.Context, conditions map[string]interface{}, scopes ...scope.Base) (entity.ProductAttributeValue, error)
+type OptionAttributeValueRepository interface {
+	TakeByConditions(ctx context.Context, conditions map[string]interface{}, scopes ...scope.Base) (entity.OptionAttributeValue, error)
 
-	FindByConditions(ctx context.Context, conditions map[string]interface{}, scopes ...scope.Base) ([]entity.ProductAttributeValue, error)
+	FindByConditions(ctx context.Context, conditions map[string]interface{}, scopes ...scope.Base) ([]entity.OptionAttributeValue, error)
 
 	CreateBatchWithTx(ctx context.Context, tx transaction.Base, attributeValues []map[string]interface{}, batchSize int) error
 
-	Update(ctx context.Context, attributeValue entity.ProductAttributeValue, attributesToUpdate map[string]interface{}) (entity.ProductAttributeValue, error)
+	Update(ctx context.Context, attributeValue entity.OptionAttributeValue, attributesToUpdate map[string]interface{}) (entity.OptionAttributeValue, error)
 
 	DeleteByConditionsWithTx(ctx context.Context, tx transaction.Base, conditions map[string]interface{}, scopes ...scope.Base) error
 }

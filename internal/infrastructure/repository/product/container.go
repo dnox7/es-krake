@@ -6,21 +6,21 @@ import (
 )
 
 type RepositoryContainer struct {
-	AttributeRepository             domainRepo.AttributeRepository
-	AttributeTypeRepository         domainRepo.AttributeTypeRepository
-	CategoryRepository              domainRepo.CategoryRepository
-	ProductAttributeValueRepository domainRepo.ProductAttributeValueRepository
-	ProductOptionRepository         domainRepo.ProductOptionRepository
-	ProductRepository               domainRepo.ProductRepository
+	AttributeRepository            domainRepo.AttributeRepository
+	AttributeTypeRepository        domainRepo.AttributeTypeRepository
+	CategoryRepository             domainRepo.CategoryRepository
+	OptionAttributeValueRepository domainRepo.OptionAttributeValueRepository
+	ProductOptionRepository        domainRepo.ProductOptionRepository
+	ProductRepository              domainRepo.ProductRepository
 }
 
 func NewRepositoryContainer(pg *db.PostgreSQL) RepositoryContainer {
 	return RepositoryContainer{
-		AttributeRepository:             NewAttributeRepository(pg),
-		AttributeTypeRepository:         NewAttributeTypeRepository(pg),
-		CategoryRepository:              NewCategoryRepository(pg),
-		ProductAttributeValueRepository: NewProductAttributeValueRepository(pg),
-		ProductOptionRepository:         NewProductOptionRepository(pg),
-		ProductRepository:               NewProductRepository(pg),
+		AttributeRepository:            NewAttributeRepository(pg),
+		AttributeTypeRepository:        NewAttributeTypeRepository(pg),
+		CategoryRepository:             NewCategoryRepository(pg),
+		OptionAttributeValueRepository: NewOptionAttributeValueRepository(pg),
+		ProductOptionRepository:        NewProductOptionRepository(pg),
+		ProductRepository:              NewProductRepository(pg),
 	}
 }
