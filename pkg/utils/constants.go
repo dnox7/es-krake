@@ -6,9 +6,6 @@ const (
 	ErrEmailFail    = "ERR003"
 	ErrPasswordFail = "ERROO4"
 
-	ErrInternalServerMsg     = "Internal server error"
-	ErrQueryBuilderFailedMsg = "The query builder failed"
-
 	DefaultPageNo   = 1
 	DefaultPageSize = 30
 
@@ -24,6 +21,7 @@ const (
 	DevEnv     = "dev"
 	TestingEnv = "testing"
 
+	ErrorInternalServer    = "Internal server error"
 	ErrorLogRequestBody    = "failed to log request body"
 	ErrorCloseResponseBody = "failed to close response body"
 	ErrorCloseRows         = "failed to close Rows"
@@ -34,4 +32,6 @@ const (
 	ErrorParseUrl          = "failed to parse url"
 	ErrorReadBody          = "failed to read body"
 	ErrorDecodeBody        = "failed to decode body"
+	ErrorMapToStruct       = "failed to map to struct"
+	ErrorGetTx             = "failed to get Tx"
 )

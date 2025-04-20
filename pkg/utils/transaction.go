@@ -5,18 +5,19 @@ import (
 	"database/sql"
 	"pech/es-krake/pkg/log"
 
-	"github.com/jmoiron/sqlx"
+	"gorm.io/gorm"
 )
 
-func Transaction(
+func GormTransaction(
 	ctx context.Context,
 	l *log.Logger,
-	db *sqlx.DB,
+	db *gorm.DB,
 	opts *sql.TxOptions,
-	callback func(tx *sqlx.Tx) error,
+	callback func(tx *gorm.DB) error,
 ) error {
-	tx, err := db.BeginTxx(ctx, opts)
-	if err != nil {
+	var err error
+	tx := db.WithContext(ctx).Begin(opts)
+	if err = tx.Error; err != nil {
 		l.Error(ctx, "Failed to begin a transaction")
 		return err
 	}
@@ -24,19 +25,19 @@ func Transaction(
 	committed := false
 	defer (func() {
 		if !committed {
-			err := tx.Rollback()
+			err = tx.Rollback().Error
 			if err != nil {
 				l.Error(ctx, "Failed to rollback transaction")
 			}
 		}
 	})()
 
-	if err := callback(tx); err != nil {
+	if err = callback(tx); err != nil {
 		l.Error(ctx, "An error occurred while executing the callback")
 		return err
 	}
 
-	if err := tx.Commit(); err != nil {
+	if err = tx.Commit().Error; err != nil {
 		l.Error(ctx, "Failed to commit the transaction")
 		return err
 	}

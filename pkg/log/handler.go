@@ -7,11 +7,11 @@ import (
 	"golang.org/x/net/context"
 )
 
-type customHandler struct {
+type handler struct {
 	slog.Handler
 }
 
-func (t *customHandler) Handle(ctx context.Context, r slog.Record) error {
+func (h *handler) Handle(ctx context.Context, r slog.Record) error {
 	if v, ok := ctx.Value(logMapCtxKey).(*sync.Map); ok {
 		v.Range(func(key, value any) bool {
 			if key, ok := key.(string); ok {
@@ -25,11 +25,11 @@ func (t *customHandler) Handle(ctx context.Context, r slog.Record) error {
 			r.AddAttrs(slog.Any(key, ctx.Value(key)))
 		}
 	}
-	return t.Handler.Handle(ctx, r)
+	return h.Handler.Handle(ctx, r)
 }
 
-func (t *customHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
-	return &customHandler{
-		Handler: t.Handler.WithAttrs(attrs),
+func (h *handler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	return &handler{
+		Handler: h.Handler.WithAttrs(attrs),
 	}
 }

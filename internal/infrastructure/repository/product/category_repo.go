@@ -2,11 +2,17 @@ package repository
 
 import (
 	"context"
-	"pech/es-krake/internal/domain"
+	"fmt"
 	"pech/es-krake/internal/domain/product/entity"
 	domainRepo "pech/es-krake/internal/domain/product/repository"
+	domainScope "pech/es-krake/internal/domain/shared/scope"
+	"pech/es-krake/internal/domain/shared/transaction"
 	"pech/es-krake/internal/infrastructure/db"
+	gormScope "pech/es-krake/internal/infrastructure/db/gorm/scope"
 	"pech/es-krake/pkg/log"
+	"pech/es-krake/pkg/utils"
+
+	"gorm.io/gorm"
 )
 
 type categoryRepository struct {
@@ -21,32 +27,125 @@ func NewCategoryRepository(pg *db.PostgreSQL) domainRepo.CategoryRepository {
 	}
 }
 
+// Create implements repository.CategoryRepository.
+func (c *categoryRepository) Create(
+	ctx context.Context,
+	attributes map[string]interface{},
+) (entity.Category, error) {
+	category := entity.Category{}
+	err := utils.MapToStruct(attributes, &category)
+	if err != nil {
+		c.logger.Error(ctx, utils.ErrorMapToStruct, "error", err.Error())
+		return entity.Category{}, err
+	}
+
+	err = c.pg.DB.WithContext(ctx).Create(&category).Error
+	return category, err
+}
+
 // CreateWithTx implements repository.CategoryRepository.
-func (c *categoryRepository) CreateWithTx(ctx context.Context, attributes map[string]interface{}) (entity.Category, error) {
-	panic("unimplemented")
+func (c *categoryRepository) CreateWithTx(
+	ctx context.Context,
+	tx transaction.Base,
+	attributes map[string]interface{},
+) (entity.Category, error) {
+	gormTx, ok := tx.GetTx().(*gorm.DB)
+	if !ok {
+		return entity.Category{}, fmt.Errorf(utils.ErrorGetTx)
+	}
+
+	category := entity.Category{}
+	err := utils.MapToStruct(attributes, &category)
+	if err != nil {
+		c.logger.Error(ctx, utils.ErrorMapToStruct, "error", err.Error())
+		return entity.Category{}, err
+	}
+
+	err = gormTx.Create(&category).Error
+	return category, err
 }
 
 // FindByConditions implements repository.CategoryRepository.
-func (c *categoryRepository) FindByConditions(ctx context.Context, conditions map[string]interface{}) ([]entity.Category, error) {
-	panic("unimplemented")
-}
+func (c *categoryRepository) FindByConditions(
+	ctx context.Context,
+	conditions map[string]interface{},
+	scopes ...domainScope.Base,
+) ([]entity.Category, error) {
+	gormScopes, err := gormScope.ToGormScopes(scopes...)
+	if err != nil {
+		c.logger.Error(ctx, err.Error())
+		return nil, err
+	}
 
-// FindByConditionsWithScope implements repository.CategoryRepository.
-func (c *categoryRepository) FindByConditionsWithScope(ctx context.Context, conditions map[string]interface{}, scopes ...domain.Scope) ([]entity.Category, error) {
-	panic("unimplemented")
+	categories := []entity.Category{}
+	err = c.pg.DB.
+		WithContext(ctx).
+		Scopes(gormScopes...).
+		Where(conditions).
+		Find(&categories).Error
+	return categories, err
+
 }
 
 // TakeByConditions implements repository.CategoryRepository.
-func (c *categoryRepository) TakeByConditions(ctx context.Context, conditions map[string]interface{}) (entity.Category, error) {
-	panic("unimplemented")
+func (c *categoryRepository) TakeByConditions(
+	ctx context.Context,
+	conditions map[string]interface{},
+	scopes ...domainScope.Base,
+) (entity.Category, error) {
+
+	gormScopes, err := gormScope.ToGormScopes(scopes...)
+	if err != nil {
+		c.logger.Error(ctx, err.Error())
+		return entity.Category{}, err
+	}
+
+	category := entity.Category{}
+	err = c.pg.DB.
+		WithContext(ctx).
+		Scopes(gormScopes...).
+		Where(conditions).
+		Take(&category).Error
+	return category, err
 }
 
-// TakeByID implements repository.CategoryRepository.
-func (c *categoryRepository) TakeByID(ctx context.Context, ID int) (entity.Category, error) {
-	panic("unimplemented")
+// Update implements repository.CategoryRepository.
+func (c *categoryRepository) Update(
+	ctx context.Context,
+	category entity.Category,
+	attributesToUpdate map[string]interface{},
+) (entity.Category, error) {
+	err := utils.MapToStruct(attributesToUpdate, &category)
+	if err != nil {
+		c.logger.Error(ctx, utils.ErrorMapToStruct, "error", err.Error())
+		return entity.Category{}, err
+	}
+
+	err = c.pg.DB.
+		WithContext(ctx).
+		Model(category).
+		Updates(attributesToUpdate).Error
+	return category, err
 }
 
 // UpdateWithTx implements repository.CategoryRepository.
-func (c *categoryRepository) UpdateWithTx(ctx context.Context, category entity.Category, attributesToUpdate map[string]interface{}) (entity.Category, error) {
-	panic("unimplemented")
+func (c *categoryRepository) UpdateWithTx(
+	ctx context.Context,
+	tx transaction.Base,
+	category entity.Category,
+	attributesToUpdate map[string]interface{},
+) (entity.Category, error) {
+	gormTx, ok := tx.GetTx().(*gorm.DB)
+	if !ok {
+		return entity.Category{}, fmt.Errorf(utils.ErrorGetTx)
+	}
+
+	err := utils.MapToStruct(attributesToUpdate, &category)
+	if err != nil {
+		c.logger.Error(ctx, utils.ErrorMapToStruct, "error", err.Error())
+		return entity.Category{}, err
+	}
+
+	err = gormTx.Model(category).Updates(attributesToUpdate).Error
+	return category, err
 }

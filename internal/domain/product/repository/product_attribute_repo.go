@@ -3,20 +3,20 @@ package repository
 import (
 	"context"
 	"pech/es-krake/internal/domain/product/entity"
+	"pech/es-krake/internal/domain/shared/scope"
+	"pech/es-krake/internal/domain/shared/transaction"
 )
 
-const ProductAttributeValueTableName = "product_attribute_values"
+const OptionAttributeValueTableName = "option_attribute_values"
 
-type ProductAttributeValueRepository interface {
-	TakeByConditions(ctx context.Context, conditions map[string]interface{}) (entity.ProductAttributeValue, error)
+type OptionAttributeValueRepository interface {
+	TakeByConditions(ctx context.Context, conditions map[string]interface{}, scopes ...scope.Base) (entity.OptionAttributeValue, error)
 
-	FindByConditions(ctx context.Context, conditions map[string]interface{}) ([]entity.ProductAttributeValue, error)
+	FindByConditions(ctx context.Context, conditions map[string]interface{}, scopes ...scope.Base) ([]entity.OptionAttributeValue, error)
 
-	Create(ctx context.Context, attributes map[string]interface{}) (entity.ProductAttributeValue, error)
+	CreateBatchWithTx(ctx context.Context, tx transaction.Base, attributeValues []map[string]interface{}, batchSize int) error
 
-	CreateWithTx(ctx context.Context, attributes map[string]interface{}) (entity.ProductAttributeValue, error)
+	Update(ctx context.Context, attributeValue entity.OptionAttributeValue, attributesToUpdate map[string]interface{}) (entity.OptionAttributeValue, error)
 
-	CreateBatch(ctx context.Context, attributeValues []map[string]interface{}, batchSize int) ([]entity.ProductAttributeValue, error)
-
-	UpdateWithTx(ctx context.Context, attributeValue entity.ProductAttributeValue, attributesToUpdate map[string]interface{}) (entity.ProductAttributeValue, error)
+	DeleteByConditionsWithTx(ctx context.Context, tx transaction.Base, conditions map[string]interface{}, scopes ...scope.Base) error
 }
