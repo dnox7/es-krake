@@ -1,0 +1,18 @@
+services:
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+        MONGO_INITDB_ROOT_USERNAME: admin
+        MONGO_INITDB_ROOT_PASSWORD: 123456
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+        ME_CONFIG_MONG0DB_ADMINUSERNAME: root
+        ME_CONFIG_MONG0DB_ADMINPASSWORD: 123456789
+        ME_CONFIG_MONG0DB_URL: mongo://admin:123456@mongo:27017/
+        ME_CONFIG_BASICAUTH: false

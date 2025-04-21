@@ -13,10 +13,11 @@ const defaultCfgFilePath = "config/default.yml"
 
 type (
 	Config struct {
-		App    `yaml:"application"`
-		Log    `yaml:"logger"`
-		Server `yaml:"server"`
-		RDB    `yaml:"rdb"`
+		App    App    `yaml:"application"`
+		Log    Log    `yaml:"logger"`
+		Server Server `yaml:"server"`
+		RDB    RDB    `yaml:"rdb"`
+		MDB    MDB    `yaml:"mdb"`
 		// Redis  `yaml:"redis"`
 		// ES     `yaml:"elastic_search"`
 	}
@@ -77,6 +78,9 @@ type (
 		MaxRetries    int  `yaml:"max_retries" env:"ES_MAX_RETRIES" env-default:"3"`
 		EnableMetrics bool `yaml:"enable_metrics" env:"ES_ENABLE_METRICS" env-default:"false"`
 		Debug         bool `yaml:"debug" env:"ES_DEBUG" env-default:"true"`
+	}
+
+	MDB struct {
 	}
 
 	Keycloak struct{}
