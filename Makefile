@@ -19,4 +19,5 @@ run-mdb:
 	docker compose -f deploy/compose/mongo.yaml up -d
 
 .PHONY: stop-mdb
+stop-mdb:
 	docker compose -f deploy/compose/mongo.yaml stop
