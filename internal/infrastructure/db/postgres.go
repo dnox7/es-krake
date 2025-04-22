@@ -47,6 +47,7 @@ func NewOrGetSingleton(cfg *config.Config) *PostgreSQL {
 }
 
 func initPostgres(cfg *config.Config) (*PostgreSQL, error) {
+	logger := log.With("service", "postgres")
 	pg := &PostgreSQL{
 		maxOpenConns: cfg.RDB.MaxOpenConns,
 		maxIdleConns: cfg.RDB.MaxIdleConns,
@@ -70,7 +71,7 @@ func initPostgres(cfg *config.Config) (*PostgreSQL, error) {
 			break
 		}
 
-		slog.Warn("PostgreSQL is trying to connect", "attempts left", pg.connAttempts)
+		logger.Warn(context.Background(), "PostgreSQL is trying to connect", "attempts left", pg.connAttempts)
 		time.Sleep(pg.connTimeout)
 		pg.connAttempts--
 	}

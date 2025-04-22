@@ -21,3 +21,7 @@ run-mdb:
 .PHONY: stop-mdb
 stop-mdb:
 	docker compose -f deploy/compose/mongo.yaml stop
+
+.PHONY: clean-mdb
+clean-mdb:
+	docker compose -f deploy/compose/mongo.yaml down --volumes

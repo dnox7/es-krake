@@ -2,20 +2,28 @@ services:
   mongo:
     image: mongo
     container_name: mongo
-    restart: always
+    restart: on-failure:3
     ports:
       - 27017:27017
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: 123456
-      MONGO_INITDB_DATABASE: es_krake
+    volumes:
+      - ../../scripts/mongo-init.sh:/docker-entrypoint-initdb.d/mongo.sh:ro
+      - mongo-data:/data/db
+      - mongo-data-config:/data/configdb
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh mongo:27017/test --quiet
+      interval: 30s
+      timeout: 10s
+      retries: 5
     networks:
       - mdb
 
   mongo-express:
     image: mongo-express
     container_name: mongo-express
-    restart: always
+    restart: on-failure:3
     ports:
       - 8081:8081
     environment:
@@ -25,16 +33,17 @@ services:
       ME_CONFIG_MONGODB_ENABLE_ADMIN: "true"
       ME_CONFIG_BASICAUTH_USERNAME: ""
       ME_CONFIG_BASICAUTH_PASSWORD: ""
-    volumes:
-      - ./init-scripts/mongo.sh:/docker-entrypoint-initdb.d/mongo.sh:ro
-      - mongodata:/data/db
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
     networks:
       - mdb
 
 volumes:
-  mongodata: 
+  mongo-data:
+    name: mongo-data
+  mongo-data-config:
+    name: mongo-data-config
 
 networks:
   mdb:
