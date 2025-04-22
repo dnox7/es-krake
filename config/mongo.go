@@ -3,6 +3,7 @@ package config
 type mongo struct {
 	Hostname     string `yaml:"host" env:"MONGO_HOST" env-default:"localhost"`
 	Port         string `yaml:"port" env:"MONGO_PORT" env-default:"27017"`
+	Database     string `yaml:"database" env:"MONGO_DATABASE" env-required:"true"`
 	Username     string `yaml:"username" env:"MONGO_USERNAME" env-required:"true"`
 	Password     string `yaml:"password" env:"MONGO_PASSWORD" env-required:"true"`
 	AuthSource   string `yaml:"auth_db" env:"MONGO_AUTH_DB" env-required:"true"`

@@ -16,6 +16,7 @@ import (
 
 type Mongo struct {
 	DB     *mongo.Client
+	DBName string
 	logger *log.Logger
 
 	connAttempts int
@@ -49,6 +50,7 @@ func initMongo(cfg *config.Config) (*Mongo, error) {
 		timeout:      time.Duration(cfg.MDB.Timeout) * time.Millisecond,
 		connTimeout:  time.Duration(cfg.MDB.ConnTimeout) * time.Millisecond,
 		maxIdleTime:  time.Duration(cfg.MDB.MaxIdleTime) * time.Millisecond,
+		DBName:       cfg.MDB.Database,
 	}
 
 	mongoLogger := mongolog.NewMongoLog()
