@@ -7,6 +7,8 @@ import (
 	"pech/es-krake/internal/domain/shared/transaction"
 )
 
+const CategoryTableName = "categories"
+
 type CategoryRepository interface {
 	TakeByConditions(ctx context.Context, conditions map[string]interface{}, scopes ...scope.Base) (entity.Category, error)
 

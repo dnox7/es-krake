@@ -13,6 +13,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/redis/go-redis/v9 v9.7.3
 	github.com/xeipuuv/gojsonschema v1.2.0
+	go.mongodb.org/mongo-driver v1.7.5
 	go.mongodb.org/mongo-driver/v2 v2.2.0
 	golang.org/x/net v0.33.0
 	gorm.io/driver/postgres v1.5.11
