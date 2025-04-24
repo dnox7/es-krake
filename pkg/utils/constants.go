@@ -34,4 +34,5 @@ const (
 	ErrorDecodeBody        = "failed to decode body"
 	ErrorMapToStruct       = "failed to map to struct"
 	ErrorGetTx             = "failed to get Tx"
+	ErrorGetSpec           = "failed to get specification"
 )

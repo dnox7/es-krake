@@ -1,4 +1,4 @@
-package db
+package rdb
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"pech/es-krake/config"
 	"pech/es-krake/pkg/log"
 	gormlog "pech/es-krake/pkg/log/gorm"
-	wraperror "pech/es-krake/pkg/wrap-error"
+	"pech/es-krake/pkg/wraperror"
 	"sync"
 	"time"
 

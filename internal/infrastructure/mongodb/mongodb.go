@@ -45,7 +45,7 @@ func NewOrGetSingleton(cfg *config.Config) *Mongo {
 func initMongo(cfg *config.Config) (*Mongo, error) {
 	m := &Mongo{
 		logger:       log.With("service", "mongodb"),
-		connAttempts: cfg.RDB.ConnAttempts,
+		connAttempts: cfg.MDB.ConnAttempts,
 		poolSize:     cfg.MDB.PoolSize,
 		timeout:      time.Duration(cfg.MDB.Timeout) * time.Millisecond,
 		connTimeout:  time.Duration(cfg.MDB.ConnTimeout) * time.Millisecond,
@@ -59,7 +59,7 @@ func initMongo(cfg *config.Config) (*Mongo, error) {
 		SetSink(mongoLogger).
 		SetComponentLevel(options.LogComponentCommand, options.LogLevelDebug)
 
-	uri := fmt.Sprintf("mongodb://%s:%s", cfg.MDB.Hostname, cfg.RDB.Port)
+	uri := fmt.Sprintf("mongodb://%s:%s", cfg.MDB.Hostname, cfg.MDB.Port)
 	credential := options.Credential{
 		AuthSource: cfg.MDB.AuthSource,
 		Username:   cfg.MDB.Username,

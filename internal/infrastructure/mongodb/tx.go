@@ -2,7 +2,7 @@ package mdb
 
 import (
 	"context"
-	tx "pech/es-krake/internal/domain/shared/transaction"
+	"pech/es-krake/internal/domain/shared/transaction"
 	"pech/es-krake/pkg/log"
 
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -13,7 +13,7 @@ type mongoTx struct {
 	tx *mongo.Client
 }
 
-func NewMongoTx(tx *mongo.Client) tx.Base {
+func NewMongoTx(tx *mongo.Client) transaction.Base {
 	return &mongoTx{tx}
 }
 

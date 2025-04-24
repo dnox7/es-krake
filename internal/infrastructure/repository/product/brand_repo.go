@@ -4,19 +4,19 @@ import (
 	"context"
 	"pech/es-krake/internal/domain/product/entity"
 	domainRepo "pech/es-krake/internal/domain/product/repository"
-	domainScope "pech/es-krake/internal/domain/shared/scope"
-	"pech/es-krake/internal/infrastructure/db"
-	gormScope "pech/es-krake/internal/infrastructure/db/gorm/scope"
+	"pech/es-krake/internal/domain/shared/specification"
+	"pech/es-krake/internal/infrastructure/rdb"
+	"pech/es-krake/internal/infrastructure/rdb/gorm/scope"
 	"pech/es-krake/pkg/log"
 	"pech/es-krake/pkg/utils"
 )
 
 type brandRepository struct {
 	logger *log.Logger
-	pg     *db.PostgreSQL
+	pg     *rdb.PostgreSQL
 }
 
-func NewBrandRepository(pg *db.PostgreSQL) domainRepo.BrandRepository {
+func NewBrandRepository(pg *rdb.PostgreSQL) domainRepo.BrandRepository {
 	return &brandRepository{
 		logger: log.With("repo", "brand_repo"),
 		pg:     pg,
@@ -43,9 +43,9 @@ func (b *brandRepository) Create(
 func (b *brandRepository) FindByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
-	scopes ...domainScope.Base,
+	spec specification.Base,
 ) ([]entity.Brand, error) {
-	gormScopes, err := gormScope.ToGormScopes(scopes...)
+	gormScopes, err := scope.ToGormScopes(spec)
 	if err != nil {
 		b.logger.Error(ctx, err.Error())
 		return nil, err
@@ -64,9 +64,9 @@ func (b *brandRepository) FindByConditions(
 func (b *brandRepository) TakeByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
-	scopes ...domainScope.Base,
+	spec specification.Base,
 ) (entity.Brand, error) {
-	gormScopes, err := gormScope.ToGormScopes(scopes...)
+	gormScopes, err := scope.ToGormScopes(spec)
 	if err != nil {
 		b.logger.Error(ctx, err.Error())
 		return entity.Brand{}, err

@@ -7,7 +7,7 @@ import (
 )
 
 type ProductMeta struct {
-	ID                     primitive.ObjectID     `bson:"_id" json:"id"`
+	ID                     primitive.ObjectID     `bson:"_id,omitempty" json:"id"`
 	ProductID              int                    `bson:"product_id" json:"product_id"`
 	DisplayName            string                 `bson:"display_name" json:"display_name"`
 	DescriptionHTML        string                 `bson:"description_html" json:"description_html"`

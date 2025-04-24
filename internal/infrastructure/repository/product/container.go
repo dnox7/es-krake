@@ -2,7 +2,7 @@ package repository
 
 import (
 	domainRepo "pech/es-krake/internal/domain/product/repository"
-	"pech/es-krake/internal/infrastructure/db"
+	"pech/es-krake/internal/infrastructure/rdb"
 )
 
 type RepositoryContainer struct {
@@ -15,7 +15,7 @@ type RepositoryContainer struct {
 	ProductRepository              domainRepo.ProductRepository
 }
 
-func NewRepositoryContainer(pg *db.PostgreSQL) RepositoryContainer {
+func NewRepositoryContainer(pg *rdb.PostgreSQL) RepositoryContainer {
 	return RepositoryContainer{
 		AttributeRepository:            NewAttributeRepository(pg),
 		AttributeTypeRepository:        NewAttributeTypeRepository(pg),
