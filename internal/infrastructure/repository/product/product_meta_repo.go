@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"pech/es-krake/internal/domain/product/entity"
 	domainRepo "pech/es-krake/internal/domain/product/repository"
 	"pech/es-krake/internal/domain/shared/specification"
@@ -10,6 +11,7 @@ import (
 	"pech/es-krake/pkg/utils"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
@@ -100,4 +102,26 @@ func (p *productMetaRepository) TakeByConditions(
 
 	err = coll.FindOne(ctx, filter, opts).Decode(&prodMeta)
 	return prodMeta, err
+}
+
+// Update implements repository.ProductMetaRespository.
+func (p *productMetaRepository) UpdateByID(
+	ctx context.Context,
+	ID interface{},
+	operation interface{},
+) (entity.ProductMeta, error) {
+	idUpdate, ok := ID.(primitive.ObjectID)
+	if !ok {
+		return entity.ProductMeta{}, fmt.Errorf("Document's ID is invalid")
+	}
+	idFilter := bson.D{{Key: "_id", Value: idUpdate}}
+
+	coll := p.db.DB.
+		Database(p.db.DBName).
+		Collection(domainRepo.ProductMetaTableName)
+	opt := options.FindOneAndUpdate().SetReturnDocument(options.After)
+
+	updatedDoc := entity.ProductMeta{}
+	err := coll.FindOneAndUpdate(ctx, idFilter, operation, opt).Decode(&updatedDoc)
+	return updatedDoc, err
 }
