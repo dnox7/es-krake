@@ -14,7 +14,7 @@ if [[ -z "$SHARD_LIST" ]]; then
 fi
 
 # Split set of shard URLs text by ';' separator
-IFS=';' read -r -a array <<< "$SHARD_LIST"
+IFS=';' read -r -a array <<<"$SHARD_LIST"
 
 # Add each shard definition to the cluster
 echo "Adding shards to the cluster..."
