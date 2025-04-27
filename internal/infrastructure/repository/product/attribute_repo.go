@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"pech/es-krake/internal/domain/product/entity"
 	domainRepo "pech/es-krake/internal/domain/product/repository"
-	domainScope "pech/es-krake/internal/domain/shared/scope"
+	"pech/es-krake/internal/domain/shared/specification"
 	"pech/es-krake/internal/domain/shared/transaction"
-	"pech/es-krake/internal/infrastructure/db"
-	gormScope "pech/es-krake/internal/infrastructure/db/gorm/scope"
+	"pech/es-krake/internal/infrastructure/rdb"
+	gormScope "pech/es-krake/internal/infrastructure/rdb/gorm/scope"
 	"pech/es-krake/pkg/log"
 	"pech/es-krake/pkg/utils"
 
@@ -17,10 +17,10 @@ import (
 
 type attributeRepository struct {
 	logger *log.Logger
-	pg     *db.PostgreSQL
+	pg     *rdb.PostgreSQL
 }
 
-func NewAttributeRepository(pg *db.PostgreSQL) domainRepo.AttributeRepository {
+func NewAttributeRepository(pg *rdb.PostgreSQL) domainRepo.AttributeRepository {
 	return &attributeRepository{
 		logger: log.With("repo", "attribute_repo"),
 		pg:     pg,
@@ -31,9 +31,9 @@ func NewAttributeRepository(pg *db.PostgreSQL) domainRepo.AttributeRepository {
 func (r *attributeRepository) TakeByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
-	scopes ...domainScope.Base,
+	spec specification.Base,
 ) (entity.Attribute, error) {
-	gormScopes, err := gormScope.ToGormScopes(scopes...)
+	gormScopes, err := gormScope.ToGormScopes(spec)
 	if err != nil {
 		r.logger.Error(ctx, err.Error())
 		return entity.Attribute{}, err
@@ -51,9 +51,9 @@ func (r *attributeRepository) TakeByConditions(
 func (r *attributeRepository) FindByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
-	scopes ...domainScope.Base,
+	spec specification.Base,
 ) ([]entity.Attribute, error) {
-	gormScopes, err := gormScope.ToGormScopes(scopes...)
+	gormScopes, err := gormScope.ToGormScopes(spec)
 	if err != nil {
 		r.logger.Error(ctx, err.Error())
 		return nil, err

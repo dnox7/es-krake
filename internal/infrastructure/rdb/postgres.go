@@ -1,4 +1,4 @@
-package db
+package rdb
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"pech/es-krake/config"
 	"pech/es-krake/pkg/log"
 	gormlog "pech/es-krake/pkg/log/gorm"
-	wraperror "pech/es-krake/pkg/wrap-error"
+	"pech/es-krake/pkg/wraperror"
 	"sync"
 	"time"
 
@@ -19,8 +19,9 @@ import (
 )
 
 type PostgreSQL struct {
-	DB   *gorm.DB
-	conn *sql.DB
+	DB     *gorm.DB
+	conn   *sql.DB
+	logger *log.Logger
 
 	maxOpenConns int
 	maxIdleConns int
@@ -48,6 +49,7 @@ func NewOrGetSingleton(cfg *config.Config) *PostgreSQL {
 
 func initPostgres(cfg *config.Config) (*PostgreSQL, error) {
 	pg := &PostgreSQL{
+		logger:       log.With("service", "postgres"),
 		maxOpenConns: cfg.RDB.MaxOpenConns,
 		maxIdleConns: cfg.RDB.MaxIdleConns,
 		maxLifeTime:  time.Duration(cfg.RDB.MaxIdleTime) * time.Millisecond,
@@ -70,7 +72,12 @@ func initPostgres(cfg *config.Config) (*PostgreSQL, error) {
 			break
 		}
 
-		slog.Warn("PostgreSQL is trying to connect", "attempts left", pg.connAttempts)
+		pg.logger.Warn(
+			context.Background(),
+			"PostgreSQL is trying to connect",
+			"error", err.Error(),
+			"attempts left", pg.connAttempts,
+		)
 		time.Sleep(pg.connTimeout)
 		pg.connAttempts--
 	}
@@ -91,9 +98,9 @@ func (pg *PostgreSQL) Ping(ctx context.Context) error {
 }
 
 func (pg *PostgreSQL) Close() {
-	slog.Info("Closing the DB connaction pool")
+	pg.logger.Info(context.Background(), "Closing the DB connaction pool")
 	if err := pg.conn.Close(); err != nil {
-		slog.Error("Error while closing the DB connactio pool")
+		pg.logger.Error(context.Background(), "Error while closing the DB connactio pool")
 	}
 }
 
@@ -102,7 +109,6 @@ func (pg *PostgreSQL) Conn() *sql.DB {
 }
 
 func (pg *PostgreSQL) StartLoggingPoolSize() func() {
-	logger := log.With("service", "database")
 	stop := make(chan bool)
 	go func() {
 		previousOpened := 0
@@ -110,12 +116,12 @@ func (pg *PostgreSQL) StartLoggingPoolSize() func() {
 			time.Sleep(time.Second)
 			select {
 			case <-stop:
-				pg.logPoolSize(pg.conn.Stats(), logger)
+				pg.logPoolSize(pg.conn.Stats())
 				return
 			default:
 				curr := pg.conn.Stats()
 				if previousOpened != curr.OpenConnections {
-					pg.logPoolSize(curr, logger)
+					pg.logPoolSize(curr)
 					previousOpened = curr.OpenConnections
 				}
 			}
@@ -127,8 +133,8 @@ func (pg *PostgreSQL) StartLoggingPoolSize() func() {
 	}
 }
 
-func (pg *PostgreSQL) logPoolSize(stats sql.DBStats, logger *log.Logger) {
-	logger.With("inUse", stats.InUse).
+func (pg *PostgreSQL) logPoolSize(stats sql.DBStats) {
+	pg.logger.With("inUse", stats.InUse).
 		With("idle", stats.Idle).
 		With("opened", stats.OpenConnections).
 		Info(context.Background(), "Current  number of opened connections in the pool")

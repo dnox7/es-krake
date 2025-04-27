@@ -37,7 +37,7 @@ func NewGormLogger(config logger.Config) logger.Interface {
 	return &gormLogger{
 		Level:  config.LogLevel,
 		cfg:    config,
-		logger: log.With("service", "database"),
+		logger: log.With("service", "postgres"),
 	}
 }
 

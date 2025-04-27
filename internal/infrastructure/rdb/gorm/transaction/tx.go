@@ -1,12 +1,25 @@
-package utils
+package tx
 
 import (
 	"context"
 	"database/sql"
+	tx "pech/es-krake/internal/domain/shared/transaction"
 	"pech/es-krake/pkg/log"
 
 	"gorm.io/gorm"
 )
+
+type gormTx struct {
+	tx *gorm.DB
+}
+
+func NewGormTx(tx *gorm.DB) tx.Base {
+	return &gormTx{tx}
+}
+
+func (g *gormTx) GetTx() interface{} {
+	return g.tx
+}
 
 func GormTransaction(
 	ctx context.Context,

@@ -4,16 +4,16 @@ import (
 	"context"
 	"pech/es-krake/internal/domain/product/entity"
 	domainRepo "pech/es-krake/internal/domain/product/repository"
-	"pech/es-krake/internal/infrastructure/db"
+	"pech/es-krake/internal/infrastructure/rdb"
 	"pech/es-krake/pkg/log"
 )
 
 type attributeTypeRepository struct {
 	logger *log.Logger
-	pg     *db.PostgreSQL
+	pg     *rdb.PostgreSQL
 }
 
-func NewAttributeTypeRepository(pg *db.PostgreSQL) domainRepo.AttributeTypeRepository {
+func NewAttributeTypeRepository(pg *rdb.PostgreSQL) domainRepo.AttributeTypeRepository {
 	return &attributeTypeRepository{
 		logger: log.With("repo", "attribute_type_repo"),
 		pg:     pg,

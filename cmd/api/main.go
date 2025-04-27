@@ -5,8 +5,8 @@ import (
 	"log/slog"
 	"os"
 	"pech/es-krake/config"
-	"pech/es-krake/internal/infrastructure/db"
-	"pech/es-krake/internal/infrastructure/db/migration"
+	"pech/es-krake/internal/infrastructure/rdb"
+	"pech/es-krake/internal/infrastructure/rdb/migration"
 	"pech/es-krake/internal/infrastructure/repository"
 	"pech/es-krake/internal/initializer"
 	"pech/es-krake/pkg/log"
@@ -18,7 +18,7 @@ func main() {
 	ctx := context.Background()
 	log.Initialize(os.Stdout, cfg, []string{"request-id", "recurringID"})
 
-	pg := db.NewOrGetSingleton(cfg)
+	pg := rdb.NewOrGetSingleton(cfg)
 	defer pg.Close()
 
 	poolLogger := pg.StartLoggingPoolSize()
@@ -37,5 +37,4 @@ func main() {
 
 	repositories := repository.NewRepositoriesContainer(pg)
 	err = initializer.MountAll(repositories, pg)
-
 }

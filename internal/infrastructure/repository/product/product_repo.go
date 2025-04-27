@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"pech/es-krake/internal/domain/product/entity"
 	domainRepo "pech/es-krake/internal/domain/product/repository"
-	domainScope "pech/es-krake/internal/domain/shared/scope"
+	"pech/es-krake/internal/domain/shared/specification"
 	"pech/es-krake/internal/domain/shared/transaction"
-	"pech/es-krake/internal/infrastructure/db"
-	gormScope "pech/es-krake/internal/infrastructure/db/gorm/scope"
+	"pech/es-krake/internal/infrastructure/rdb"
+	gormScope "pech/es-krake/internal/infrastructure/rdb/gorm/scope"
 	"pech/es-krake/pkg/log"
 	"pech/es-krake/pkg/utils"
 
@@ -17,10 +17,10 @@ import (
 
 type productRepository struct {
 	logger *log.Logger
-	pg     *db.PostgreSQL
+	pg     *rdb.PostgreSQL
 }
 
-func NewProductRepository(pg *db.PostgreSQL) domainRepo.ProductRepository {
+func NewProductRepository(pg *rdb.PostgreSQL) domainRepo.ProductRepository {
 	return &productRepository{
 		logger: log.With("repo", "product_repo"),
 		pg:     pg,
@@ -69,9 +69,9 @@ func (p *productRepository) CreateWithTx(
 func (p *productRepository) FindByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
-	scopes ...domainScope.Base,
+	spec specification.Base,
 ) ([]entity.Product, error) {
-	gormScopes, err := gormScope.ToGormScopes(scopes...)
+	gormScopes, err := gormScope.ToGormScopes(spec)
 	if err != nil {
 		p.logger.Error(ctx, err.Error())
 		return nil, err
@@ -89,9 +89,9 @@ func (p *productRepository) FindByConditions(
 func (p *productRepository) TakeByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
-	scopes ...domainScope.Base,
+	spec specification.Base,
 ) (entity.Product, error) {
-	gormScopes, err := gormScope.ToGormScopes(scopes...)
+	gormScopes, err := gormScope.ToGormScopes(spec)
 	if err != nil {
 		p.logger.Error(ctx, err.Error())
 		return entity.Product{}, err

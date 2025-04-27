@@ -8,8 +8,20 @@ run-migration:
 
 .PHONY: run-kc
 run-kc:
-	docker compose -f deploy/docker-compose.yaml up -d keycloak
+	docker compose -f deploy/compose/keycloak.yaml up -d
 
 .PHONY: stop-kc
 stop-kc:
-	docker compose -f deploy/docker-compose.yaml stop keycloak
+	docker compose -f deploy/compose/keycloak.yaml stop
+
+.PHONY: run-mdb
+run-mdb:
+	docker compose -f deploy/compose/mongo.yaml up -d
+
+.PHONY: stop-mdb
+stop-mdb:
+	docker compose -f deploy/compose/mongo.yaml stop
+
+.PHONY: clean-mdb
+clean-mdb:
+	docker compose -f deploy/compose/mongo.yaml down --volumes

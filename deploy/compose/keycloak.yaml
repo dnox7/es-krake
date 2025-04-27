@@ -7,10 +7,3 @@ services:
     ports:
       - "8080:8080"
     command: ["start-dev"]
-
-  # postgres:
-  #   image: postgres
-  #   environment:
-  #     - POSTGRES_USER: postgres
-  #     - POSTGRES_PASSWORD: 123456
-

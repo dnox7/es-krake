@@ -3,14 +3,16 @@ package repository
 import (
 	"context"
 	"pech/es-krake/internal/domain/product/entity"
-	"pech/es-krake/internal/domain/shared/scope"
+	"pech/es-krake/internal/domain/shared/specification"
 	"pech/es-krake/internal/domain/shared/transaction"
 )
 
-type CategoryRepository interface {
-	TakeByConditions(ctx context.Context, conditions map[string]interface{}, scopes ...scope.Base) (entity.Category, error)
+const CategoryTableName = "categories"
 
-	FindByConditions(ctx context.Context, conditions map[string]interface{}, scopes ...scope.Base) ([]entity.Category, error)
+type CategoryRepository interface {
+	TakeByConditions(ctx context.Context, conditions map[string]interface{}, spec specification.Base) (entity.Category, error)
+
+	FindByConditions(ctx context.Context, conditions map[string]interface{}, spec specification.Base) ([]entity.Category, error)
 
 	Create(ctx context.Context, attributes map[string]interface{}) (entity.Category, error)
 

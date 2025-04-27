@@ -11,7 +11,7 @@ import (
 	"pech/es-krake/pkg/dto"
 	"pech/es-krake/pkg/utils"
 	"pech/es-krake/pkg/validator"
-	wraperror "pech/es-krake/pkg/wrap-error"
+	"pech/es-krake/pkg/wraperror"
 
 	"github.com/gin-gonic/gin"
 	"github.com/graphql-go/graphql/gqlerrors"
