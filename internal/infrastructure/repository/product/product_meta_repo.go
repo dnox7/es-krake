@@ -3,12 +3,12 @@ package repository
 import (
 	"context"
 	"fmt"
-	"pech/es-krake/internal/domain/product/entity"
-	domainRepo "pech/es-krake/internal/domain/product/repository"
-	"pech/es-krake/internal/domain/shared/specification"
-	mdb "pech/es-krake/internal/infrastructure/mongodb"
-	"pech/es-krake/pkg/log"
-	"pech/es-krake/pkg/utils"
+	"github.com/dpe27/es-krake/internal/domain/product/entity"
+	domainRepo "github.com/dpe27/es-krake/internal/domain/product/repository"
+	"github.com/dpe27/es-krake/internal/domain/shared/specification"
+	mdb "github.com/dpe27/es-krake/internal/infrastructure/mongodb"
+	"github.com/dpe27/es-krake/pkg/log"
+	"github.com/dpe27/es-krake/pkg/utils"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"

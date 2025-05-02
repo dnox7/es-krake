@@ -1,8 +1,8 @@
 package es
 
 import (
-	"pech/es-krake/config"
-	"pech/es-krake/pkg/log"
+	"github.com/dpe27/es-krake/config"
+	"github.com/dpe27/es-krake/pkg/log"
 
 	"github.com/elastic/go-elasticsearch/v8"
 )

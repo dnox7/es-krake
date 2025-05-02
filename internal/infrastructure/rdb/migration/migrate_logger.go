@@ -3,7 +3,7 @@ package migration
 import (
 	"context"
 	"fmt"
-	"pech/es-krake/pkg/log"
+	"github.com/dpe27/es-krake/pkg/log"
 )
 
 // this type is required to implement the Logger interface of golang-migrate

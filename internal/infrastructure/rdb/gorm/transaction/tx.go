@@ -3,8 +3,8 @@ package tx
 import (
 	"context"
 	"database/sql"
-	tx "pech/es-krake/internal/domain/shared/transaction"
-	"pech/es-krake/pkg/log"
+	tx "github.com/dpe27/es-krake/internal/domain/shared/transaction"
+	"github.com/dpe27/es-krake/pkg/log"
 
 	"gorm.io/gorm"
 )

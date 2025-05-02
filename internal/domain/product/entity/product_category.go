@@ -1,7 +1,7 @@
 package entity
 
 import (
-	"pech/es-krake/internal/domain/shared/model"
+	"github.com/dpe27/es-krake/internal/domain/shared/model"
 )
 
 type ProductCategory struct {

@@ -3,7 +3,7 @@ package log
 import (
 	"io"
 	"log/slog"
-	"pech/es-krake/config"
+	"github.com/dpe27/es-krake/config"
 	"sync"
 	"time"
 

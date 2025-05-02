@@ -1,6 +1,6 @@
 package entity
 
-import "pech/es-krake/internal/domain/shared/model"
+import "github.com/dpe27/es-krake/internal/domain/shared/model"
 
 type Product struct {
 	ID                    int              `gorm:"column:id;primaryKey;type:bigint;not null;autoIncrement"     json:"id"`

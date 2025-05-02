@@ -3,9 +3,9 @@ package mdb
 import (
 	"context"
 	"fmt"
-	"pech/es-krake/config"
-	"pech/es-krake/pkg/log"
-	mongolog "pech/es-krake/pkg/log/mongo"
+	"github.com/dpe27/es-krake/config"
+	"github.com/dpe27/es-krake/pkg/log"
+	mongolog "github.com/dpe27/es-krake/pkg/log/mongo"
 	"sync"
 	"time"
 

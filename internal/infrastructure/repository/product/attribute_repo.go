@@ -3,14 +3,14 @@ package repository
 import (
 	"context"
 	"fmt"
-	"pech/es-krake/internal/domain/product/entity"
-	domainRepo "pech/es-krake/internal/domain/product/repository"
-	"pech/es-krake/internal/domain/shared/specification"
-	"pech/es-krake/internal/domain/shared/transaction"
-	"pech/es-krake/internal/infrastructure/rdb"
-	gormScope "pech/es-krake/internal/infrastructure/rdb/gorm/scope"
-	"pech/es-krake/pkg/log"
-	"pech/es-krake/pkg/utils"
+	"github.com/dpe27/es-krake/internal/domain/product/entity"
+	domainRepo "github.com/dpe27/es-krake/internal/domain/product/repository"
+	"github.com/dpe27/es-krake/internal/domain/shared/specification"
+	"github.com/dpe27/es-krake/internal/domain/shared/transaction"
+	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
+	gormScope "github.com/dpe27/es-krake/internal/infrastructure/rdb/gorm/scope"
+	"github.com/dpe27/es-krake/pkg/log"
+	"github.com/dpe27/es-krake/pkg/utils"
 
 	"gorm.io/gorm"
 )

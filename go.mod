@@ -1,4 +1,4 @@
-module pech/es-krake
+module github.com/dpe27/es-krake
 
 go 1.23
 

@@ -2,8 +2,8 @@ package mdb
 
 import (
 	"fmt"
-	"pech/es-krake/internal/domain/shared/specification"
-	"pech/es-krake/pkg/utils"
+	"github.com/dpe27/es-krake/internal/domain/shared/specification"
+	"github.com/dpe27/es-krake/pkg/utils"
 
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )

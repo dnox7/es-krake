@@ -2,10 +2,10 @@ package repository
 
 import (
 	"context"
-	"pech/es-krake/internal/domain/product/entity"
-	domainRepo "pech/es-krake/internal/domain/product/repository"
-	"pech/es-krake/internal/infrastructure/rdb"
-	"pech/es-krake/pkg/log"
+	"github.com/dpe27/es-krake/internal/domain/product/entity"
+	domainRepo "github.com/dpe27/es-krake/internal/domain/product/repository"
+	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
+	"github.com/dpe27/es-krake/pkg/log"
 )
 
 type attributeTypeRepository struct {

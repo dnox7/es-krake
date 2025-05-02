@@ -2,9 +2,9 @@ package repository
 
 import (
 	"context"
-	"pech/es-krake/internal/domain/product/entity"
-	"pech/es-krake/internal/domain/shared/specification"
-	"pech/es-krake/internal/domain/shared/transaction"
+	"github.com/dpe27/es-krake/internal/domain/product/entity"
+	"github.com/dpe27/es-krake/internal/domain/shared/specification"
+	"github.com/dpe27/es-krake/internal/domain/shared/transaction"
 )
 
 const OptionAttributeValueTableName = "option_attribute_values"
