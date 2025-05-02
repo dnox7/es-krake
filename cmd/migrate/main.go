@@ -4,10 +4,10 @@ import (
 	"context"
 	"log/slog"
 	"os"
-	"pech/es-krake/config"
-	"pech/es-krake/internal/infrastructure/rdb"
-	"pech/es-krake/internal/infrastructure/rdb/migration"
-	"pech/es-krake/pkg/log"
+	"github.com/dpe27/es-krake/config"
+	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
+	"github.com/dpe27/es-krake/internal/infrastructure/rdb/migration"
+	"github.com/dpe27/es-krake/pkg/log"
 )
 
 func main() {

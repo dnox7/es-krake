@@ -2,8 +2,8 @@ package repository
 
 import (
 	"context"
-	"pech/es-krake/internal/domain/product/entity"
-	"pech/es-krake/internal/domain/shared/specification"
+	"github.com/dpe27/es-krake/internal/domain/product/entity"
+	"github.com/dpe27/es-krake/internal/domain/shared/specification"
 )
 
 const BrandTableName = "brands"

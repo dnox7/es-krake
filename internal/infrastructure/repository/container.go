@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"pech/es-krake/internal/infrastructure/rdb"
-	productRepo "pech/es-krake/internal/infrastructure/repository/product"
+	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
+	productRepo "github.com/dpe27/es-krake/internal/infrastructure/repository/product"
 )
 
 type RepositoriesContainer struct {

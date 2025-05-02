@@ -3,7 +3,7 @@ package middleware
 import (
 	"fmt"
 	"net/http"
-	"pech/es-krake/pkg/dto"
+	"github.com/dpe27/es-krake/pkg/dto"
 	"runtime"
 	"strings"
 

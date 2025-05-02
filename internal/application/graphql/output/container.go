@@ -1,7 +1,7 @@
 package output
 
 import (
-	"pech/es-krake/internal/infrastructure/repository"
+	"github.com/dpe27/es-krake/internal/infrastructure/repository"
 
 	"github.com/graphql-go/graphql"
 )

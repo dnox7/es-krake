@@ -1,8 +1,8 @@
 package initializer
 
 import (
-	"pech/es-krake/internal/infrastructure/rdb"
-	"pech/es-krake/internal/infrastructure/repository"
+	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
+	"github.com/dpe27/es-krake/internal/infrastructure/repository"
 )
 
 func MountAll(

@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"pech/es-krake/pkg/log"
-	"pech/es-krake/pkg/utils"
+	"github.com/dpe27/es-krake/pkg/log"
+	"github.com/dpe27/es-krake/pkg/utils"
 	"time"
 )
 

@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"pech/es-krake/config"
-	"pech/es-krake/pkg/log"
+	"github.com/dpe27/es-krake/config"
+	"github.com/dpe27/es-krake/pkg/log"
 	"sort"
 
 	"github.com/golang-migrate/migrate/v4"

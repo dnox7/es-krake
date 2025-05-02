@@ -2,8 +2,8 @@ package jwt
 
 import (
 	"fmt"
-	"pech/es-krake/config"
-	"pech/es-krake/pkg/utils"
+	"github.com/dpe27/es-krake/config"
+	"github.com/dpe27/es-krake/pkg/utils"
 
 	"github.com/golang-jwt/jwt/v5"
 )
