@@ -33,3 +33,7 @@ run-pgadmin:
 .PHONY: stop-pgadmin
 stop-pgadmin:
 	docker compose -f deploy/compose/pgadmin.yaml down
+
+.PHONY: export-realm
+export-realm:
+	scripts/export-realm.sh
