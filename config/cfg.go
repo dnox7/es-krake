@@ -9,7 +9,7 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
-const defaultCfgFilePath = "config/default.yml"
+const cfgFilePath = ".env"
 
 type (
 	Config struct {
@@ -38,7 +38,7 @@ type (
 func NewConfig() *Config {
 	cfg := &Config{}
 	root := projectRoot()
-	configFilePath := root + defaultCfgFilePath
+	configFilePath := root + cfgFilePath
 
 	err := loadCfgFile(configFilePath, cfg)
 	if err != nil {
