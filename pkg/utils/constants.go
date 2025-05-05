@@ -21,6 +21,9 @@ const (
 	DevEnv     = "dev"
 	TestingEnv = "testing"
 
+	HeaderAuthorization = "Authorization"
+	HeaderContentType   = "Content-Type"
+
 	ErrorInternalServer    = "Internal server error"
 	ErrorLogRequestBody    = "failed to log request body"
 	ErrorCloseResponseBody = "failed to close response body"
@@ -35,4 +38,5 @@ const (
 	ErrorMapToStruct       = "failed to map to struct"
 	ErrorGetTx             = "failed to get Tx"
 	ErrorGetSpec           = "failed to get specification"
+	ErrorCreateReq         = "failed to create new HTTP request"
 )
