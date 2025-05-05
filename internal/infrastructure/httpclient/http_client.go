@@ -9,9 +9,10 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"time"
+
 	"github.com/dpe27/es-krake/pkg/log"
 	"github.com/dpe27/es-krake/pkg/utils"
-	"time"
 )
 
 const (
@@ -35,7 +36,7 @@ const (
 
 type (
 	HttpClient interface {
-		Do(req *http.Request, setters ...reqOptSetter) (*http.Response, error)
+		Do(req *http.Request, opts *reqOpt) (*http.Response, error)
 	}
 
 	httpClient struct {
@@ -44,15 +45,7 @@ type (
 	}
 )
 
-func NewHttpClient(setters ...clientOptSetter) HttpClient {
-	args := &clientOpt{
-		timeout:             http.DefaultClient.Timeout,
-		maxIdleConnsPerHost: http.DefaultMaxIdleConnsPerHost,
-	}
-	for _, setter := range setters {
-		setter(args)
-	}
-
+func NewHttpClient(args *clientOpt) HttpClient {
 	logger := log.With("service", args.serviceName)
 	if args.client != nil {
 		return &httpClient{
@@ -76,9 +69,9 @@ func NewHttpClient(setters ...clientOptSetter) HttpClient {
 	}
 }
 
-func (h *httpClient) Do(req *http.Request, setters ...reqOptSetter) (*http.Response, error) {
+func (h *httpClient) Do(req *http.Request, opts *reqOpt) (*http.Response, error) {
 	fields := make(map[string]interface{})
-	args := h.preReq(req, setters, fields)
+	args := h.preReq(req, opts, fields)
 
 	var (
 		res     *http.Response
@@ -101,15 +94,10 @@ func (h *httpClient) Do(req *http.Request, setters ...reqOptSetter) (*http.Respo
 
 func (h *httpClient) preReq(
 	req *http.Request,
-	setters []reqOptSetter,
+	opts *reqOpt,
 	fields map[string]interface{},
 ) *reqOpt {
-	args := &reqOpt{}
-	for _, setter := range setters {
-		setter(args)
-	}
-
-	u := h.maskUrl(req.URL.String(), args.markedQueryParamKeys)
+	u := h.maskUrl(req.URL.String(), opts.markedQueryParamKeys)
 	if u == "" {
 		fields[urlLogKey] = utils.ErrorParseUrl
 	}
@@ -117,11 +105,11 @@ func (h *httpClient) preReq(
 	req.Body = h.logBody(
 		req.Body,
 		requestBodyLogKey,
-		args.loggedRequestBody,
+		opts.loggedRequestBody,
 		true,
 		fields,
 	)
-	return args
+	return opts
 }
 
 func (h *httpClient) postReq(
