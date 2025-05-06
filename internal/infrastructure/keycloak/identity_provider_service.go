@@ -15,41 +15,42 @@ import (
 	"github.com/dpe27/es-krake/pkg/utils"
 )
 
-type KcRealmService interface {
-	GetRealm(ctx context.Context, realm, token string) (kcdto.KcRealm, error)
-	PostRealm(ctx context.Context, body map[string]interface{}, token string) error
-	PutRealm(ctx context.Context, body map[string]interface{}, realm, token string) error
+const identityProviderPath = "/identity-provider/instances"
+
+type KcIdentityProviderService interface {
+	GetIdPList(ctx context.Context, realm, token string) ([]kcdto.KcIdentityProvider, error)
+	PostIdP(ctx context.Context, body map[string]interface{}, realm, token string) error
+	PutIdP(ctx context.Context, body map[string]interface{}, realm, alias, token string) error
 }
 
-type realmService struct {
+type identityProvider struct {
 	BaseKcService
 	logger *log.Logger
 }
 
-func NewKcRealmService(base BaseKcService) KcRealmService {
-	return &realmService{
+func NewKcIdentityProvider(base BaseKcService) KcIdentityProviderService {
+	return &identityProvider{
 		BaseKcService: base,
-		logger:        log.With("service", "keycloak_realm_service"),
+		logger:        log.With("service", "keycloak_identity_provider_service"),
 	}
 }
 
-// GetRealm implements RealmService.
-func (r *realmService) GetRealm(
+// GetIdPList implements KcIdentityProviderService.
+func (i *identityProvider) GetIdPList(
 	ctx context.Context,
 	realm string,
 	token string,
-) (kcdto.KcRealm, error) {
-	url := r.BaseKcService.AdminRealmUrl(realm)
+) ([]kcdto.KcIdentityProvider, error) {
+	url := i.AdminRealmUrl(realm) + identityProviderPath
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		r.logger.Error(ctx, utils.ErrorCreateReq, "error", err.Error())
-		return kcdto.KcRealm{}, err
+		i.logger.Error(ctx, utils.ErrorCreateReq, "error", err.Error())
+		return nil, err
 	}
 
-	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
 	query := req.URL.Query()
 	req.URL.RawQuery = query.Encode()
-
+	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
 	opts := httpclient.ReqOptBuidler().
 		Log().
 		LogReqBodyOnlyError().
@@ -58,55 +59,54 @@ func (r *realmService) GetRealm(
 		LoggedResBody([]string{}).
 		Build()
 
-	res, err := r.Client().Do(req, opts)
+	res, err := i.Client().Do(req, opts)
 	if err != nil {
-		return kcdto.KcRealm{}, err
+		return nil, err
 	}
 	defer func() {
 		if err := res.Body.Close(); err != nil {
-			r.logger.Error(ctx, utils.ErrorCloseResponseBody, "error", err.Error())
+			i.logger.Error(ctx, utils.ErrorCloseResponseBody, "error", err.Error())
 		}
 	}()
 
-	if res.StatusCode == http.StatusNotFound {
-		return kcdto.KcRealm{}, domainerr.ErrorNotFound
-	}
-
 	if res.StatusCode == http.StatusOK {
-		body, err := io.ReadAll(res.Body)
+		bodyBytes, err := io.ReadAll(res.Body)
 		if err != nil {
-			return kcdto.KcRealm{}, err
+			return nil, err
 		}
-
-		realm := kcdto.KcRealm{}
-		err = json.Unmarshal(body, &realm)
+		var idpSlice []kcdto.KcIdentityProvider
+		err = json.Unmarshal(bodyBytes, &idpSlice)
 		if err != nil {
-			return kcdto.KcRealm{}, err
+			return nil, err
 		}
-
-		return realm, nil
+		return idpSlice, nil
 	}
 
-	return kcdto.KcRealm{}, fmt.Errorf("call api get realm status: %s", res.Status)
+	if res.StatusCode == http.StatusNotFound {
+		return nil, domainerr.ErrorNotFound
+	}
+
+	return nil, fmt.Errorf("call api get identity provider list status: %s", res.Status)
 }
 
-// PostRealm implements RealmService.
-func (r *realmService) PostRealm(
+// PostIdP implements KcIdentityProviderService.
+func (i *identityProvider) PostIdP(
 	ctx context.Context,
 	body map[string]interface{},
+	realm string,
 	token string,
 ) error {
 	bodyBytes, err := json.Marshal(body)
 	if err != nil {
-		r.logger.Error(ctx, utils.ErrorMarshalFailed, "error", err.Error())
+		i.logger.Error(ctx, utils.ErrorMarshalFailed, "error", err.Error())
 		return err
 	}
 
+	url := i.AdminRealmUrl(realm) + identityProviderPath
 	reqBody := strings.NewReader(string(bodyBytes))
-	url := r.AdminApiBaseUrl()
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, reqBody)
 	if err != nil {
-		r.logger.Error(ctx, utils.ErrorCreateReq, "error", err.Error())
+		i.logger.Error(ctx, utils.ErrorCreateReq, "error", err.Error())
 		return err
 	}
 
@@ -120,13 +120,13 @@ func (r *realmService) PostRealm(
 		LoggedResBody([]string{}).
 		Build()
 
-	res, err := r.Client().Do(req, opts)
+	res, err := i.Client().Do(req, opts)
 	if err != nil {
 		return err
 	}
 	defer func() {
 		if err := res.Body.Close(); err != nil {
-			r.logger.Error(ctx, utils.ErrorCloseResponseBody, "error", err.Error())
+			i.logger.Error(ctx, utils.ErrorCloseResponseBody, "error", err.Error())
 		}
 	}()
 
@@ -134,27 +134,28 @@ func (r *realmService) PostRealm(
 		return nil
 	}
 
-	return fmt.Errorf("call api post realm status: %s", res.Status)
+	return fmt.Errorf("call api create identity provider status: %s", res.Status)
 }
 
-// PutRealm implements RealmService.
-func (r *realmService) PutRealm(
+// PutIdP implements KcIdentityProviderService.
+func (i *identityProvider) PutIdP(
 	ctx context.Context,
 	body map[string]interface{},
 	realm string,
+	alias string,
 	token string,
 ) error {
 	bodyBytes, err := json.Marshal(body)
 	if err != nil {
-		r.logger.Error(ctx, utils.ErrorMarshalFailed, "error", err.Error())
+		i.logger.Error(ctx, utils.ErrorMarshalFailed, "error", err.Error())
 		return err
 	}
 
 	reqBody := strings.NewReader(string(bodyBytes))
-	url := r.AdminRealmUrl(realm)
+	url := i.AdminRealmUrl(realm) + identityProviderPath + "/" + alias
 	req, err := http.NewRequestWithContext(ctx, http.MethodPut, url, reqBody)
 	if err != nil {
-		r.logger.Error(ctx, utils.ErrorCreateReq, "error", err.Error())
+		i.logger.Error(ctx, utils.ErrorCreateReq, "error", err.Error())
 		return err
 	}
 
@@ -168,13 +169,13 @@ func (r *realmService) PutRealm(
 		LoggedResBody([]string{}).
 		Build()
 
-	res, err := r.Client().Do(req, opts)
+	res, err := i.Client().Do(req, opts)
 	if err != nil {
 		return err
 	}
 	defer func() {
 		if err := res.Body.Close(); err != nil {
-			r.logger.Error(ctx, utils.ErrorCloseResponseBody, "error", err.Error())
+			i.logger.Error(ctx, utils.ErrorCloseResponseBody, "error", err.Error())
 		}
 	}()
 
@@ -182,5 +183,5 @@ func (r *realmService) PutRealm(
 		return nil
 	}
 
-	return fmt.Errorf("call api put realm status: %s", res.Status)
+	return fmt.Errorf("call api update identity provider status: %s", res.Status)
 }

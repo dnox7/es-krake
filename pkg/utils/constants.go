@@ -21,9 +21,6 @@ const (
 	DevEnv     = "dev"
 	TestingEnv = "testing"
 
-	HeaderAuthorization = "Authorization"
-	HeaderContentType   = "Content-Type"
-
 	ErrorInternalServer    = "Internal server error"
 	ErrorLogRequestBody    = "failed to log request body"
 	ErrorCloseResponseBody = "failed to close response body"
@@ -39,4 +36,5 @@ const (
 	ErrorGetTx             = "failed to get Tx"
 	ErrorGetSpec           = "failed to get specification"
 	ErrorCreateReq         = "failed to create new HTTP request"
+	ErrorMarshalFailed     = "failed to marshal object to JSON"
 )
