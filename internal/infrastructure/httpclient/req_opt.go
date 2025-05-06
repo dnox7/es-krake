@@ -1,9 +1,9 @@
 package httpclient
 
 type (
-	ReqOpt struct{}
-
-	reqOptSetter func(*reqOpt)
+	reqOptBuilder struct {
+		setters []func(*reqOpt)
+	}
 
 	reqOpt struct {
 		canLog                      bool
@@ -18,47 +18,77 @@ type (
 	}
 )
 
-func (ReqOpt) LoggedRequestBody(body []string) reqOptSetter {
-	return func(ro *reqOpt) {
+func ReqOptBuidler() *reqOptBuilder {
+	return &reqOptBuilder{}
+}
+
+func (b *reqOptBuilder) Log() *reqOptBuilder {
+	b.setters = append(b.setters, func(ro *reqOpt) {
 		ro.canLog = true
+	})
+	return b
+}
+
+func (b *reqOptBuilder) LogReqBody() *reqOptBuilder {
+	b.setters = append(b.setters, func(ro *reqOpt) {
 		ro.canLogRequestBody = true
-		ro.loggedRequestBody = body
-	}
+	})
+	return b
 }
 
-func (ReqOpt) LoggedResponseBody(body []string) reqOptSetter {
-	return func(ro *reqOpt) {
-		ro.canLog = true
+func (b *reqOptBuilder) LogResBody() *reqOptBuilder {
+	b.setters = append(b.setters, func(ro *reqOpt) {
 		ro.canLogResponseBody = true
-		ro.loggedResponseBody = body
-	}
+	})
+	return b
 }
 
-func (ReqOpt) LoggedRequestBodyOnlyError(body []string) reqOptSetter {
-	return func(ro *reqOpt) {
-		ro.canLog = true
+func (b *reqOptBuilder) LogReqBodyOnlyError() *reqOptBuilder {
+	b.setters = append(b.setters, func(ro *reqOpt) {
 		ro.canLogRequestBodyOnlyError = true
-		ro.loggedRequestBody = body
-	}
+	})
+	return b
 }
 
-func (ReqOpt) LoggedResponseBodyOnlyError(body []string) reqOptSetter {
-	return func(ro *reqOpt) {
-		ro.canLog = true
+func (b *reqOptBuilder) LogResBodyOnlyError() *reqOptBuilder {
+	b.setters = append(b.setters, func(ro *reqOpt) {
 		ro.canLogResponseBodyOnlyError = true
+	})
+	return b
+}
+
+func (b *reqOptBuilder) LoggedReqBody(body []string) *reqOptBuilder {
+	b.setters = append(b.setters, func(ro *reqOpt) {
+		ro.loggedRequestBody = body
+	})
+	return b
+}
+
+func (b *reqOptBuilder) LoggedResBody(body []string) *reqOptBuilder {
+	b.setters = append(b.setters, func(ro *reqOpt) {
 		ro.loggedResponseBody = body
-	}
+	})
+	return b
 }
 
-func (ReqOpt) MarkedQueryParamKeys(keys []string) reqOptSetter {
-	return func(ro *reqOpt) {
-		ro.canLog = true
+func (b *reqOptBuilder) MarkedQueryParamKeys(keys []string) *reqOptBuilder {
+	b.setters = append(b.setters, func(ro *reqOpt) {
 		ro.markedQueryParamKeys = keys
-	}
+	})
+	return b
 }
 
-func (ReqOpt) RetryTimes(retries uint) reqOptSetter {
-	return func(ro *reqOpt) {
+func (b *reqOptBuilder) RetryTimes(retries uint) *reqOptBuilder {
+	b.setters = append(b.setters, func(ro *reqOpt) {
 		ro.retryTimes = retries
+	})
+	return b
+}
+
+func (b *reqOptBuilder) Build() *reqOpt {
+	opt := &reqOpt{}
+	for _, setter := range b.setters {
+		setter(opt)
 	}
+	return opt
 }
