@@ -28,7 +28,7 @@ type identityProvider struct {
 	logger *log.Logger
 }
 
-func NewKcIdentityProvider(base BaseKcService) KcIdentityProviderService {
+func NewKcIdentityProviderService(base BaseKcService) KcIdentityProviderService {
 	return &identityProvider{
 		BaseKcService: base,
 		logger:        log.With("service", "keycloak_identity_provider_service"),
