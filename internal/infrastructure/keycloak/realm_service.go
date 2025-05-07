@@ -39,7 +39,7 @@ func (r *realmService) GetRealm(
 	realm string,
 	token string,
 ) (kcdto.KcRealm, error) {
-	url := r.BaseKcService.AdminRealmUrl(realm)
+	url := r.AdminRealmUrl(realm)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		r.logger.Error(ctx, utils.ErrorCreateReq, "error", err.Error())

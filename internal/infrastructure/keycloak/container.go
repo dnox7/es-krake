@@ -9,6 +9,7 @@ type ServiceContainer struct {
 	ClientService           KcClientService
 	IdentityProviderService KcIdentityProviderService
 	RealmService            KcRealmService
+	UserService             KcUserService
 }
 
 func NewServiceContainer(cfg *config.Config) ServiceContainer {
@@ -22,5 +23,6 @@ func NewServiceContainer(cfg *config.Config) ServiceContainer {
 		ClientService:           NewKcClientService(base),
 		IdentityProviderService: NewKcIdentityProviderService(base),
 		RealmService:            NewKcRealmService(base),
+		UserService:             NewKcUserService(base),
 	}
 }

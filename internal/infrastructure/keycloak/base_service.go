@@ -9,6 +9,7 @@ const (
 	openIdConnectPath = "/protocol/openid-connect"
 	tokenPath         = openIdConnectPath + "/token"
 	pubKeyPath        = openIdConnectPath + "/certs"
+	logoutPath        = openIdConnectPath + "/logout"
 
 	adminRealmPath = "/auth/admin/realms"
 	realmPath      = "/auth/realms"
@@ -26,6 +27,7 @@ type BaseKcService interface {
 	AdminRealmUrl(realm string) string
 	PublicKeyUrl(realm string) string
 	TokenUrl(realm string) string
+	LogoutUrl(realm string) string
 }
 
 type baseKcService struct {
@@ -91,4 +93,9 @@ func (b *baseKcService) PublicKeyUrl(realm string) string {
 // TokenUrl implements BaseKcService.
 func (b *baseKcService) TokenUrl(realm string) string {
 	return b.domain + realmPath + "/" + realm + tokenPath
+}
+
+// LogoutUrl implements BaseKcService.
+func (b *baseKcService) LogoutUrl(realm string) string {
+	return b.domain + realmPath + "/" + realm + logoutPath
 }
