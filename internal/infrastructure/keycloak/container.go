@@ -6,6 +6,7 @@ import (
 )
 
 type ServiceContainer struct {
+	AttackDetectionService  KcAttackDetectionService
 	ClientService           KcClientService
 	IdentityProviderService KcIdentityProviderService
 	RealmService            KcRealmService
@@ -20,6 +21,7 @@ func NewServiceContainer(cfg *config.Config) ServiceContainer {
 	base := NewBaseKcSevice(cfg, client)
 
 	return ServiceContainer{
+		AttackDetectionService:  NewKcAttackDetectionService(base),
 		ClientService:           NewKcClientService(base),
 		IdentityProviderService: NewKcIdentityProviderService(base),
 		RealmService:            NewKcRealmService(base),

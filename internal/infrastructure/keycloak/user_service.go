@@ -23,6 +23,7 @@ const (
 	countPath        = "/count"
 	resetPaswordPath = "/reset-password"
 	credentialsPath  = "/credentials"
+	logoutAllPath    = "/logout-all"
 )
 
 type KcUserService interface {
@@ -34,6 +35,7 @@ type KcUserService interface {
 	CountUsers(ctx context.Context, conditions map[string]interface{}, realm, token string) (int, error)
 
 	LogoutOIDC(ctx context.Context, realm, clientID, refreshToken string) error
+	LogoutAll(ctx context.Context, realm, userID, token string) error
 	ResetPassword(ctx context.Context, body map[string]interface{}, realm, userID, token string) error
 	CheckPasswordExist(ctx context.Context, realm, userID, token string) (bool, error)
 }
@@ -437,6 +439,46 @@ func (u *userService) LogoutOIDC(
 	}
 
 	return fmt.Errorf("call api logout OIDC status: %s", res.Status)
+}
+
+// LogoutAll implements KcUserService.
+func (u *userService) LogoutAll(
+	ctx context.Context,
+	realm string,
+	userID string,
+	token string,
+) error {
+	url := u.AdminRealmUrl(realm) + userPath + "/" + userID + logoutPath
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, nil)
+	if err != nil {
+		u.logger.Error(ctx, utils.ErrorCreateReq, "error", err.Error())
+		return err
+	}
+
+	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	opts := httpclient.ReqOptBuidler().
+		Log().
+		LoggedReqBody([]string{}).
+		LoggedResBody([]string{}).
+		LogReqBodyOnlyError().
+		LogResBody().
+		Build()
+
+	res, err := u.Client().Do(req, opts)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := res.Body.Close(); err != nil {
+			u.logger.Error(ctx, utils.ErrorCloseResponseBody, "error", err.Error())
+		}
+	}()
+
+	if res.StatusCode == http.StatusNoContent {
+		return nil
+	}
+
+	return fmt.Errorf("call api logout all status: %s", res.Status)
 }
 
 // ResetPassword implements KcUserService.
