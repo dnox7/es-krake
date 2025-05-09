@@ -391,7 +391,12 @@ func (u *userService) LogoutOIDC(
 		return err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, parsedUrl.String(), strings.NewReader(data.Encode()))
+	req, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodPost,
+		parsedUrl.String(),
+		strings.NewReader(data.Encode()),
+	)
 	if err != nil {
 		u.logger.Error(ctx, utils.ErrorCreateReq, "error", err.Error())
 		return err
