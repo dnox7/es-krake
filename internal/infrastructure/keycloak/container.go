@@ -7,6 +7,7 @@ import (
 
 type ServiceContainer struct {
 	AttackDetectionService  KcAttackDetectionService
+	AuthenticationService   KcAuthenticationService
 	ClientService           KcClientService
 	IdentityProviderService KcIdentityProviderService
 	KeyService              KcKeyService
@@ -24,6 +25,7 @@ func NewServiceContainer(cfg *config.Config) ServiceContainer {
 
 	return ServiceContainer{
 		AttackDetectionService:  NewKcAttackDetectionService(base),
+		AuthenticationService:   NewKcAuthenticationService(base),
 		ClientService:           NewKcClientService(base),
 		IdentityProviderService: NewKcIdentityProviderService(base),
 		KeyService:              NewKcKeyService(base),
