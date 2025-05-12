@@ -18,9 +18,9 @@ import (
 )
 
 type KcTokenService interface {
-	GetTokenWithPassword(ctx context.Context, realm, clientID, username, password string) (kcdto.TokenEndpointResponse, error)
-	GetTokenWithCode(ctx context.Context, realm, clientID, code, redirectURI string) (kcdto.TokenEndpointResponse, error)
-	RefreshToken(ctx context.Context, realm, clientID, refreshToken string) (kcdto.TokenEndpointResponse, error)
+	GetTokenWithPassword(ctx context.Context, realm, clientID, username, password string) (kcdto.TokenEndpointResp, error)
+	GetTokenWithCode(ctx context.Context, realm, clientID, code, redirectURI string) (kcdto.TokenEndpointResp, error)
+	RefreshToken(ctx context.Context, realm, clientID, refreshToken string) (kcdto.TokenEndpointResp, error)
 }
 
 type tokenService struct {
@@ -42,7 +42,7 @@ func (t *tokenService) GetTokenWithPassword(
 	clientID string,
 	username string,
 	password string,
-) (kcdto.TokenEndpointResponse, error) {
+) (kcdto.TokenEndpointResp, error) {
 	params := map[string]string{
 		"client_id":  clientID,
 		"grant_type": "password",
@@ -59,7 +59,7 @@ func (t *tokenService) GetTokenWithCode(
 	clientID string,
 	code string,
 	redirectURI string,
-) (kcdto.TokenEndpointResponse, error) {
+) (kcdto.TokenEndpointResp, error) {
 	params := map[string]string{
 		"client_id":    clientID,
 		"grant_type":   "authorization_code",
@@ -75,7 +75,7 @@ func (t *tokenService) RefreshToken(
 	realm string,
 	clientID string,
 	refreshToken string,
-) (kcdto.TokenEndpointResponse, error) {
+) (kcdto.TokenEndpointResp, error) {
 	params := map[string]string{
 		"client_id":     clientID,
 		"grant_type":    "refresh_token",
@@ -88,11 +88,11 @@ func (t *tokenService) requestToken(
 	ctx context.Context,
 	realm string,
 	params map[string]string,
-) (kcdto.TokenEndpointResponse, error) {
+) (kcdto.TokenEndpointResp, error) {
 	endpoint := t.TokenUrl(realm)
 	parsedUrl, err := url.ParseRequestURI(endpoint)
 	if err != nil {
-		return kcdto.TokenEndpointResponse{}, err
+		return kcdto.TokenEndpointResp{}, err
 	}
 
 	data := url.Values{}
@@ -108,7 +108,7 @@ func (t *tokenService) requestToken(
 	)
 	if err != nil {
 		t.logger.Error(ctx, utils.ErrorCreateReq, "error", err.Error())
-		return kcdto.TokenEndpointResponse{}, err
+		return kcdto.TokenEndpointResp{}, err
 	}
 
 	req.Header.Add(httpclient.HeaderContentType, httpclient.MIMEApplicationForm)
@@ -123,7 +123,7 @@ func (t *tokenService) requestToken(
 
 	res, err := t.Client().Do(req, opts)
 	if err != nil {
-		return kcdto.TokenEndpointResponse{}, err
+		return kcdto.TokenEndpointResp{}, err
 	}
 	defer func() {
 		if err := res.Body.Close(); err != nil {
@@ -133,14 +133,14 @@ func (t *tokenService) requestToken(
 
 	bodyBytes, err := io.ReadAll(res.Body)
 	if err != nil {
-		return kcdto.TokenEndpointResponse{}, err
+		return kcdto.TokenEndpointResp{}, err
 	}
 
 	if res.StatusCode == http.StatusOK {
-		token := kcdto.TokenEndpointResponse{}
+		token := kcdto.TokenEndpointResp{}
 		err = json.Unmarshal(bodyBytes, &token)
 		if err != nil {
-			return kcdto.TokenEndpointResponse{}, err
+			return kcdto.TokenEndpointResp{}, err
 		}
 		return token, nil
 	}
@@ -148,12 +148,12 @@ func (t *tokenService) requestToken(
 	var body map[string]interface{}
 	err = json.Unmarshal(bodyBytes, &body)
 	if err != nil {
-		return kcdto.TokenEndpointResponse{}, err
+		return kcdto.TokenEndpointResp{}, err
 	}
 
 	errMsg, ok := body["error"].(string)
 	if !ok {
-		return kcdto.TokenEndpointResponse{}, fmt.Errorf(
+		return kcdto.TokenEndpointResp{}, fmt.Errorf(
 			"call apt get token (grant_type: %s) status: %s",
 			params["grant_type"],
 			res.Status,
@@ -165,5 +165,5 @@ func (t *tokenService) requestToken(
 		errMsg += ". " + errDesc
 	}
 
-	return kcdto.TokenEndpointResponse{}, errors.New(errMsg)
+	return kcdto.TokenEndpointResp{}, errors.New(errMsg)
 }

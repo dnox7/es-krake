@@ -21,6 +21,7 @@ type KcIdentityProviderService interface {
 	GetIdPList(ctx context.Context, realm, token string) ([]kcdto.KcIdentityProvider, error)
 	PostIdP(ctx context.Context, body map[string]interface{}, realm, token string) error
 	PutIdP(ctx context.Context, body map[string]interface{}, realm, alias, token string) error
+	DeleteIdP(ctx context.Context, realm, alias, token string) error
 }
 
 type identityProvider struct {
@@ -184,4 +185,44 @@ func (i *identityProvider) PutIdP(
 	}
 
 	return fmt.Errorf("call api update identity provider status: %s", res.Status)
+}
+
+// DeleteIdP implements KcIdentityProviderService.
+func (i *identityProvider) DeleteIdP(
+	ctx context.Context,
+	realm string,
+	alias string,
+	token string,
+) error {
+	url := i.AdminRealmUrl(realm) + identityProviderPath + "/" + alias
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
+	if err != nil {
+		i.logger.Error(ctx, utils.ErrorCreateReq, "error", err.Error())
+		return err
+	}
+
+	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	opts := httpclient.ReqOptBuidler().
+		Log().
+		LogReqBodyOnlyError().
+		LoggedReqBody([]string{}).
+		LogResBody().
+		LoggedResBody([]string{}).
+		Build()
+
+	res, err := i.Client().Do(req, opts)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := res.Body.Close(); err != nil {
+			i.logger.Error(ctx, utils.ErrorCloseResponseBody, "error", err.Error())
+		}
+	}()
+
+	if res.StatusCode == http.StatusOK {
+		return nil
+	}
+
+	return fmt.Errorf("call api delete identity provider status: %s", res.Status)
 }
