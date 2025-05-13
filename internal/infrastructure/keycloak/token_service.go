@@ -18,7 +18,8 @@ import (
 )
 
 type KcTokenService interface {
-	GetTokenWithPassword(ctx context.Context, realm, clientID, username, password string) (kcdto.TokenEndpointResp, error)
+	GetAdminToken(ctx context.Context, realm string) (kcdto.TokenEndpointResp, error)
+	GetTokenWithClientCredentials(ctx context.Context, realm, clientID, clientSecret string) (kcdto.TokenEndpointResp, error)
 	GetTokenWithCode(ctx context.Context, realm, clientID, code, redirectURI string) (kcdto.TokenEndpointResp, error)
 	RefreshToken(ctx context.Context, realm, clientID, refreshToken string) (kcdto.TokenEndpointResp, error)
 }
@@ -35,19 +36,22 @@ func NewKcTokenService(base BaseKcService) KcTokenService {
 	}
 }
 
-// GetTokenWithPassword implements KcTokenService.
-func (t *tokenService) GetTokenWithPassword(
+// GetAdminToken implements KcTokenService.
+func (t *tokenService) GetAdminToken(ctx context.Context, realm string) (kcdto.TokenEndpointResp, error) {
+	return t.GetTokenWithClientCredentials(ctx, realm, t.ClientID(), t.ClientSecret())
+}
+
+// GetTokenWithClientCredentials implements KcTokenService.
+func (t *tokenService) GetTokenWithClientCredentials(
 	ctx context.Context,
 	realm string,
 	clientID string,
-	username string,
-	password string,
+	clientSecret string,
 ) (kcdto.TokenEndpointResp, error) {
 	params := map[string]string{
-		"client_id":  clientID,
-		"grant_type": "password",
-		"username":   username,
-		"password":   password,
+		"client_id":     clientID,
+		"client_secret": clientSecret,
+		"grant_type":    "client_credentials",
 	}
 	return t.requestToken(ctx, realm, params)
 }
