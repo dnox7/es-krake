@@ -6,7 +6,7 @@ type KcKeysMetadata struct {
 }
 
 type KcKeyMetadata struct {
-	ProviderID       string `json:"providerI"`
+	ProviderID       string `json:"providerID"`
 	ProviderPriority int64  `json:"providerPriority"`
 	Kid              string `json:"kid"`
 	Status           string `json:"status"`

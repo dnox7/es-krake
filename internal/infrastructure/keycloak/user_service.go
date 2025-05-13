@@ -19,11 +19,12 @@ import (
 )
 
 const (
-	userPath         = "/users"
-	countPath        = "/count"
-	resetPaswordPath = "/reset-password"
-	credentialsPath  = "/credentials"
-	logoutAllPath    = "/logout-all"
+	userPath              = "/users"
+	countPath             = "/count"
+	resetPaswordPath      = "/reset-password"
+	credentialsPath       = "/credentials"
+	logoutAllPath         = "/logout-all"
+	federatedIdentityPath = "/federated-identity"
 )
 
 type KcUserService interface {
@@ -38,6 +39,13 @@ type KcUserService interface {
 	LogoutAll(ctx context.Context, realm, userID, token string) error
 	ResetPassword(ctx context.Context, body map[string]interface{}, realm, userID, token string) error
 	CheckPasswordExist(ctx context.Context, realm, userID, token string) (bool, error)
+
+	// Get social logins associated with the user
+	GetFederatedIdPs(ctx context.Context, realm, userID, token string) ([]kcdto.KcFederatedIdentity, error)
+	// Add a social login provider to the user
+	AddFederatedIdP(ctx context.Context, body map[string]interface{}, realm, userID, provider, token string) error
+	// Remove a social login provider from user
+	RemoveFederatedIdP(ctx context.Context, realm, userID, provider, token string) error
 }
 
 type userService struct {
@@ -589,4 +597,149 @@ func (u *userService) CheckPasswordExist(
 	}
 
 	return false, fmt.Errorf("call api check exist password: %s", res.Status)
+}
+
+// GetFederatedIdPs implements KcUserService.
+func (u *userService) GetFederatedIdPs(
+	ctx context.Context,
+	realm string,
+	userID string,
+	token string,
+) ([]kcdto.KcFederatedIdentity, error) {
+	url := u.AdminRealmUrl(realm) + userPath + "/" + userID + federatedIdentityPath
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		u.logger.Error(ctx, utils.ErrorCreateReq, "error", err.Error())
+		return nil, err
+	}
+
+	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	opts := httpclient.ReqOptBuidler().
+		Log().
+		LogReqBodyOnlyError().
+		LoggedReqBody([]string{}).
+		LogResBody().
+		LoggedResBody([]string{}).
+		Build()
+
+	res, err := u.Client().Do(req, opts)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err := res.Body.Close(); err != nil {
+			u.logger.Error(ctx, utils.ErrorCloseResponseBody, "error", err.Error())
+		}
+	}()
+
+	if res.StatusCode == http.StatusNotFound {
+		return nil, domainerr.ErrorNotFound
+	}
+
+	bodyBytes, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if res.StatusCode != http.StatusOK {
+		var errMsg interface{}
+		err = json.Unmarshal(bodyBytes, &errMsg)
+		if err != nil {
+			return nil, err
+		}
+		return nil, fmt.Errorf("call api Get social logins associated with userID: %s, status: %s, err: %v", userID, res.Status, err)
+	}
+
+	federatedIdPs := []kcdto.KcFederatedIdentity{}
+	err = json.Unmarshal(bodyBytes, &federatedIdPs)
+	return federatedIdPs, err
+}
+
+// AddFederatedIdP implements KcUserService.
+func (u *userService) AddFederatedIdP(
+	ctx context.Context,
+	body map[string]interface{},
+	realm string,
+	userID string,
+	provider string,
+	token string,
+) error {
+	bodyBytes, err := json.Marshal(body)
+	if err != nil {
+		u.logger.Error(ctx, utils.ErrorMarshalFailed, "error", err.Error())
+		return err
+	}
+
+	url := u.AdminRealmUrl(realm) + userPath + "/" + userID + federatedIdentityPath + "/" + provider
+	req, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodPost,
+		url,
+		strings.NewReader(string(bodyBytes)),
+	)
+	if err != nil {
+		u.logger.Error(ctx, utils.ErrorCreateReq, "error", err.Error())
+		return err
+	}
+
+	req.Header.Add(httpclient.HeaderContentType, httpclient.MIMEApplicationJSON)
+	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	opts := httpclient.ReqOptBuidler().
+		Log().
+		LogReqBodyOnlyError().
+		LoggedReqBody([]string{}).
+		LogResBody().
+		LoggedResBody([]string{}).
+		Build()
+
+	res, err := u.Client().Do(req, opts)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := res.Body.Close(); err != nil {
+			u.logger.Error(ctx, utils.ErrorCloseResponseBody, "error", err.Error())
+		}
+	}()
+
+	if res.StatusCode == http.StatusNoContent {
+		return nil
+	}
+
+	return fmt.Errorf("call api Add a social login provider to the user with userID: %s, provider: %s, status: %s", userID, provider, res.Status)
+}
+
+// RemoveFederatedIdP implements KcUserService.
+func (u *userService) RemoveFederatedIdP(ctx context.Context, realm string, userID string, provider string, token string) error {
+	url := u.AdminRealmUrl(realm) + userPath + "/" + userID + federatedIdentityPath + "/" + provider
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
+	if err != nil {
+		u.logger.Error(ctx, utils.ErrorCreateReq, "error", err.Error())
+		return err
+	}
+
+	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	opts := httpclient.ReqOptBuidler().
+		Log().
+		LogReqBodyOnlyError().
+		LoggedReqBody([]string{}).
+		LogResBody().
+		LoggedResBody([]string{}).
+		Build()
+
+	res, err := u.Client().Do(req, opts)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := res.Body.Close(); err != nil {
+			u.logger.Error(ctx, utils.ErrorCloseResponseBody, "error", err.Error())
+		}
+	}()
+
+	if res.StatusCode == http.StatusNoContent {
+		return nil
+	}
+
+	return fmt.Errorf("call api Remove a social login provider to the user with userID: %s, provider: %s, status: %s", userID, provider, res.Status)
 }
