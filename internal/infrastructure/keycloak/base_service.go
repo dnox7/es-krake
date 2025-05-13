@@ -1,17 +1,18 @@
 package keycloak
 
 import (
-	"fmt"
-
 	"github.com/dpe27/es-krake/config"
 	"github.com/dpe27/es-krake/internal/infrastructure/httpclient"
 )
 
 const (
 	openIdConnectPath = "/protocol/openid-connect"
-	adminRealmUrlFmt  = "%s/auth/admin/realms/%s"
-	tokenUrlFmt       = "%s/auth/realms/%s" + openIdConnectPath + "/token"
-	publicKeyUrlFmt   = "%s/auth/realms/%s" + openIdConnectPath + "/certs"
+	tokenPath         = openIdConnectPath + "/token"
+	pubKeyPath        = openIdConnectPath + "/certs"
+	logoutPath        = openIdConnectPath + "/logout"
+
+	adminRealmPath = "/auth/admin/realms"
+	realmPath      = "/auth/realms"
 )
 
 type BaseKcService interface {
@@ -22,9 +23,11 @@ type BaseKcService interface {
 	AccessTokenLifespan() uint
 	RefreshTokenLifespan() uint
 
+	AdminApiBaseUrl() string
 	AdminRealmUrl(realm string) string
 	PublicKeyUrl(realm string) string
 	TokenUrl(realm string) string
+	LogoutUrl(realm string) string
 }
 
 type baseKcService struct {
@@ -72,17 +75,27 @@ func (b *baseKcService) RefreshTokenLifespan() uint {
 	return b.refreshTokenLifespan
 }
 
+// AdminRealmUrl implements BaseKcService.
+func (b *baseKcService) AdminApiBaseUrl() string {
+	return b.domain + adminRealmPath
+}
+
 // RealmUrl implements BaseKcService.
 func (b *baseKcService) AdminRealmUrl(realm string) string {
-	return fmt.Sprintf(adminRealmUrlFmt, b.domain, realm)
+	return b.domain + adminRealmPath + "/" + realm
 }
 
 // PublicKeyUrl implements BaseKcService.
 func (b *baseKcService) PublicKeyUrl(realm string) string {
-	return fmt.Sprintf(publicKeyUrlFmt, b.domain, realm)
+	return b.domain + realmPath + "/" + realm + pubKeyPath
 }
 
 // TokenUrl implements BaseKcService.
 func (b *baseKcService) TokenUrl(realm string) string {
-	return fmt.Sprintf(tokenUrlFmt, b.domain, realm)
+	return b.domain + realmPath + "/" + realm + tokenPath
+}
+
+// LogoutUrl implements BaseKcService.
+func (b *baseKcService) LogoutUrl(realm string) string {
+	return b.domain + realmPath + "/" + realm + logoutPath
 }

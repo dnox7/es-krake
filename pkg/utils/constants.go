@@ -35,4 +35,6 @@ const (
 	ErrorMapToStruct       = "failed to map to struct"
 	ErrorGetTx             = "failed to get Tx"
 	ErrorGetSpec           = "failed to get specification"
+	ErrorCreateReq         = "failed to create new HTTP request"
+	ErrorMarshalFailed     = "failed to marshal object to JSON"
 )
