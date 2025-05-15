@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+
 	"github.com/dpe27/es-krake/internal/domain/product/entity"
 	domainRepo "github.com/dpe27/es-krake/internal/domain/product/repository"
 	"github.com/dpe27/es-krake/internal/domain/shared/specification"
@@ -93,7 +94,6 @@ func (c *categoryRepository) TakeByConditions(
 	conditions map[string]interface{},
 	spec specification.Base,
 ) (entity.Category, error) {
-
 	gormScopes, err := gormScope.ToGormScopes(spec)
 	if err != nil {
 		c.logger.Error(ctx, err.Error())
