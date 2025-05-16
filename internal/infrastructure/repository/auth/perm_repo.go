@@ -24,10 +24,10 @@ func NewPermissionRepository(pg *rdb.PostgreSQL) domainRepo.PermissionRepository
 	}
 }
 
-// TakeByCondition implements repository.PermissionRepository.
-func (p *permRepo) TakeByCondition(
+// TakeByConditions implements repository.PermissionRepository.
+func (p *permRepo) TakeByConditions(
 	ctx context.Context,
-	condition map[string]interface{},
+	conditions map[string]interface{},
 	spec specification.Base,
 ) (entity.Permission, error) {
 	scopes, err := gormScope.ToGormScopes(spec)
@@ -40,15 +40,15 @@ func (p *permRepo) TakeByCondition(
 	err = p.pg.DB.
 		WithContext(ctx).
 		Scopes(scopes...).
-		Where(condition).
+		Where(conditions).
 		Take(&perm).Error
 	return perm, err
 }
 
-// FindByCondition implements repository.PermissionRepository.
-func (p *permRepo) FindByCondition(
+// FindByConditions implements repository.PermissionRepository.
+func (p *permRepo) FindByConditions(
 	ctx context.Context,
-	condition map[string]interface{},
+	conditions map[string]interface{},
 	spec specification.Base,
 ) ([]entity.Permission, error) {
 	scopes, err := gormScope.ToGormScopes(spec)
@@ -61,7 +61,7 @@ func (p *permRepo) FindByCondition(
 	err = p.pg.DB.
 		WithContext(ctx).
 		Scopes(scopes...).
-		Where(condition).
+		Where(conditions).
 		Find(&perms).Error
 	return perms, err
 }

@@ -34,6 +34,6 @@ const (
 )
 
 type ActionRepository interface {
-	TakeByCondition(ctx context.Context, condition map[string]interface{}, spec specification.Base) (entity.Action, error)
-	FindByCondition(ctx context.Context, condition map[string]interface{}, spec specification.Base) ([]entity.Action, error)
+	TakeByConditions(ctx context.Context, conditions map[string]interface{}, spec specification.Base) (entity.Action, error)
+	FindByConditions(ctx context.Context, conditions map[string]interface{}, spec specification.Base) ([]entity.Action, error)
 }

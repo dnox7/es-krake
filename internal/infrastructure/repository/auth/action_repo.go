@@ -23,10 +23,10 @@ func NewActionRepository(pg *rdb.PostgreSQL) domainRepo.ActionRepository {
 	}
 }
 
-// TakeByCondition implements repository.ActionRepository.
-func (a *actionRepo) TakeByCondition(
+// TakeByConditions implements repository.ActionRepository.
+func (a *actionRepo) TakeByConditions(
 	ctx context.Context,
-	condition map[string]interface{},
+	conditions map[string]interface{},
 	spec specification.Base,
 ) (entity.Action, error) {
 	scopes, err := gormScope.ToGormScopes(spec)
@@ -39,15 +39,15 @@ func (a *actionRepo) TakeByCondition(
 	err = a.pg.DB.
 		WithContext(ctx).
 		Scopes(scopes...).
-		Where(condition).
+		Where(conditions).
 		Take(&action).Error
 	return action, err
 }
 
-// FindByCondition implements repository.ActionRepository.
-func (a *actionRepo) FindByCondition(
+// FindByConditions implements repository.ActionRepository.
+func (a *actionRepo) FindByConditions(
 	ctx context.Context,
-	condition map[string]interface{},
+	conditions map[string]interface{},
 	spec specification.Base,
 ) ([]entity.Action, error) {
 	scopes, err := gormScope.ToGormScopes(spec)
@@ -60,7 +60,7 @@ func (a *actionRepo) FindByCondition(
 	err = a.pg.DB.
 		WithContext(ctx).
 		Scopes(scopes...).
-		Where(condition).
+		Where(conditions).
 		Find(&actions).Error
 	return actions, err
 }

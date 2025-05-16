@@ -27,10 +27,10 @@ func NewResourceRepository(pg *rdb.PostgreSQL) domainRepo.ResourceRepository {
 	}
 }
 
-// TakeByCondition implements repository.ResourceRepository.
-func (r *resourceRepo) TakeByCondition(
+// TakeByConditions implements repository.ResourceRepository.
+func (r *resourceRepo) TakeByConditions(
 	ctx context.Context,
-	condition map[string]interface{},
+	conditions map[string]interface{},
 	spec specification.Base,
 ) (entity.Resource, error) {
 	scopes, err := gormScope.ToGormScopes(spec)
@@ -43,15 +43,15 @@ func (r *resourceRepo) TakeByCondition(
 	err = r.pg.DB.
 		WithContext(ctx).
 		Scopes(scopes...).
-		Where(condition).
+		Where(conditions).
 		Take(&resoure).Error
 	return resoure, err
 }
 
-// FindByCondition implements repository.ResourceRepository.
-func (r *resourceRepo) FindByCondition(
+// FindByConditions implements repository.ResourceRepository.
+func (r *resourceRepo) FindByConditions(
 	ctx context.Context,
-	condition map[string]interface{},
+	conditions map[string]interface{},
 	spec specification.Base,
 ) ([]entity.Resource, error) {
 	scopes, err := gormScope.ToGormScopes(spec)
@@ -64,7 +64,7 @@ func (r *resourceRepo) FindByCondition(
 	err = r.pg.DB.
 		WithContext(ctx).
 		Scopes(scopes...).
-		Where(condition).
+		Where(conditions).
 		Find(&resoures).Error
 	return resoures, err
 }

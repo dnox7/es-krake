@@ -6,15 +6,19 @@ import (
 )
 
 type RepositoryContainer struct {
-	ActionRepository     domainRepo.ActionRepository
-	PermissionRepository domainRepo.PermissionRepository
-	ResourceRepository   domainRepo.ResourceRepository
+	AccessRequirementRepo domainRepo.AccessRequirementRepository
+	ActionRepo            domainRepo.ActionRepository
+	FunctionCodeRepo      domainRepo.FunctionCodeRepository
+	PermissionRepo        domainRepo.PermissionRepository
+	ResourceRepo          domainRepo.ResourceRepository
 }
 
 func NewRepositoryContainer(pg *rdb.PostgreSQL) RepositoryContainer {
 	return RepositoryContainer{
-		ActionRepository:     NewActionRepository(pg),
-		PermissionRepository: NewPermissionRepository(pg),
-		ResourceRepository:   NewResourceRepository(pg),
+		AccessRequirementRepo: NewAccessRequirementRepository(pg),
+		ActionRepo:            NewActionRepository(pg),
+		FunctionCodeRepo:      NewFunctionCodeRepository(pg),
+		PermissionRepo:        NewPermissionRepository(pg),
+		ResourceRepo:          NewResourceRepository(pg),
 	}
 }
