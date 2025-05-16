@@ -2,7 +2,7 @@ package entity
 
 import "github.com/dpe27/es-krake/internal/domain/shared/model"
 
-type FunctionCode struct {
+type AccessOperation struct {
 	ID         int       `gorm:"column:id;primaryKey;type:bigint;autoIncrement;not null" json:"id"`
 	ActionID   int       `gorm:"column:action_id;type:smallint;not null" json:"action_id"`
 	ResourceID int       `gorm:"column:resource_id;type:smallint;not null" json:"resource_id"`
@@ -11,7 +11,7 @@ type FunctionCode struct {
 	model.BaseModel
 }
 
-func (f FunctionCode) Code() string {
+func (f AccessOperation) Code() string {
 	if f.Action == nil || f.Resource == nil {
 		return ""
 	}

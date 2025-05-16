@@ -5,7 +5,8 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
-	"github.com/dpe27/es-krake/pkg/middleware"
+
+	"github.com/dpe27/es-krake/internal/interfaces/middleware"
 
 	"github.com/gin-gonic/gin"
 )

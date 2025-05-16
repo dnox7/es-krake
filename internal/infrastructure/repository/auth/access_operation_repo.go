@@ -11,31 +11,31 @@ import (
 	"github.com/dpe27/es-krake/pkg/log"
 )
 
-type funcCodeRepo struct {
+type accessOpetationRepo struct {
 	logger *log.Logger
 	pg     *rdb.PostgreSQL
 }
 
-func NewFunctionCodeRepository(pg *rdb.PostgreSQL) domainRepo.FunctionCodeRepository {
-	return &funcCodeRepo{
-		logger: log.With("repository", "function_code_repo"),
+func NewAccessOperationRepository(pg *rdb.PostgreSQL) domainRepo.AccessOperationRepository {
+	return &accessOpetationRepo{
+		logger: log.With("repository", "access_operation_repo"),
 		pg:     pg,
 	}
 }
 
-// FindByConditions implements repository.FunctionCodeRepository.
-func (f *funcCodeRepo) FindByConditions(
+// FindByConditions implements repository.AccessOperationRepository.
+func (f *accessOpetationRepo) FindByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
 	spec specification.Base,
-) ([]entity.FunctionCode, error) {
+) ([]entity.AccessOperation, error) {
 	scopes, err := gormScope.ToGormScopes(spec)
 	if err != nil {
 		f.logger.Error(ctx, err.Error())
 		return nil, err
 	}
 
-	funcCodes := []entity.FunctionCode{}
+	funcCodes := []entity.AccessOperation{}
 	err = f.pg.DB.
 		WithContext(ctx).
 		Scopes(scopes...).

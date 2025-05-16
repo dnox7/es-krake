@@ -11,7 +11,10 @@ const PermissionTableName = "permissions"
 
 type PermissionRepository interface {
 	TakeByConditions(ctx context.Context, conditions map[string]interface{}, spec specification.Base) (entity.Permission, error)
+
 	FindByConditions(ctx context.Context, conditions map[string]interface{}, spec specification.Base) ([]entity.Permission, error)
+
 	Create(ctx context.Context, attributes map[string]interface{}) (entity.Permission, error)
+
 	Update(ctx context.Context, perm entity.Permission, attributesToUpdate map[string]interface{}) (entity.Permission, error)
 }
