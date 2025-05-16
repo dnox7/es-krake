@@ -15,20 +15,20 @@ import (
 	"gorm.io/gorm"
 )
 
-type categoryRepository struct {
+type categoryRepo struct {
 	logger *log.Logger
 	pg     *rdb.PostgreSQL
 }
 
 func NewCategoryRepository(pg *rdb.PostgreSQL) domainRepo.CategoryRepository {
-	return &categoryRepository{
-		logger: log.With("repo", "category_repo"),
+	return &categoryRepo{
+		logger: log.With("repository", "category_repo"),
 		pg:     pg,
 	}
 }
 
 // Create implements repository.CategoryRepository.
-func (c *categoryRepository) Create(
+func (c *categoryRepo) Create(
 	ctx context.Context,
 	attributes map[string]interface{},
 ) (entity.Category, error) {
@@ -44,7 +44,7 @@ func (c *categoryRepository) Create(
 }
 
 // CreateWithTx implements repository.CategoryRepository.
-func (c *categoryRepository) CreateWithTx(
+func (c *categoryRepo) CreateWithTx(
 	ctx context.Context,
 	tx transaction.Base,
 	attributes map[string]interface{},
@@ -66,7 +66,7 @@ func (c *categoryRepository) CreateWithTx(
 }
 
 // FindByConditions implements repository.CategoryRepository.
-func (c *categoryRepository) FindByConditions(
+func (c *categoryRepo) FindByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
 	spec specification.Base,
@@ -88,7 +88,7 @@ func (c *categoryRepository) FindByConditions(
 }
 
 // TakeByConditions implements repository.CategoryRepository.
-func (c *categoryRepository) TakeByConditions(
+func (c *categoryRepo) TakeByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
 	spec specification.Base,
@@ -110,7 +110,7 @@ func (c *categoryRepository) TakeByConditions(
 }
 
 // Update implements repository.CategoryRepository.
-func (c *categoryRepository) Update(
+func (c *categoryRepo) Update(
 	ctx context.Context,
 	category entity.Category,
 	attributesToUpdate map[string]interface{},
@@ -129,7 +129,7 @@ func (c *categoryRepository) Update(
 }
 
 // UpdateWithTx implements repository.CategoryRepository.
-func (c *categoryRepository) UpdateWithTx(
+func (c *categoryRepo) UpdateWithTx(
 	ctx context.Context,
 	tx transaction.Base,
 	category entity.Category,

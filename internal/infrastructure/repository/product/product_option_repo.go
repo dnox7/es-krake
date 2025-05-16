@@ -15,20 +15,20 @@ import (
 	"gorm.io/gorm"
 )
 
-type productOptionRepository struct {
+type productOptionRepo struct {
 	logger *log.Logger
 	pg     *rdb.PostgreSQL
 }
 
 func NewProductOptionRepository(pg *rdb.PostgreSQL) domainRepo.ProductOptionRepository {
-	return &productOptionRepository{
-		logger: log.With("repo", "product_option_repo"),
+	return &productOptionRepo{
+		logger: log.With("repository", "product_option_repo"),
 		pg:     pg,
 	}
 }
 
 // CreateBatchWithTx implements repository.ProductOptionRepository.
-func (p *productOptionRepository) CreateBatchWithTx(
+func (p *productOptionRepo) CreateBatchWithTx(
 	ctx context.Context,
 	tx transaction.Base,
 	attributes []map[string]interface{},
@@ -57,7 +57,7 @@ func (p *productOptionRepository) CreateBatchWithTx(
 }
 
 // DeleteByConditionWithTx implements repository.ProductOptionRepository.
-func (p *productOptionRepository) DeleteByConditionWithTx(
+func (p *productOptionRepo) DeleteByConditionWithTx(
 	ctx context.Context,
 	tx transaction.Base,
 	conditions map[string]interface{},
@@ -80,7 +80,7 @@ func (p *productOptionRepository) DeleteByConditionWithTx(
 }
 
 // FindByConditions implements repository.ProductOptionRepository.
-func (p *productOptionRepository) FindByConditions(
+func (p *productOptionRepo) FindByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
 	spec specification.Base,
@@ -101,7 +101,7 @@ func (p *productOptionRepository) FindByConditions(
 }
 
 // TakeByConditions implements repository.ProductOptionRepository.
-func (p *productOptionRepository) TakeByConditions(
+func (p *productOptionRepo) TakeByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
 	spec specification.Base,
@@ -122,7 +122,7 @@ func (p *productOptionRepository) TakeByConditions(
 }
 
 // Update implements repository.ProductOptionRepository.
-func (p *productOptionRepository) Update(
+func (p *productOptionRepo) Update(
 	ctx context.Context,
 	option entity.ProductOption,
 	attributesToUpdate map[string]interface{},
