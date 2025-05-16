@@ -15,20 +15,20 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
-type productMetaRepository struct {
+type productMetaRepo struct {
 	logger *log.Logger
 	db     *mdb.Mongo
 }
 
 func NewProductMetaRepository(db *mdb.Mongo) domainRepo.ProductMetaRespository {
-	return &productMetaRepository{
-		logger: log.With("repo", "product_meta_repo"),
+	return &productMetaRepo{
+		logger: log.With("repository", "product_meta_repo"),
 		db:     db,
 	}
 }
 
 // Create implements repository.ProductMetaRespository.
-func (p *productMetaRepository) Create(
+func (p *productMetaRepo) Create(
 	ctx context.Context,
 	attributes map[string]interface{},
 ) (entity.ProductMeta, error) {
@@ -54,7 +54,7 @@ func (p *productMetaRepository) Create(
 }
 
 // FindByConditions implements repository.ProductMetaRespository.
-func (p *productMetaRepository) FindByConditions(
+func (p *productMetaRepo) FindByConditions(
 	ctx context.Context,
 	filter interface{},
 	spec specification.Base,
@@ -84,7 +84,7 @@ func (p *productMetaRepository) FindByConditions(
 }
 
 // TakeByConditions implements repository.ProductMetaRespository.
-func (p *productMetaRepository) TakeByConditions(
+func (p *productMetaRepo) TakeByConditions(
 	ctx context.Context,
 	filter interface{},
 	spec specification.Base,
@@ -105,7 +105,7 @@ func (p *productMetaRepository) TakeByConditions(
 }
 
 // Update implements repository.ProductMetaRespository.
-func (p *productMetaRepository) UpdateByID(
+func (p *productMetaRepo) UpdateByID(
 	ctx context.Context,
 	ID interface{},
 	operation interface{},

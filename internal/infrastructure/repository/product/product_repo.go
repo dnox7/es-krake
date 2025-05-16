@@ -15,20 +15,20 @@ import (
 	"gorm.io/gorm"
 )
 
-type productRepository struct {
+type productRepo struct {
 	logger *log.Logger
 	pg     *rdb.PostgreSQL
 }
 
 func NewProductRepository(pg *rdb.PostgreSQL) domainRepo.ProductRepository {
-	return &productRepository{
-		logger: log.With("repo", "product_repo"),
+	return &productRepo{
+		logger: log.With("repository", "product_repo"),
 		pg:     pg,
 	}
 }
 
 // Create implements repository.ProductRepository.
-func (p *productRepository) Create(
+func (p *productRepo) Create(
 	ctx context.Context,
 	attributes map[string]interface{},
 ) (entity.Product, error) {
@@ -44,7 +44,7 @@ func (p *productRepository) Create(
 }
 
 // CreateWithTx implements repository.ProductRepository.
-func (p *productRepository) CreateWithTx(
+func (p *productRepo) CreateWithTx(
 	ctx context.Context,
 	tx transaction.Base,
 	attributes map[string]interface{},
@@ -66,7 +66,7 @@ func (p *productRepository) CreateWithTx(
 }
 
 // FindByConditions implements repository.ProductRepository.
-func (p *productRepository) FindByConditions(
+func (p *productRepo) FindByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
 	spec specification.Base,
@@ -86,7 +86,7 @@ func (p *productRepository) FindByConditions(
 }
 
 // TakeByConditions implements repository.ProductRepository.
-func (p *productRepository) TakeByConditions(
+func (p *productRepo) TakeByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
 	spec specification.Base,
@@ -107,7 +107,7 @@ func (p *productRepository) TakeByConditions(
 }
 
 // Update implements repository.ProductRepository.
-func (p *productRepository) Update(
+func (p *productRepo) Update(
 	ctx context.Context,
 	product entity.Product,
 	attributesToUpdate map[string]interface{},
@@ -126,7 +126,7 @@ func (p *productRepository) Update(
 }
 
 // UpdateWithTx implements repository.ProductRepository.
-func (p *productRepository) UpdateWithTx(
+func (p *productRepo) UpdateWithTx(
 	ctx context.Context,
 	tx transaction.Base,
 	product entity.Product,

@@ -8,20 +8,20 @@ import (
 	"github.com/dpe27/es-krake/pkg/log"
 )
 
-type attributeTypeRepository struct {
+type attributeTypeRepo struct {
 	logger *log.Logger
 	pg     *rdb.PostgreSQL
 }
 
 func NewAttributeTypeRepository(pg *rdb.PostgreSQL) domainRepo.AttributeTypeRepository {
-	return &attributeTypeRepository{
-		logger: log.With("repo", "attribute_type_repo"),
+	return &attributeTypeRepo{
+		logger: log.With("repository", "attribute_type_repo"),
 		pg:     pg,
 	}
 }
 
 // TakeByID implements repository.AttributeTypeRepository.
-func (r *attributeTypeRepository) TakeByID(ctx context.Context, ID int) (entity.AttributeType, error) {
+func (r *attributeTypeRepo) TakeByID(ctx context.Context, ID int) (entity.AttributeType, error) {
 	attrType := entity.AttributeType{}
 	db := r.pg.DB.WithContext(ctx)
 	err := db.Take(&attrType, ID).Error
@@ -29,7 +29,7 @@ func (r *attributeTypeRepository) TakeByID(ctx context.Context, ID int) (entity.
 }
 
 // GetAsDictionary implements repository.AttributeTypeRepository.
-func (r *attributeTypeRepository) GetAsDictionary(ctx context.Context) (map[int]string, error) {
+func (r *attributeTypeRepo) GetAsDictionary(ctx context.Context) (map[int]string, error) {
 	var attrTypes []entity.AttributeType
 
 	err := r.pg.DB.
