@@ -15,20 +15,20 @@ import (
 	"gorm.io/gorm"
 )
 
-type optionAttributeValueRepository struct {
+type optionAttributeValueRepo struct {
 	logger *log.Logger
 	pg     *rdb.PostgreSQL
 }
 
 func NewOptionAttributeValueRepository(pg *rdb.PostgreSQL) domainRepo.OptionAttributeValueRepository {
-	return &optionAttributeValueRepository{
-		logger: log.With("repo", "product_attribute_value_repo"),
+	return &optionAttributeValueRepo{
+		logger: log.With("repository", "product_attribute_value_repo"),
 		pg:     pg,
 	}
 }
 
 // TakeByConditions implements repository.OptionAttributeValueRepository.
-func (p *optionAttributeValueRepository) TakeByConditions(
+func (p *optionAttributeValueRepo) TakeByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
 	spec specification.Base,
@@ -48,7 +48,7 @@ func (p *optionAttributeValueRepository) TakeByConditions(
 }
 
 // FindByConditions implements repository.OptionAttributeValueRepository.
-func (p *optionAttributeValueRepository) FindByConditions(
+func (p *optionAttributeValueRepo) FindByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
 	spec specification.Base,
@@ -68,7 +68,7 @@ func (p *optionAttributeValueRepository) FindByConditions(
 }
 
 // CreateBatchWithTx implements repository.OptionAttributeValueRepository.
-func (p *optionAttributeValueRepository) CreateBatchWithTx(
+func (p *optionAttributeValueRepo) CreateBatchWithTx(
 	ctx context.Context,
 	tx transaction.Base,
 	attributeValues []map[string]interface{},
@@ -97,7 +97,7 @@ func (p *optionAttributeValueRepository) CreateBatchWithTx(
 }
 
 // Update implements repository.OptionAttributeValueRepository.
-func (p *optionAttributeValueRepository) Update(
+func (p *optionAttributeValueRepo) Update(
 	ctx context.Context,
 	attributeValue entity.OptionAttributeValue,
 	attributesToUpdate map[string]interface{},
@@ -116,7 +116,7 @@ func (p *optionAttributeValueRepository) Update(
 }
 
 // DeleteByConditions implements repository.OptionAttributeValueRepository.
-func (p *optionAttributeValueRepository) DeleteByConditionsWithTx(
+func (p *optionAttributeValueRepo) DeleteByConditionsWithTx(
 	ctx context.Context,
 	tx transaction.Base,
 	conditions map[string]interface{},

@@ -15,20 +15,20 @@ import (
 	"gorm.io/gorm"
 )
 
-type attributeRepository struct {
+type attributeRepo struct {
 	logger *log.Logger
 	pg     *rdb.PostgreSQL
 }
 
 func NewAttributeRepository(pg *rdb.PostgreSQL) domainRepo.AttributeRepository {
-	return &attributeRepository{
-		logger: log.With("repo", "attribute_repo"),
+	return &attributeRepo{
+		logger: log.With("repository", "attribute_repo"),
 		pg:     pg,
 	}
 }
 
 // TakeByConditions implements repository.AttributeRepository.
-func (r *attributeRepository) TakeByConditions(
+func (r *attributeRepo) TakeByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
 	spec specification.Base,
@@ -48,7 +48,7 @@ func (r *attributeRepository) TakeByConditions(
 }
 
 // FindByConditions implements repository.AttributeRepository.
-func (r *attributeRepository) FindByConditions(
+func (r *attributeRepo) FindByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
 	spec specification.Base,
@@ -69,7 +69,7 @@ func (r *attributeRepository) FindByConditions(
 }
 
 // Create implements repository.AttributeRepository.
-func (r *attributeRepository) Create(
+func (r *attributeRepo) Create(
 	ctx context.Context,
 	attributes map[string]interface{},
 ) (entity.Attribute, error) {
@@ -85,7 +85,7 @@ func (r *attributeRepository) Create(
 }
 
 // CreateWithTx implements repository.AttributeRepository.
-func (r *attributeRepository) CreateWithTx(
+func (r *attributeRepo) CreateWithTx(
 	ctx context.Context,
 	tx transaction.Base,
 	attributes map[string]interface{},
@@ -107,7 +107,7 @@ func (r *attributeRepository) CreateWithTx(
 }
 
 // Update implements repository.AttributeRepository.
-func (r *attributeRepository) Update(
+func (r *attributeRepo) Update(
 	ctx context.Context,
 	attribute entity.Attribute,
 	attributesToUpdate map[string]interface{},
@@ -126,7 +126,7 @@ func (r *attributeRepository) Update(
 }
 
 // UpdateWithTx implements repository.AttributeRepository.
-func (r *attributeRepository) UpdateWithTx(
+func (r *attributeRepo) UpdateWithTx(
 	ctx context.Context,
 	tx transaction.Base,
 	attribute entity.Attribute,

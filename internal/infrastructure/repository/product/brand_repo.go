@@ -11,20 +11,20 @@ import (
 	"pech/es-krake/pkg/utils"
 )
 
-type brandRepository struct {
+type brandRepo struct {
 	logger *log.Logger
 	pg     *rdb.PostgreSQL
 }
 
 func NewBrandRepository(pg *rdb.PostgreSQL) domainRepo.BrandRepository {
-	return &brandRepository{
-		logger: log.With("repo", "brand_repo"),
+	return &brandRepo{
+		logger: log.With("repository", "brand_repo"),
 		pg:     pg,
 	}
 }
 
 // Create implements repository.BrandRepository.
-func (b *brandRepository) Create(
+func (b *brandRepo) Create(
 	ctx context.Context,
 	attributes map[string]interface{},
 ) (entity.Brand, error) {
@@ -40,7 +40,7 @@ func (b *brandRepository) Create(
 }
 
 // FindByConditions implements repository.BrandRepository.
-func (b *brandRepository) FindByConditions(
+func (b *brandRepo) FindByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
 	spec specification.Base,
@@ -61,7 +61,7 @@ func (b *brandRepository) FindByConditions(
 }
 
 // TakeByConditions implements repository.BrandRepository.
-func (b *brandRepository) TakeByConditions(
+func (b *brandRepo) TakeByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
 	spec specification.Base,
@@ -82,7 +82,7 @@ func (b *brandRepository) TakeByConditions(
 }
 
 // Update implements repository.BrandRepository.
-func (b *brandRepository) Update(
+func (b *brandRepo) Update(
 	ctx context.Context,
 	brand entity.Brand,
 	attributesToUpdate map[string]interface{},
