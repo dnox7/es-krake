@@ -1,6 +1,8 @@
 package entity
 
 import (
+	"fmt"
+
 	"github.com/dpe27/es-krake/internal/domain/shared/model"
 )
 
@@ -16,9 +18,21 @@ type Permission struct {
 	model.BaseModelWithDeleted
 }
 
-func (p Permission) Code() string {
+func (p Permission) Code() (string, error) {
 	if p.Action == nil || p.Resource == nil {
-		return ""
+		return "", fmt.Errorf("failed to map permission to code, id: %d", p.ID)
 	}
-	return p.Action.Code + ":" + p.Resource.Code
+	return p.Action.Code + ":" + p.Resource.Code, nil
+}
+
+func MapPermissionToCodes(perms []Permission) ([]string, error) {
+	codes := make([]string, 0, len(perms))
+	for _, p := range perms {
+		c, err := p.Code()
+		if err != nil {
+			return nil, err
+		}
+		codes = append(codes, c)
+	}
+	return codes, nil
 }
