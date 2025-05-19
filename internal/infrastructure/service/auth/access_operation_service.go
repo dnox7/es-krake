@@ -6,7 +6,6 @@ import (
 	"github.com/dpe27/es-krake/internal/domain/auth/entity"
 	"github.com/dpe27/es-krake/internal/domain/auth/repository"
 	domainService "github.com/dpe27/es-krake/internal/domain/auth/service"
-	"github.com/dpe27/es-krake/internal/infrastructure/rdb/gorm/scope"
 	"github.com/dpe27/es-krake/pkg/log"
 	"github.com/dpe27/es-krake/pkg/utils"
 
@@ -32,20 +31,7 @@ func (a *accessOperationService) GetOperationsWithAccessReqCode(
 	ctx context.Context,
 	code string,
 ) ([]entity.AccessOperation, error) {
-	accessReq, err := a.accessReqRepo.TakeByConditions(
-		ctx, map[string]interface{}{
-			"code": code,
-		},
-		scope.GormScope().
-			Preload("Operations").
-			Preload("Operations.Action").
-			Preload("Operations.Resource"),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return accessReq.Operations, nil
+	return nil, nil
 }
 
 // HasRequiredOperations implements service.AccessOperationService.
@@ -61,7 +47,7 @@ func (a *accessOperationService) HasRequiredOperations(
 
 	g.Go(func() error {
 		var err error
-		permCodes, err = entity.MapPermissionToCodes(perms)
+		permCodes, err = entity.MapPermissionsToCodes(perms)
 		return err
 	})
 
