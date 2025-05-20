@@ -16,6 +16,7 @@ func (p APIPattern) Key() string {
 
 var routeMatcherIndex map[string][]string
 
+//nolint:gochecknoinits
 func init() {
 	routeMatcherIndex = make(map[string][]string)
 	for code, patterns := range APIPermissions {

@@ -14,7 +14,7 @@ type Permission struct {
 }
 
 func (p Permission) Codes() ([]string, error) {
-	if p.Operations == nil || len(p.Operations) == 0 {
+	if len(p.Operations) == 0 {
 		return nil, fmt.Errorf("failed to map permission to code: id=%d", p.ID)
 	}
 

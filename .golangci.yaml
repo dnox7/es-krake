@@ -345,6 +345,7 @@ linters-settings:
       rules:
         json: snake
         mapstructure: snake
+        yaml: snake
       use-field-name: false
   usestdlibvars:
     # Suggest the use of http.MethodXX.

@@ -24,3 +24,6 @@ vendor/
 
 # coverage files
 coverage.txt
+
+# golangci-lint report
+report.xml

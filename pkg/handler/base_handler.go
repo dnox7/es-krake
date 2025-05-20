@@ -8,11 +8,11 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+
 	"github.com/dpe27/es-krake/pkg/dto"
 	"github.com/dpe27/es-krake/pkg/utils"
 	"github.com/dpe27/es-krake/pkg/validator"
 	"github.com/dpe27/es-krake/pkg/wraperror"
-
 	"github.com/gin-gonic/gin"
 	"github.com/graphql-go/graphql/gqlerrors"
 	"github.com/xeipuuv/gojsonschema"
@@ -136,8 +136,6 @@ func (h *BaseHTTPHandler) SetGenericErrorResponse(c *gin.Context, finalErr error
 	default:
 
 	}
-
-	return
 }
 
 func (h *BaseHTTPHandler) SetValidationErrorResponse(c *gin.Context, err error) {

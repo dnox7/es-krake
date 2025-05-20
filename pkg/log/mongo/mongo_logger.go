@@ -2,8 +2,8 @@ package mongolog
 
 import (
 	"context"
-	"github.com/dpe27/es-krake/pkg/log"
 
+	"github.com/dpe27/es-krake/pkg/log"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 

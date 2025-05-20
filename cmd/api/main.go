@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"os"
+
 	"github.com/dpe27/es-krake/config"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb/migration"
@@ -37,4 +38,7 @@ func main() {
 
 	repositories := repository.NewRepositoriesContainer(pg)
 	err = initializer.MountAll(repositories, pg)
+	if err != nil {
+		panic(err)
+	}
 }

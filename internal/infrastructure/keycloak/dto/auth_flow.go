@@ -1,6 +1,8 @@
 package kcdto
 
 // KcAuthFlow: AuthenticationFlowRepresentation
+//
+//nolint:tagliatelle
 type KcAuthFlow struct {
 	ID         string `json:"id"`
 	Alias      string `json:"alias"`
@@ -12,6 +14,8 @@ type KcAuthFlow struct {
 }
 
 // KcAuthExecExport: AuthenticationExecutionExportRepresentation
+//
+//nolint:tagliatelle
 type KcAuthExecExport struct {
 	FlowAlias         string `json:"flowAlias"`
 	AuthenticatorFlow string `json:"authenticatorFlow"`

@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+
 	"github.com/dpe27/es-krake/internal/domain/product/entity"
 	domainRepo "github.com/dpe27/es-krake/internal/domain/product/repository"
 	"github.com/dpe27/es-krake/internal/domain/shared/specification"
@@ -11,7 +12,6 @@ import (
 	gormScope "github.com/dpe27/es-krake/internal/infrastructure/rdb/gorm/scope"
 	"github.com/dpe27/es-krake/pkg/log"
 	"github.com/dpe27/es-krake/pkg/utils"
-
 	"gorm.io/gorm"
 )
 
@@ -65,7 +65,6 @@ func (r *attributeRepo) FindByConditions(
 		Where(conditions).
 		Find(&attributes).Error
 	return attributes, err
-
 }
 
 // Create implements repository.AttributeRepository.

@@ -2,6 +2,4 @@ package domainerr
 
 import "errors"
 
-var (
-	ErrorNotFound = errors.New("Record not found")
-)
+var ErrorNotFound = errors.New("Record not found")

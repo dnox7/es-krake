@@ -3,9 +3,9 @@ package gormlog
 import (
 	"context"
 	"errors"
-	"github.com/dpe27/es-krake/pkg/log"
 	"time"
 
+	"github.com/dpe27/es-krake/pkg/log"
 	"gorm.io/gorm/logger"
 )
 

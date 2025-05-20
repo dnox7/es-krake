@@ -6,10 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"github.com/dpe27/es-krake/config"
-	"github.com/dpe27/es-krake/pkg/log"
 	"sort"
 
+	"github.com/dpe27/es-krake/config"
+	"github.com/dpe27/es-krake/pkg/log"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/golang-migrate/migrate/v4/source"

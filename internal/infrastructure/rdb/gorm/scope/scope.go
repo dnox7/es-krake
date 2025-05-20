@@ -2,9 +2,9 @@ package scope
 
 import (
 	"fmt"
+
 	"github.com/dpe27/es-krake/internal/domain/shared/specification"
 	"github.com/dpe27/es-krake/pkg/utils"
-
 	"gorm.io/gorm"
 )
 

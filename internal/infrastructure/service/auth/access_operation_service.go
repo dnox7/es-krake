@@ -8,7 +8,6 @@ import (
 	domainService "github.com/dpe27/es-krake/internal/domain/auth/service"
 	"github.com/dpe27/es-krake/pkg/log"
 	"github.com/dpe27/es-krake/pkg/utils"
-
 	"golang.org/x/sync/errgroup"
 )
 

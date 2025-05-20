@@ -3,10 +3,10 @@ package log
 import (
 	"io"
 	"log/slog"
-	"github.com/dpe27/es-krake/config"
 	"sync"
 	"time"
 
+	"github.com/dpe27/es-krake/config"
 	"golang.org/x/net/context"
 )
 
@@ -44,7 +44,6 @@ func Initialize(w io.Writer, cfg *config.Config, keyInput []string) {
 	slog.SetDefault(slog.New(&handler{
 		Handler: slog.NewJSONHandler(w, opts),
 	}))
-	return
 }
 
 // AddLogValToCtx adds a key-val pair to the context in sync.Map for thread safely

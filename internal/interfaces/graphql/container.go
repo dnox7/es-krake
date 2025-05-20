@@ -5,7 +5,6 @@ import (
 	"github.com/dpe27/es-krake/internal/interfaces/graphql/mutation"
 	"github.com/dpe27/es-krake/internal/interfaces/graphql/output"
 	"github.com/dpe27/es-krake/internal/interfaces/graphql/query"
-
 	"github.com/graphql-go/graphql"
 )
 

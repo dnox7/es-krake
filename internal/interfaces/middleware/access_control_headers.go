@@ -36,7 +36,7 @@ func AccessControlHeaders() gin.HandlerFunc {
 			c.Header("Access-Control-Allow-Method", "*")
 		}
 
-		if c.Request.Method == "OPTIONS" {
+		if c.Request.Method == http.MethodOptions {
 			c.Header("Access-Control-Max-Age", strconv.Itoa(defaultMaxAge))
 			c.AbortWithStatus(http.StatusNoContent)
 		} else {

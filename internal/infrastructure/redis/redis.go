@@ -3,12 +3,10 @@ package redis
 import (
 	"github.com/dpe27/es-krake/config"
 	"github.com/dpe27/es-krake/pkg/log"
-
 	"github.com/redis/go-redis/v9"
 )
 
-type CacheStore interface {
-}
+type CacheStore interface{}
 
 type redisService struct {
 	logger *log.Logger

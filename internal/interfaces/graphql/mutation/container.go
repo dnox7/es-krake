@@ -2,7 +2,6 @@ package mutation
 
 import (
 	"github.com/dpe27/es-krake/internal/infrastructure/repository"
-
 	"github.com/graphql-go/graphql"
 )
 

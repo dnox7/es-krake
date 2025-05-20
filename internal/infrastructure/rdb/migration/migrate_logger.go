@@ -3,6 +3,7 @@ package migration
 import (
 	"context"
 	"fmt"
+
 	"github.com/dpe27/es-krake/pkg/log"
 )
 
