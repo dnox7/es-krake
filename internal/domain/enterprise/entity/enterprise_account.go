@@ -9,5 +9,5 @@ type EnterpriseAccount struct {
 	EnterpriseID string  `gorm:"column:enterprise_id;type:bigint;not null" json:"enterprise_id"`
 	HasPassword  bool    `gorm:"column:has_password;type:tinyint(1);not null;default:1" json:"has_password"`
 	Notes        *string `gorm:"column:notes;type:varchar(512)" json:"notes"`
-	model.BaseModel
+	model.BaseModelWithDeleted
 }
