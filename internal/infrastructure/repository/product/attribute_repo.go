@@ -2,156 +2,147 @@ package repository
 
 import (
 	"context"
-	"database/sql"
-	"pech/es-krake/internal/domain/product/entity"
-	domainRepo "pech/es-krake/internal/domain/product/repository"
-	"pech/es-krake/internal/infrastructure/db"
-	"pech/es-krake/pkg/log"
-	"pech/es-krake/pkg/utils"
+	"fmt"
+	"github.com/dpe27/es-krake/internal/domain/product/entity"
+	domainRepo "github.com/dpe27/es-krake/internal/domain/product/repository"
+	"github.com/dpe27/es-krake/internal/domain/shared/specification"
+	"github.com/dpe27/es-krake/internal/domain/shared/transaction"
+	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
+	gormScope "github.com/dpe27/es-krake/internal/infrastructure/rdb/gorm/scope"
+	"github.com/dpe27/es-krake/pkg/log"
+	"github.com/dpe27/es-krake/pkg/utils"
 
-	sq "github.com/Masterminds/squirrel"
-	"github.com/jmoiron/sqlx"
+	"gorm.io/gorm"
 )
 
-type attributeRepository struct {
+type attributeRepo struct {
 	logger *log.Logger
-	pg     *db.PostgreSQL
+	pg     *rdb.PostgreSQL
 }
 
-func NewAttributeRepository(pg *db.PostgreSQL) domainRepo.AttributeRepository {
-	return &attributeRepository{
-		logger: log.With("repo", "attribute_repo"),
+func NewAttributeRepository(pg *rdb.PostgreSQL) domainRepo.AttributeRepository {
+	return &attributeRepo{
+		logger: log.With("repository", "attribute_repo"),
 		pg:     pg,
 	}
 }
 
-func (r *attributeRepository) TakeByID(ctx context.Context, ID int) (entity.Attribute, error) {
-	var attribute entity.Attribute
-
-	sql, args, err := r.pg.Builder.
-		Select("id", "name", "description", "display_order", "created_at", "updated_at").
-		From(domainRepo.AttributeTableName).
-		Where(sq.Eq{"id": ID}).
-		ToSql()
-
+// TakeByConditions implements repository.AttributeRepository.
+func (r *attributeRepo) TakeByConditions(
+	ctx context.Context,
+	conditions map[string]interface{},
+	spec specification.Base,
+) (entity.Attribute, error) {
+	gormScopes, err := gormScope.ToGormScopes(spec)
 	if err != nil {
-		r.logger.Error(ctx, utils.ErrQueryBuilderFailedMsg, "detail", err)
-		return attribute, err
+		r.logger.Error(ctx, err.Error())
+		return entity.Attribute{}, err
 	}
-
-	err = r.pg.DB.GetContext(ctx, &attribute, sql, args...)
+	var attribute entity.Attribute
+	err = r.pg.DB.
+		WithContext(ctx).
+		Scopes(gormScopes...).
+		Where(conditions).
+		Take(&attribute).Error
 	return attribute, err
 }
 
-func (r *attributeRepository) TakeByConditions(ctx context.Context, conditions map[string]interface{}) (entity.Attribute, error) {
-	var attribute entity.Attribute
-
-	sql, args, err := r.pg.Builder.
-		Select("id", "name", "description", "display_order", "created_at", "updated_at").
-		From(domainRepo.AttributeTableName).
-		Where(sq.Eq(conditions)).
-		ToSql()
-
+// FindByConditions implements repository.AttributeRepository.
+func (r *attributeRepo) FindByConditions(
+	ctx context.Context,
+	conditions map[string]interface{},
+	spec specification.Base,
+) ([]entity.Attribute, error) {
+	gormScopes, err := gormScope.ToGormScopes(spec)
 	if err != nil {
-		r.logger.Error(ctx, utils.ErrQueryBuilderFailedMsg, "detail", err)
-		return attribute, err
+		r.logger.Error(ctx, err.Error())
+		return nil, err
 	}
-
-	err = r.pg.DB.GetContext(ctx, &attribute, sql, args...)
-	return attribute, err
-}
-
-func (r *attributeRepository) FindByConditions(ctx context.Context, conditions map[string]interface{}) ([]entity.Attribute, error) {
 	attributes := []entity.Attribute{}
-
-	sql, args, err := r.pg.Builder.
-		Select("id", "name", "description", "display_order", "created_at", "updated_at").
-		From(domainRepo.AttributeTableName).
-		Where(sq.Eq(conditions)).
-		ToSql()
-
-	if err != nil {
-		r.logger.Error(ctx, utils.ErrQueryBuilderFailedMsg, "detail", err)
-		return attributes, err
-	}
-
-	err = r.pg.DB.SelectContext(ctx, &attributes, sql, args...)
+	err = r.pg.DB.
+		WithContext(ctx).
+		Scopes(gormScopes...).
+		Where(conditions).
+		Find(&attributes).Error
 	return attributes, err
+
 }
 
-func (r *attributeRepository) Create(ctx context.Context, attributes map[string]interface{}) (entity.Attribute, error) {
-	var attributeEntity entity.Attribute
-
-	if err := utils.MapToStruct(attributes, &attributeEntity); err != nil {
-		return attributeEntity, err
-	}
-
-	query, args, err := r.pg.Builder.
-		Insert(domainRepo.AttributeTableName).
-		Columns("name", "description", "attribute_type_id", "display_order").
-		Values(attributeEntity.Name, attributeEntity.Description, attributeEntity.AttributeTypeID, attributeEntity.DisplayOrder).
-		Suffix("RETURNING *").
-		ToSql()
-
+// Create implements repository.AttributeRepository.
+func (r *attributeRepo) Create(
+	ctx context.Context,
+	attributes map[string]interface{},
+) (entity.Attribute, error) {
+	attributeEntity := entity.Attribute{}
+	err := utils.MapToStruct(attributes, &attributeEntity)
 	if err != nil {
-		r.logger.Error(ctx, utils.ErrQueryBuilderFailedMsg, "detail", err)
-		return attributeEntity, err
-	}
-
-	txOpts := &sql.TxOptions{
-		Isolation: sql.LevelWriteCommitted,
-		ReadOnly:  false,
-	}
-
-	err = utils.Transaction(ctx, r.logger, r.pg.DB, txOpts, func(tx *sqlx.Tx) error {
-		return tx.QueryRowxContext(ctx, query, args...).StructScan(&attributeEntity)
-	})
-
-	if err != nil {
+		r.logger.Error(ctx, utils.ErrorMapToStruct, "error", err.Error())
 		return entity.Attribute{}, err
 	}
 
-	return attributeEntity, nil
+	err = r.pg.DB.WithContext(ctx).Create(&attributeEntity).Error
+	return attributeEntity, err
 }
 
-func (r *attributeRepository) Update(
+// CreateWithTx implements repository.AttributeRepository.
+func (r *attributeRepo) CreateWithTx(
 	ctx context.Context,
-	attributeEntity entity.Attribute,
+	tx transaction.Base,
+	attributes map[string]interface{},
+) (entity.Attribute, error) {
+	gormTx, ok := tx.GetTx().(*gorm.DB)
+	if !ok {
+		return entity.Attribute{}, fmt.Errorf(utils.ErrorGetTx)
+	}
+
+	attributeEntity := entity.Attribute{}
+	err := utils.MapToStruct(attributes, &attributeEntity)
+	if err != nil {
+		r.logger.Error(ctx, utils.ErrorMapToStruct, "error", err.Error())
+		return entity.Attribute{}, err
+	}
+
+	err = gormTx.Create(&attributeEntity).Error
+	return attributeEntity, err
+}
+
+// Update implements repository.AttributeRepository.
+func (r *attributeRepo) Update(
+	ctx context.Context,
+	attribute entity.Attribute,
 	attributesToUpdate map[string]interface{},
 ) (entity.Attribute, error) {
-	if err := utils.MapToStruct(attributesToUpdate, &attributeEntity); err != nil {
-		return attributeEntity, err
-	}
-
-	query, args, err := r.pg.Builder.
-		Update(domainRepo.AttributeTableName).
-		SetMap(map[string]interface{}{
-			"name":              attributeEntity.Name,
-			"description":       attributeEntity.Description,
-			"attribute_type_id": attributeEntity.AttributeTypeID,
-			"display_order":     attributeEntity.DisplayOrder,
-		}).
-		Where(sq.Eq{"id": attributeEntity.ID}).
-		Suffix("RETURNING *").
-		ToSql()
-
+	err := utils.MapToStruct(attributesToUpdate, &attribute)
 	if err != nil {
-		r.logger.Error(ctx, utils.ErrQueryBuilderFailedMsg, "detail", err)
+		r.logger.Error(ctx, utils.ErrorMapToStruct, "error", err.Error())
 		return entity.Attribute{}, err
 	}
 
-	txOpts := &sql.TxOptions{
-		Isolation: sql.LevelWriteCommitted,
-		ReadOnly:  false,
+	err = r.pg.DB.
+		WithContext(ctx).
+		Model(attribute).
+		Updates(attributesToUpdate).Error
+	return attribute, err
+}
+
+// UpdateWithTx implements repository.AttributeRepository.
+func (r *attributeRepo) UpdateWithTx(
+	ctx context.Context,
+	tx transaction.Base,
+	attribute entity.Attribute,
+	attributesToUpdate map[string]interface{},
+) (entity.Attribute, error) {
+	gormTx, ok := tx.GetTx().(*gorm.DB)
+	if !ok {
+		return entity.Attribute{}, fmt.Errorf(utils.ErrorGetTx)
 	}
 
-	err = utils.Transaction(ctx, r.logger, r.pg.DB, txOpts, func(tx *sqlx.Tx) error {
-		return tx.QueryRowxContext(ctx, query, args...).StructScan(&attributeEntity)
-	})
-
+	err := utils.MapToStruct(attributesToUpdate, &attribute)
 	if err != nil {
+		r.logger.Error(ctx, utils.ErrorMapToStruct, "error", err.Error())
 		return entity.Attribute{}, err
 	}
 
-	return attributeEntity, nil
+	err = gormTx.Model(attribute).Updates(attributesToUpdate).Error
+	return attribute, err
 }

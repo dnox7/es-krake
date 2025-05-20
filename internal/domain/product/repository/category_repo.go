@@ -2,20 +2,23 @@ package repository
 
 import (
 	"context"
-	"pech/es-krake/internal/domain"
-	"pech/es-krake/internal/domain/product/entity"
+	"github.com/dpe27/es-krake/internal/domain/product/entity"
+	"github.com/dpe27/es-krake/internal/domain/shared/specification"
+	"github.com/dpe27/es-krake/internal/domain/shared/transaction"
 )
 
+const CategoryTableName = "categories"
+
 type CategoryRepository interface {
-	TakeByID(ctx context.Context, ID int) (entity.Category, error)
+	TakeByConditions(ctx context.Context, conditions map[string]interface{}, spec specification.Base) (entity.Category, error)
 
-	TakeByConditions(ctx context.Context, conditions map[string]interface{}) (entity.Category, error)
+	FindByConditions(ctx context.Context, conditions map[string]interface{}, spec specification.Base) ([]entity.Category, error)
 
-	FindByConditions(ctx context.Context, conditions map[string]interface{}) ([]entity.Category, error)
+	Create(ctx context.Context, attributes map[string]interface{}) (entity.Category, error)
 
-	FindByConditionsWithScope(ctx context.Context, conditions map[string]interface{}, scopes ...domain.Scope) ([]entity.Category, error)
+	CreateWithTx(ctx context.Context, tx transaction.Base, attributes map[string]interface{}) (entity.Category, error)
 
-	CreateWithTx(ctx context.Context, attributes map[string]interface{}) (entity.Category, error)
+	Update(ctx context.Context, category entity.Category, attributesToUpdate map[string]interface{}) (entity.Category, error)
 
-	UpdateWithTx(ctx context.Context, category entity.Category, attributesToUpdate map[string]interface{}) (entity.Category, error)
+	UpdateWithTx(ctx context.Context, tx transaction.Base, category entity.Category, attributesToUpdate map[string]interface{}) (entity.Category, error)
 }

@@ -1,26 +1,28 @@
 package repository
 
 import (
-	domainRepo "pech/es-krake/internal/domain/product/repository"
-	"pech/es-krake/internal/infrastructure/db"
+	domainRepo "github.com/dpe27/es-krake/internal/domain/product/repository"
+	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
 )
 
 type RepositoryContainer struct {
-	AttributeRepository             domainRepo.AttributeRepository
-	AttributeTypeRepository         domainRepo.AttributeTypeRepository
-	CategoryRepository              domainRepo.CategoryRepository
-	ProductAttributeValueRepository domainRepo.ProductAttributeValueRepository
-	ProductOptionRepository         domainRepo.ProductOptionRepository
-	ProductRepository               domainRepo.ProductRepository
+	AttributeRepo            domainRepo.AttributeRepository
+	AttributeTypeRepo        domainRepo.AttributeTypeRepository
+	BrandRepo                domainRepo.BrandRepository
+	CategoryRepo             domainRepo.CategoryRepository
+	OptionAttributeValueRepo domainRepo.OptionAttributeValueRepository
+	ProductOptionRepo        domainRepo.ProductOptionRepository
+	ProductRepo              domainRepo.ProductRepository
 }
 
-func NewRepositoryContainer(pg *db.PostgreSQL) RepositoryContainer {
+func NewRepositoryContainer(pg *rdb.PostgreSQL) RepositoryContainer {
 	return RepositoryContainer{
-		AttributeRepository:             NewAttributeRepository(pg),
-		AttributeTypeRepository:         NewAttributeTypeRepository(pg),
-		CategoryRepository:              NewCategoryRepository(pg),
-		ProductAttributeValueRepository: NewProductAttributeValueRepository(pg),
-		ProductOptionRepository:         NewProductOptionRepository(pg),
-		ProductRepository:               NewProductRepository(pg),
+		AttributeRepo:            NewAttributeRepository(pg),
+		AttributeTypeRepo:        NewAttributeTypeRepository(pg),
+		BrandRepo:                NewBrandRepository(pg),
+		CategoryRepo:             NewCategoryRepository(pg),
+		OptionAttributeValueRepo: NewOptionAttributeValueRepository(pg),
+		ProductOptionRepo:        NewProductOptionRepository(pg),
+		ProductRepo:              NewProductRepository(pg),
 	}
 }

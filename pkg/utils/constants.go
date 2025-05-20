@@ -6,9 +6,6 @@ const (
 	ErrEmailFail    = "ERR003"
 	ErrPasswordFail = "ERROO4"
 
-	ErrInternalServerMsg     = "Internal server error"
-	ErrQueryBuilderFailedMsg = "The query builder failed"
-
 	DefaultPageNo   = 1
 	DefaultPageSize = 30
 
@@ -19,4 +16,25 @@ const (
 	FormatDateTimeISO = "2006-01-02T15:04:05Z07:00"
 	FormatDateTimeSQL = "2006-01-02 15:04:05"
 	FormatDateCompact = "20060102150405"
+
+	ProdEnv    = "prod"
+	DevEnv     = "dev"
+	TestingEnv = "testing"
+
+	ErrorInternalServer    = "Internal server error"
+	ErrorLogRequestBody    = "failed to log request body"
+	ErrorCloseResponseBody = "failed to close response body"
+	ErrorCloseRows         = "failed to close Rows"
+	ErrorCloseReader       = "failed to close reader"
+	ErrorCloseWriter       = "failed to close writer"
+	ErrorCloseFile         = "failed to close file"
+	ErrorCloseSftp         = "failed to close sftp"
+	ErrorParseUrl          = "failed to parse url"
+	ErrorReadBody          = "failed to read body"
+	ErrorDecodeBody        = "failed to decode body"
+	ErrorMapToStruct       = "failed to map to struct"
+	ErrorGetTx             = "failed to get Tx"
+	ErrorGetSpec           = "failed to get specification"
+	ErrorCreateReq         = "failed to create new HTTP request"
+	ErrorMarshalFailed     = "failed to marshal object to JSON"
 )

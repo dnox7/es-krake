@@ -2,72 +2,147 @@ package repository
 
 import (
 	"context"
-	"pech/es-krake/internal/domain/product/entity"
-	domainRepo "pech/es-krake/internal/domain/product/repository"
-	"pech/es-krake/internal/infrastructure/db"
-	"pech/es-krake/pkg/log"
-	"pech/es-krake/pkg/utils"
+	"fmt"
+	"github.com/dpe27/es-krake/internal/domain/product/entity"
+	domainRepo "github.com/dpe27/es-krake/internal/domain/product/repository"
+	"github.com/dpe27/es-krake/internal/domain/shared/specification"
+	"github.com/dpe27/es-krake/internal/domain/shared/transaction"
+	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
+	gormScope "github.com/dpe27/es-krake/internal/infrastructure/rdb/gorm/scope"
+	"github.com/dpe27/es-krake/pkg/log"
+	"github.com/dpe27/es-krake/pkg/utils"
 
-	sq "github.com/Masterminds/squirrel"
+	"gorm.io/gorm"
 )
 
-type productRepository struct {
+type productRepo struct {
 	logger *log.Logger
-	pg     *db.PostgreSQL
+	pg     *rdb.PostgreSQL
 }
 
-func NewProductRepository(pg *db.PostgreSQL) domainRepo.ProductRepository {
-	return &productRepository{
-		logger: log.With("repo", "product_repo"),
+func NewProductRepository(pg *rdb.PostgreSQL) domainRepo.ProductRepository {
+	return &productRepo{
+		logger: log.With("repository", "product_repo"),
 		pg:     pg,
 	}
 }
 
-func (r *productRepository) TakeByConditions(ctx context.Context, conditions map[string]interface{}) (entity.Product, error) {
-	var prod entity.Product
-
-	sql, args, err := r.pg.Builder.
-		Select(
-			"id",
-			"name",
-			"sku",
-			"description",
-			"price",
-			"has_options",
-			"is_allowed_to_order",
-			"is_publised",
-			"is_featured",
-			"is_visible_individually",
-			"stock_tracking_enabled",
-			"stock_quantity",
-			"tax_class_id",
-			"meta_title",
-			"meta_keyword",
-		).
-		From(domainRepo.ProductTableName).
-		Where(sq.Eq(conditions)).
-		ToSql()
+// Create implements repository.ProductRepository.
+func (p *productRepo) Create(
+	ctx context.Context,
+	attributes map[string]interface{},
+) (entity.Product, error) {
+	product := entity.Product{}
+	err := utils.MapToStruct(attributes, &product)
 	if err != nil {
-		r.logger.Error(ctx, utils.ErrQueryBuilderFailedMsg)
-		return prod, err
+		p.logger.Error(ctx, utils.ErrorMapToStruct, "error", err.Error())
+		return entity.Product{}, err
 	}
 
-	err = r.pg.DB.GetContext(ctx, &prod, sql, args...)
-	return prod, err
+	err = p.pg.DB.WithContext(ctx).Create(&product).Error
+	return product, err
 }
 
-func (r *productRepository) FindByConditions(ctx context.Context, conditions map[string]interface{}) ([]entity.Product, error) {
-	return nil, nil
+// CreateWithTx implements repository.ProductRepository.
+func (p *productRepo) CreateWithTx(
+	ctx context.Context,
+	tx transaction.Base,
+	attributes map[string]interface{},
+) (entity.Product, error) {
+	gormTx, ok := tx.GetTx().(*gorm.DB)
+	if !ok {
+		return entity.Product{}, fmt.Errorf(utils.ErrorGetTx)
+	}
+
+	product := entity.Product{}
+	err := utils.MapToStruct(attributes, &product)
+	if err != nil {
+		p.logger.Error(ctx, utils.ErrorMapToStruct, "error", err.Error())
+		return entity.Product{}, err
+	}
+
+	err = gormTx.Create(&product).Error
+	return product, err
 }
 
-func (r *productRepository) Create(ctx context.Context, attributes map[string]interface{}) (entity.Product, error) {
-	return entity.Product{}, nil
+// FindByConditions implements repository.ProductRepository.
+func (p *productRepo) FindByConditions(
+	ctx context.Context,
+	conditions map[string]interface{},
+	spec specification.Base,
+) ([]entity.Product, error) {
+	gormScopes, err := gormScope.ToGormScopes(spec)
+	if err != nil {
+		p.logger.Error(ctx, err.Error())
+		return nil, err
+	}
+	products := []entity.Product{}
+	err = p.pg.DB.
+		WithContext(ctx).
+		Scopes(gormScopes...).
+		Where(conditions).
+		Find(&products).Error
+	return products, err
 }
 
-func (r *productRepository) CreateWithTx(ctx context.Context, attributes map[string]interface{}) (entity.Product, error) {
-	panic("lmao")
+// TakeByConditions implements repository.ProductRepository.
+func (p *productRepo) TakeByConditions(
+	ctx context.Context,
+	conditions map[string]interface{},
+	spec specification.Base,
+) (entity.Product, error) {
+	gormScopes, err := gormScope.ToGormScopes(spec)
+	if err != nil {
+		p.logger.Error(ctx, err.Error())
+		return entity.Product{}, err
+	}
+
+	var product entity.Product
+	err = p.pg.DB.
+		WithContext(ctx).
+		Scopes(gormScopes...).
+		Where(conditions).
+		Take(&product).Error
+	return product, err
 }
 
-func (r *productRepository) UpdateWithTx(ctx context.Context, prod entity.Product, attributesToUpdate map[string]interface{}) (entity.Product, error) {
-	panic("lmao")
+// Update implements repository.ProductRepository.
+func (p *productRepo) Update(
+	ctx context.Context,
+	product entity.Product,
+	attributesToUpdate map[string]interface{},
+) (entity.Product, error) {
+	err := utils.MapToStruct(attributesToUpdate, &product)
+	if err != nil {
+		p.logger.Error(ctx, utils.ErrorMapToStruct, "error", err.Error())
+		return entity.Product{}, err
+	}
+
+	err = p.pg.DB.
+		WithContext(ctx).
+		Model(product).
+		Updates(attributesToUpdate).Error
+	return product, err
+}
+
+// UpdateWithTx implements repository.ProductRepository.
+func (p *productRepo) UpdateWithTx(
+	ctx context.Context,
+	tx transaction.Base,
+	product entity.Product,
+	attributesToUpdate map[string]interface{},
+) (entity.Product, error) {
+	gormTx, ok := tx.GetTx().(*gorm.DB)
+	if !ok {
+		return entity.Product{}, fmt.Errorf(utils.ErrorGetTx)
+	}
+
+	err := utils.MapToStruct(attributesToUpdate, &product)
+	if err != nil {
+		p.logger.Error(ctx, utils.ErrorMapToStruct, "error", err.Error())
+		return entity.Product{}, err
+	}
+
+	err = gormTx.Model(product).Updates(attributesToUpdate).Error
+	return product, err
 }
