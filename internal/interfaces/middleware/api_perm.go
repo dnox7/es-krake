@@ -3,8 +3,6 @@ package middleware
 import (
 	"net/http"
 	"strings"
-
-	"github.com/gin-gonic/gin"
 )
 
 type APIPattern struct {
@@ -35,5 +33,3 @@ var APIPermissions = map[string][]APIPattern{
 		},
 	},
 }
-
-func getAllFuncCodesWithAPI(c *gin.Context)
