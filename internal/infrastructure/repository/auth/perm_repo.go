@@ -9,7 +9,6 @@ import (
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
 	gormScope "github.com/dpe27/es-krake/internal/infrastructure/rdb/gorm/scope"
 	"github.com/dpe27/es-krake/pkg/log"
-	"github.com/dpe27/es-krake/pkg/utils"
 )
 
 type permRepo struct {
@@ -64,39 +63,4 @@ func (p *permRepo) FindByConditions(
 		Where(conditions).
 		Find(&perms).Error
 	return perms, err
-}
-
-// Create implements repository.PermissionRepository.
-func (p *permRepo) Create(
-	ctx context.Context,
-	attributes map[string]interface{},
-) (entity.Permission, error) {
-	perm := entity.Permission{}
-	err := utils.MapToStruct(attributes, &perm)
-	if err != nil {
-		p.logger.Error(ctx, utils.ErrorMapToStruct, "error", err.Error())
-		return entity.Permission{}, err
-	}
-
-	err = p.pg.DB.WithContext(ctx).Create(&perm).Error
-	return perm, err
-}
-
-// Update implements repository.PermissionRepository.
-func (p *permRepo) Update(
-	ctx context.Context,
-	perm entity.Permission,
-	attributesToUpdate map[string]interface{},
-) (entity.Permission, error) {
-	err := utils.MapToStruct(attributesToUpdate, &perm)
-	if err != nil {
-		p.logger.Error(ctx, utils.ErrorMapToStruct, "error", err.Error())
-		return entity.Permission{}, err
-	}
-
-	err = p.pg.DB.
-		WithContext(ctx).
-		Model(perm).
-		Updates(attributesToUpdate).Error
-	return perm, err
 }

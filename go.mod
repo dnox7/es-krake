@@ -16,6 +16,7 @@ require (
 	go.mongodb.org/mongo-driver v1.7.5
 	go.mongodb.org/mongo-driver/v2 v2.2.0
 	golang.org/x/net v0.33.0
+	golang.org/x/sync v0.11.0
 	gorm.io/driver/postgres v1.5.11
 	gorm.io/gorm v1.25.12
 	gorm.io/plugin/soft_delete v1.2.1
@@ -74,7 +75,6 @@ require (
 	go.uber.org/atomic v1.7.0 // indirect
 	golang.org/x/arch v0.8.0 // indirect
 	golang.org/x/crypto v0.33.0 // indirect
-	golang.org/x/sync v0.11.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/text v0.22.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect

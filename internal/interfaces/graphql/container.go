@@ -1,10 +1,10 @@
 package graphql
 
 import (
-	"github.com/dpe27/es-krake/internal/application/graphql/mutation"
-	"github.com/dpe27/es-krake/internal/application/graphql/output"
-	"github.com/dpe27/es-krake/internal/application/graphql/query"
 	"github.com/dpe27/es-krake/internal/infrastructure/repository"
+	"github.com/dpe27/es-krake/internal/interfaces/graphql/mutation"
+	"github.com/dpe27/es-krake/internal/interfaces/graphql/output"
+	"github.com/dpe27/es-krake/internal/interfaces/graphql/query"
 
 	"github.com/graphql-go/graphql"
 )

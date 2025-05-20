@@ -11,35 +11,39 @@ import (
 	"github.com/dpe27/es-krake/pkg/log"
 )
 
-type accessRequirementRepo struct {
+type accessReqOpRepo struct {
 	logger *log.Logger
 	pg     *rdb.PostgreSQL
 }
 
-func NewAccessRequirementRepository(pg *rdb.PostgreSQL) domainRepo.AccessRequirementRepository {
-	return &accessRequirementRepo{
-		logger: log.With("repository", "access_requirement_repo"),
+func NewAccessRequirementOperationRepository(
+	pg *rdb.PostgreSQL,
+) domainRepo.AccessRequirementOperationRepository {
+	return &accessReqOpRepo{
+		logger: log.With("repository", "access_requirement_operation_repo"),
 		pg:     pg,
 	}
 }
 
-// TakeByConditions implements repository.AccessRequirementRepository.
-func (a *accessRequirementRepo) TakeByConditions(
+// PluckOperationIDByConditions implements repository.AccessRequirementOperationRepository.
+func (a *accessReqOpRepo) PluckOperationIDByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
 	spec specification.Base,
-) (entity.AccessRequirement, error) {
+) ([]int, error) {
 	scopes, err := gormScope.ToGormScopes(spec)
 	if err != nil {
 		a.logger.Error(ctx, err.Error())
-		return entity.AccessRequirement{}, err
+		return nil, err
 	}
 
-	accessReq := entity.AccessRequirement{}
+	var opIDs []int
 	err = a.pg.DB.
 		WithContext(ctx).
+		Model(entity.AccessRequirementOperation{}).
 		Scopes(scopes...).
 		Where(conditions).
-		Take(&accessReq).Error
-	return accessReq, err
+		Pluck("access_operation_id", &opIDs).
+		Error
+	return opIDs, err
 }

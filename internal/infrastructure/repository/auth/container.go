@@ -6,19 +6,29 @@ import (
 )
 
 type RepositoryContainer struct {
-	AccessRequirementRepo domainRepo.AccessRequirementRepository
-	ActionRepo            domainRepo.ActionRepository
-	FunctionCodeRepo      domainRepo.FunctionCodeRepository
-	PermissionRepo        domainRepo.PermissionRepository
-	ResourceRepo          domainRepo.ResourceRepository
+	AccessOperationRepo            domainRepo.AccessOperationRepository
+	AccessRequirementRepo          domainRepo.AccessRequirementRepository
+	AccessRequirementOperationRepo domainRepo.AccessRequirementOperationRepository
+	ActionRepo                     domainRepo.ActionRepository
+	PermissionRepo                 domainRepo.PermissionRepository
+	PermissionOpeartionRepo        domainRepo.PermissionOperationRepository
+	ResourceRepo                   domainRepo.ResourceRepository
+	RoleRepo                       domainRepo.RoleRepository
+	RolePermissionRepo             domainRepo.RolePermissionRepository
+	RoleTypeRepo                   domainRepo.RoleTypeRepository
 }
 
 func NewRepositoryContainer(pg *rdb.PostgreSQL) RepositoryContainer {
 	return RepositoryContainer{
-		AccessRequirementRepo: NewAccessRequirementRepository(pg),
-		ActionRepo:            NewActionRepository(pg),
-		FunctionCodeRepo:      NewFunctionCodeRepository(pg),
-		PermissionRepo:        NewPermissionRepository(pg),
-		ResourceRepo:          NewResourceRepository(pg),
+		AccessOperationRepo:            NewAccessOperationRepository(pg),
+		AccessRequirementRepo:          NewAccessRequirementRepository(pg),
+		AccessRequirementOperationRepo: NewAccessRequirementOperationRepository(pg),
+		ActionRepo:                     NewActionRepository(pg),
+		PermissionRepo:                 NewPermissionRepository(pg),
+		PermissionOpeartionRepo:        NewPermissionOperationRepository(pg),
+		ResourceRepo:                   NewResourceRepository(pg),
+		RoleRepo:                       NewRoleRepository(pg),
+		RolePermissionRepo:             NewRolePermissionRepository(pg),
+		RoleTypeRepo:                   NewRoleTypeRepository(pg),
 	}
 }

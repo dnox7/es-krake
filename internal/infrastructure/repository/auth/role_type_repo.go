@@ -11,35 +11,31 @@ import (
 	"github.com/dpe27/es-krake/pkg/log"
 )
 
-type funcCodeRepo struct {
+type roleTypeRepo struct {
 	logger *log.Logger
 	pg     *rdb.PostgreSQL
 }
 
-func NewFunctionCodeRepository(pg *rdb.PostgreSQL) domainRepo.FunctionCodeRepository {
-	return &funcCodeRepo{
-		logger: log.With("repository", "function_code_repo"),
+func NewRoleTypeRepository(pg *rdb.PostgreSQL) domainRepo.RoleTypeRepository {
+	return &roleTypeRepo{
+		logger: log.With("repository", "role_type_repo"),
 		pg:     pg,
 	}
 }
 
-// FindByConditions implements repository.FunctionCodeRepository.
-func (f *funcCodeRepo) FindByConditions(
-	ctx context.Context,
-	conditions map[string]interface{},
-	spec specification.Base,
-) ([]entity.FunctionCode, error) {
+// FindByConditions implements repository.RoleTypeRepository.
+func (r *roleTypeRepo) FindByConditions(ctx context.Context, conditions map[string]interface{}, spec specification.Base) ([]entity.RoleType, error) {
 	scopes, err := gormScope.ToGormScopes(spec)
 	if err != nil {
-		f.logger.Error(ctx, err.Error())
+		r.logger.Error(ctx, err.Error())
 		return nil, err
 	}
 
-	funcCodes := []entity.FunctionCode{}
-	err = f.pg.DB.
+	types := []entity.RoleType{}
+	err = r.pg.DB.
 		WithContext(ctx).
 		Scopes(scopes...).
 		Where(conditions).
-		Find(&funcCodes).Error
-	return funcCodes, err
+		Find(&types).Error
+	return types, err
 }
