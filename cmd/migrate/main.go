@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"os"
+
 	"github.com/dpe27/es-krake/config"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb/migration"

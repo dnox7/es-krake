@@ -1,5 +1,6 @@
 package kcdto
 
+//nolint:tagliatelle
 type BruteForceStatus struct {
 	Disabled      bool   `json:"disabled"`
 	LastFailure   int    `json:"lastFailure"`

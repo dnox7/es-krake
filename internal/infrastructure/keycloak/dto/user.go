@@ -1,5 +1,6 @@
 package kcdto
 
+//nolint:tagliatelle
 type KcUser struct {
 	ID                  string                `json:"id"`
 	Username            string                `json:"username"`
@@ -18,6 +19,7 @@ type KcCredential struct {
 	Temporary bool   `json:"temporary"`
 }
 
+//nolint:tagliatelle
 type KcFederatedIdentity struct {
 	IdentityProvider string `json:"identityProvider"`
 	UserID           string `json:"userId"`

@@ -1,5 +1,6 @@
 package config
 
+//nolint:tagliatelle
 type Redis struct {
 	Host       string `yaml:"host" env:"REDIS_HOST" env-required:"true"`
 	Port       string `yaml:"port" env:"REDIS_PORT" env-required:"true"`

@@ -1,5 +1,7 @@
 package utils
 
+import "time"
+
 const (
 	ErrInputFail    = "ERR001"
 	ErrInputRequire = "ERR002"
@@ -10,11 +12,11 @@ const (
 	DefaultPageSize = 30
 
 	FormatYearISO     = "2006"
-	FormatDateISO     = "2006-01-02"
+	FormatDateISO     = time.DateOnly
 	FormatTimeHHMM    = "15:04"
-	FormatTimeHHMMSS  = "15:04:05"
-	FormatDateTimeISO = "2006-01-02T15:04:05Z07:00"
-	FormatDateTimeSQL = "2006-01-02 15:04:05"
+	FormatTimeHHMMSS  = time.TimeOnly
+	FormatDateTimeISO = time.RFC3339
+	FormatDateTimeSQL = time.DateTime
 	FormatDateCompact = "20060102150405"
 
 	ProdEnv    = "prod"

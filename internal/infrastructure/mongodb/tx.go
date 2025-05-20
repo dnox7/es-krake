@@ -2,9 +2,9 @@ package mdb
 
 import (
 	"context"
+
 	"github.com/dpe27/es-krake/internal/domain/shared/transaction"
 	"github.com/dpe27/es-krake/pkg/log"
-
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )

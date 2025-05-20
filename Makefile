@@ -2,6 +2,14 @@
 test:
 	go test -v -race -cover ./...
 
+.PHONY: lint
+lint:
+	golangci-lint run
+
+.PHONY: fix-lint
+fix-lint:
+	golangci-lint run --fix --timeout=10m
+
 .PHONY: run-migration
 run-migration:
 	go run cmd/migrate/main.go

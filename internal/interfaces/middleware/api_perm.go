@@ -3,8 +3,6 @@ package middleware
 import (
 	"net/http"
 	"strings"
-
-	"github.com/gin-gonic/gin"
 )
 
 type APIPattern struct {
@@ -18,6 +16,7 @@ func (p APIPattern) Key() string {
 
 var routeMatcherIndex map[string][]string
 
+//nolint:gochecknoinits
 func init() {
 	routeMatcherIndex = make(map[string][]string)
 	for code, patterns := range APIPermissions {
@@ -35,5 +34,3 @@ var APIPermissions = map[string][]APIPattern{
 		},
 	},
 }
-
-func getAllFuncCodesWithAPI(c *gin.Context)

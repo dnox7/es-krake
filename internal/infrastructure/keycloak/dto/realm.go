@@ -1,5 +1,6 @@
 package kcdto
 
+//nolint:tagliatelle
 type KcRealm struct {
 	ID                  string `json:"id"`
 	Realm               string `json:"realm"`

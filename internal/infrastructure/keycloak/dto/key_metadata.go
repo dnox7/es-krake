@@ -5,6 +5,7 @@ type KcKeysMetadata struct {
 	Keys   []KcKeyMetadata        `json:"keys"`
 }
 
+//nolint:tagliatelle
 type KcKeyMetadata struct {
 	ProviderID       string `json:"providerID"`
 	ProviderPriority int64  `json:"providerPriority"`

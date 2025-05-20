@@ -1,5 +1,6 @@
 package kcdto
 
+//nolint:tagliatelle
 type KcClient struct {
 	ID       string `json:"id"`
 	ClientID string `json:"clientId"`

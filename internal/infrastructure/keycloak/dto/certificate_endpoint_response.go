@@ -38,5 +38,5 @@ type PubKey struct {
 	// The "x5t#S256" (X.509 certificate SHA-256 thumbprint) parameter is a
 	// base64url-encoded SHA-256 thumbprint (a.k.a. digest) of the DER
 	// encoding of an X.509 certificate
-	X5tS2566 string `json:"x5t#S256"`
+	X5tS2566 string `json:"x5t#S256"` //nolint:tagliatelle
 }

@@ -20,7 +20,7 @@ type TokenEndpointResp struct {
 	IDToken string `json:"id_token"`
 	// NotBeforePolicy indicates the time before which the token should not be
 	// accepted for validation.
-	NotBeforePolicy int `json:"not-before-policy"`
+	NotBeforePolicy int `json:"not-before-policy"` //nolint:tagliatelle
 	// Scope defines the permissions granted by the access token.
 	Scope string `json:"scope"`
 	// SessionState provides the state of the session, typically used for

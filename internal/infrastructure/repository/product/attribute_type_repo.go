@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+
 	"github.com/dpe27/es-krake/internal/domain/product/entity"
 	domainRepo "github.com/dpe27/es-krake/internal/domain/product/repository"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb"

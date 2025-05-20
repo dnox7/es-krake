@@ -2,13 +2,12 @@ package middleware
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
-	"github.com/dpe27/es-krake/pkg/dto"
 	"runtime"
 	"strings"
 
-	"log/slog"
-
+	"github.com/dpe27/es-krake/pkg/dto"
 	"github.com/gin-gonic/gin"
 )
 
@@ -23,7 +22,7 @@ func GinCustomRecovery() gin.HandlerFunc {
 			stackTrace := stack()
 
 			slog.ErrorContext(
-				c.Request.Context(), "Panic occured",
+				c.Request.Context(), "Panic occurred",
 				"error", errMsg,
 				"path", c.Request.URL.Path,
 				"method", c.Request.Method,
@@ -33,7 +32,7 @@ func GinCustomRecovery() gin.HandlerFunc {
 
 			errDto := &dto.BaseErrorResponse{
 				Error: &dto.ErrorResponse{
-					Message: fmt.Sprintf("Panic occured: %v", errMsg),
+					Message: fmt.Sprintf("Panic occurred: %v", errMsg),
 					Details: stackTrace,
 				},
 			}

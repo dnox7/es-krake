@@ -12,7 +12,6 @@ import (
 	gormScope "github.com/dpe27/es-krake/internal/infrastructure/rdb/gorm/scope"
 	"github.com/dpe27/es-krake/pkg/log"
 	"github.com/dpe27/es-krake/pkg/utils"
-
 	"gorm.io/gorm"
 )
 
@@ -85,7 +84,6 @@ func (c *categoryRepo) FindByConditions(
 		Where(conditions).
 		Find(&categories).Error
 	return categories, err
-
 }
 
 // TakeByConditions implements repository.CategoryRepository.

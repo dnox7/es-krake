@@ -1,6 +1,8 @@
 package kcdto
 
 // KcAuthExecInfo: AuthenticationExecutionInfoRepresentation
+//
+//nolint:tagliatelle
 type KcAuthExecInfo struct {
 	ID                 string `json:"id"`
 	Alias              string `json:"alias"`

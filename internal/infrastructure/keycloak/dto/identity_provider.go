@@ -1,5 +1,6 @@
 package kcdto
 
+//nolint:tagliatelle
 type KcIdentityProvider struct {
 	Alias       string `json:"alias"`
 	DisplayName string `json:"displayName"`

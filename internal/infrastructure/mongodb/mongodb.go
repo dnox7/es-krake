@@ -3,12 +3,13 @@ package mdb
 import (
 	"context"
 	"fmt"
-	"github.com/dpe27/es-krake/config"
-	"github.com/dpe27/es-krake/pkg/log"
-	mongolog "github.com/dpe27/es-krake/pkg/log/mongo"
+	"net"
 	"sync"
 	"time"
 
+	"github.com/dpe27/es-krake/config"
+	"github.com/dpe27/es-krake/pkg/log"
+	mongolog "github.com/dpe27/es-krake/pkg/log/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
@@ -59,7 +60,7 @@ func initMongo(cfg *config.Config) (*Mongo, error) {
 		SetSink(mongoLogger).
 		SetComponentLevel(options.LogComponentCommand, options.LogLevelDebug)
 
-	uri := fmt.Sprintf("mongodb://%s:%s", cfg.MDB.Hostname, cfg.MDB.Port)
+	uri := "mongodb://" + net.JoinHostPort(cfg.MDB.Hostname, cfg.MDB.Port)
 	credential := options.Credential{
 		AuthSource: cfg.MDB.AuthSource,
 		Username:   cfg.MDB.Username,

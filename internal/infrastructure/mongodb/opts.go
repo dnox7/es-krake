@@ -2,9 +2,9 @@ package mdb
 
 import (
 	"fmt"
+
 	"github.com/dpe27/es-krake/internal/domain/shared/specification"
 	"github.com/dpe27/es-krake/pkg/utils"
-
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
