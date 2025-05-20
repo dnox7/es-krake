@@ -2,13 +2,17 @@ package repository
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/dpe27/es-krake/internal/domain/auth/entity"
 	domainRepo "github.com/dpe27/es-krake/internal/domain/auth/repository"
 	"github.com/dpe27/es-krake/internal/domain/shared/specification"
 	"github.com/dpe27/es-krake/internal/domain/shared/transaction"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
+	gormScope "github.com/dpe27/es-krake/internal/infrastructure/rdb/gorm/scope"
 	"github.com/dpe27/es-krake/pkg/log"
+	"github.com/dpe27/es-krake/pkg/utils"
+	"gorm.io/gorm"
 )
 
 type roleRepo struct {
@@ -29,7 +33,19 @@ func (r *roleRepo) TakeByConditions(
 	conditions map[string]interface{},
 	spec specification.Base,
 ) (entity.Role, error) {
-	panic("unimplemented")
+	scopes, err := gormScope.ToGormScopes(spec)
+	if err != nil {
+		r.logger.Error(ctx, err.Error())
+		return entity.Role{}, err
+	}
+
+	role := entity.Role{}
+	err = r.pg.DB.
+		WithContext(ctx).
+		Scopes(scopes...).
+		Where(conditions).
+		Take(&role).Error
+	return role, err
 }
 
 // FindByConditions implements repository.RoleRepository.
@@ -38,16 +54,41 @@ func (r *roleRepo) FindByConditions(
 	conditions map[string]interface{},
 	spec specification.Base,
 ) ([]entity.Role, error) {
-	panic("unimplemented")
+	scopes, err := gormScope.ToGormScopes(spec)
+	if err != nil {
+		r.logger.Error(ctx, err.Error())
+		return nil, err
+	}
+
+	roles := []entity.Role{}
+	err = r.pg.DB.
+		WithContext(ctx).
+		Scopes(scopes...).
+		Where(conditions).
+		Find(&roles).Error
+	return roles, err
 }
 
 // CreateWithTx implements repository.RoleRepository.
 func (r *roleRepo) CreateWithTx(
 	ctx context.Context,
 	tx transaction.Base,
-	attributes []map[string]interface{},
+	attributes map[string]interface{},
 ) (entity.Role, error) {
-	panic("unimplemented")
+	gormTx, ok := tx.GetTx().(*gorm.DB)
+	if !ok {
+		return entity.Role{}, fmt.Errorf(utils.ErrorGetTx)
+	}
+
+	role := entity.Role{}
+	err := utils.MapToStruct(attributes, &role)
+	if err != nil {
+		r.logger.Error(ctx, utils.ErrorMapToStruct, "error", err.Error())
+		return entity.Role{}, err
+	}
+
+	err = gormTx.Create(&role).Error
+	return role, err
 }
 
 // UpdateWithTx implements repository.RoleRepository.
@@ -57,7 +98,19 @@ func (r *roleRepo) UpdateWithTx(
 	role entity.Role,
 	attributesToUpdate map[string]interface{},
 ) (entity.Role, error) {
-	panic("unimplemented")
+	gormTx, ok := tx.GetTx().(*gorm.DB)
+	if !ok {
+		return entity.Role{}, fmt.Errorf(utils.ErrorGetTx)
+	}
+
+	err := utils.MapToStruct(attributesToUpdate, &role)
+	if err != nil {
+		r.logger.Error(ctx, utils.ErrorMapToStruct, "error", err.Error())
+		return entity.Role{}, err
+	}
+
+	err = gormTx.Model(role).Updates(attributesToUpdate).Error
+	return role, err
 }
 
 // DeleteByConditionsWithTx implements repository.RoleRepository.
@@ -67,5 +120,18 @@ func (r *roleRepo) DeleteByConditionsWithTx(
 	conditions map[string]interface{},
 	spec specification.Base,
 ) error {
-	panic("unimplemented")
+	gormTx, ok := tx.GetTx().(*gorm.DB)
+	if !ok {
+		return fmt.Errorf(utils.ErrorGetTx)
+	}
+
+	gormScopes, err := gormScope.ToGormScopes(spec)
+	if err != nil {
+		r.logger.Error(ctx, err.Error())
+		return err
+	}
+	return gormTx.
+		Scopes(gormScopes...).
+		Where(conditions).
+		Delete(&entity.Role{}).Error
 }

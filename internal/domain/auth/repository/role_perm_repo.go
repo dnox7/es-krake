@@ -15,7 +15,5 @@ type RolePermissionRepository interface {
 
 	CreateBatchWithTx(ctx context.Context, tx transaction.Base, attributes []map[string]interface{}, batchSize int) error
 
-	CreateWithTx(ctx context.Context, tx transaction.Base, attributes map[string]interface{}) (entity.RolePermission, error)
-
 	DeleteByConditionsWithTx(ctx context.Context, tx transaction.Base, conditions map[string]interface{}, spec specification.Base) error
 }

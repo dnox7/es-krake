@@ -15,7 +15,7 @@ type RoleRepository interface {
 
 	FindByConditions(ctx context.Context, conditions map[string]interface{}, spec specification.Base) ([]entity.Role, error)
 
-	CreateWithTx(ctx context.Context, tx transaction.Base, attributes []map[string]interface{}) (entity.Role, error)
+	CreateWithTx(ctx context.Context, tx transaction.Base, attributes map[string]interface{}) (entity.Role, error)
 
 	UpdateWithTx(ctx context.Context, tx transaction.Base, role entity.Role, attributesToUpdate map[string]interface{}) (entity.Role, error)
 

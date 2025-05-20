@@ -7,13 +7,13 @@ import (
 	"github.com/dpe27/es-krake/internal/domain/shared/specification"
 )
 
-type RoleType string
+type RoleType int
 
 const (
 	RoleTypeTableName = "role_types"
 
-	PlatformRoleType   RoleType = "plarform"
-	EnterpriseRoleType RoleType = "enterprise"
+	PlatformRoleType   RoleType = 1
+	EnterpriseRoleType RoleType = 2
 )
 
 type RoleTypeRepository interface {
