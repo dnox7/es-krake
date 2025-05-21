@@ -12,6 +12,7 @@ import (
 	"github.com/dpe27/es-krake/internal/infrastructure/httpclient"
 	kcdto "github.com/dpe27/es-krake/internal/infrastructure/keycloak/dto"
 	"github.com/dpe27/es-krake/pkg/log"
+	"github.com/dpe27/es-krake/pkg/nethttp"
 	"github.com/dpe27/es-krake/pkg/utils"
 )
 
@@ -74,7 +75,7 @@ func (a *authenService) GetExecs(
 		return nil, err
 	}
 
-	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	req.Header.Add(nethttp.HeaderAuthorization, nethttp.AuthSchemeBearer+token)
 	query := req.URL.Query()
 	req.URL.RawQuery = query.Encode()
 	opts := httpclient.ReqOptBuidler().
@@ -134,8 +135,8 @@ func (a *authenService) PutExec(
 		return err
 	}
 
-	req.Header.Add(httpclient.HeaderContentType, httpclient.MIMEApplicationJSON)
-	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	req.Header.Add(nethttp.HeaderContentType, nethttp.MIMEApplicationJSON)
+	req.Header.Add(nethttp.HeaderAuthorization, nethttp.AuthSchemeBearer+token)
 	opts := httpclient.ReqOptBuidler().
 		LogReqBodyOnlyError().
 		LogResBody().
@@ -173,7 +174,7 @@ func (a *authenService) DeleteExec(
 		return err
 	}
 
-	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	req.Header.Add(nethttp.HeaderAuthorization, nethttp.AuthSchemeBearer+token)
 	opts := httpclient.ReqOptBuidler().
 		LogReqBodyOnlyError().
 		LogResBody().
@@ -207,7 +208,7 @@ func (a *authenService) PromoteExec(ctx context.Context, realm string, execID st
 		return err
 	}
 
-	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	req.Header.Add(nethttp.HeaderAuthorization, nethttp.AuthSchemeBearer+token)
 	opts := httpclient.ReqOptBuidler().
 		Log().
 		LogReqBodyOnlyError().
@@ -242,7 +243,7 @@ func (a *authenService) DemoteExec(ctx context.Context, realm string, execID str
 		return err
 	}
 
-	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	req.Header.Add(nethttp.HeaderAuthorization, nethttp.AuthSchemeBearer+token)
 	opts := httpclient.ReqOptBuidler().
 		Log().
 		LogReqBodyOnlyError().
@@ -277,7 +278,7 @@ func (a *authenService) GetFlows(ctx context.Context, realm string, token string
 		return nil, err
 	}
 
-	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	req.Header.Add(nethttp.HeaderAuthorization, nethttp.AuthSchemeBearer+token)
 	query := req.URL.Query()
 	req.URL.RawQuery = query.Encode()
 	opts := httpclient.ReqOptBuidler().
@@ -340,8 +341,8 @@ func (a *authenService) PostFlowCopy(
 		a.logger.Error(ctx, utils.ErrorCreateReq, "error", err.Error())
 	}
 
-	req.Header.Add(httpclient.HeaderContentType, httpclient.MIMEApplicationJSON)
-	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	req.Header.Add(nethttp.HeaderContentType, nethttp.MIMEApplicationJSON)
+	req.Header.Add(nethttp.HeaderAuthorization, nethttp.AuthSchemeBearer+token)
 	opts := httpclient.ReqOptBuidler().
 		Log().LogReqBodyOnlyError().
 		LogResBody().
@@ -392,8 +393,8 @@ func (a *authenService) PutFlow(
 		return err
 	}
 
-	req.Header.Add(httpclient.HeaderContentType, httpclient.MIMEApplicationJSON)
-	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	req.Header.Add(nethttp.HeaderContentType, nethttp.MIMEApplicationJSON)
+	req.Header.Add(nethttp.HeaderAuthorization, nethttp.AuthSchemeBearer+token)
 	opts := httpclient.ReqOptBuidler().
 		LogReqBodyOnlyError().
 		LogResBody().
@@ -426,7 +427,7 @@ func (a *authenService) DeleteFlow(ctx context.Context, realm string, flowID str
 		return err
 	}
 
-	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	req.Header.Add(nethttp.HeaderAuthorization, nethttp.AuthSchemeBearer+token)
 	opts := httpclient.ReqOptBuidler().
 		LogReqBodyOnlyError().
 		LogResBody().

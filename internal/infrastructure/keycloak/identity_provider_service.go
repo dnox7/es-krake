@@ -12,6 +12,7 @@ import (
 	"github.com/dpe27/es-krake/internal/infrastructure/httpclient"
 	kcdto "github.com/dpe27/es-krake/internal/infrastructure/keycloak/dto"
 	"github.com/dpe27/es-krake/pkg/log"
+	"github.com/dpe27/es-krake/pkg/nethttp"
 	"github.com/dpe27/es-krake/pkg/utils"
 )
 
@@ -51,7 +52,7 @@ func (i *identityProvider) GetIdPList(
 
 	query := req.URL.Query()
 	req.URL.RawQuery = query.Encode()
-	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	req.Header.Add(nethttp.HeaderAuthorization, nethttp.AuthSchemeBearer+token)
 	opts := httpclient.ReqOptBuidler().
 		Log().
 		LogReqBodyOnlyError().
@@ -111,8 +112,8 @@ func (i *identityProvider) PostIdP(
 		return err
 	}
 
-	req.Header.Add(httpclient.HeaderContentType, httpclient.MIMEApplicationJSON)
-	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	req.Header.Add(nethttp.HeaderContentType, nethttp.MIMEApplicationJSON)
+	req.Header.Add(nethttp.HeaderAuthorization, nethttp.AuthSchemeBearer+token)
 	opts := httpclient.ReqOptBuidler().
 		Log().
 		LogReqBodyOnlyError().
@@ -160,8 +161,8 @@ func (i *identityProvider) PutIdP(
 		return err
 	}
 
-	req.Header.Add(httpclient.HeaderContentType, httpclient.MIMEApplicationJSON)
-	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	req.Header.Add(nethttp.HeaderContentType, nethttp.MIMEApplicationJSON)
+	req.Header.Add(nethttp.HeaderAuthorization, nethttp.AuthSchemeBearer+token)
 	opts := httpclient.ReqOptBuidler().
 		Log().
 		LogReqBodyOnlyError().
@@ -201,7 +202,7 @@ func (i *identityProvider) DeleteIdP(
 		return err
 	}
 
-	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	req.Header.Add(nethttp.HeaderAuthorization, nethttp.AuthSchemeBearer+token)
 	opts := httpclient.ReqOptBuidler().
 		Log().
 		LogReqBodyOnlyError().

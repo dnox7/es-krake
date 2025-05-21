@@ -11,6 +11,7 @@ import (
 	"github.com/dpe27/es-krake/internal/infrastructure/httpclient"
 	kcdto "github.com/dpe27/es-krake/internal/infrastructure/keycloak/dto"
 	"github.com/dpe27/es-krake/pkg/log"
+	"github.com/dpe27/es-krake/pkg/nethttp"
 	"github.com/dpe27/es-krake/pkg/utils"
 )
 
@@ -48,8 +49,8 @@ func (a *attackDectectionService) GetUserBruteForceStatus(
 		return kcdto.BruteForceStatus{}, err
 	}
 
-	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
-	req.Header.Add(httpclient.HeaderContentType, httpclient.MIMEApplicationJSON)
+	req.Header.Add(nethttp.HeaderAuthorization, nethttp.AuthSchemeBearer+token)
+	req.Header.Add(nethttp.HeaderContentType, nethttp.MIMEApplicationJSON)
 	opts := httpclient.ReqOptBuidler().
 		Log().
 		LogReqBodyOnlyError().
@@ -112,7 +113,7 @@ func (a *attackDectectionService) ClearAllBruteForceStates(
 		return err
 	}
 
-	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	req.Header.Add(nethttp.HeaderAuthorization, nethttp.AuthSchemeBearer+token)
 	reqOpts := httpclient.ReqOptBuidler().
 		LogReqBodyOnlyError().
 		LogResBody().
@@ -152,7 +153,7 @@ func (a *attackDectectionService) ResetBruteForceForUser(
 		return err
 	}
 
-	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	req.Header.Add(nethttp.HeaderAuthorization, nethttp.AuthSchemeBearer+token)
 	opts := httpclient.ReqOptBuidler().
 		Log().
 		LogReqBodyOnlyError().
