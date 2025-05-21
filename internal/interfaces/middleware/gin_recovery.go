@@ -3,11 +3,10 @@ package middleware
 import (
 	"fmt"
 	"log/slog"
-	"net/http"
 	"runtime"
 	"strings"
 
-	"github.com/dpe27/es-krake/pkg/dto"
+	"github.com/dpe27/es-krake/pkg/nethttp"
 	"github.com/gin-gonic/gin"
 )
 
@@ -30,14 +29,7 @@ func GinCustomRecovery() gin.HandlerFunc {
 				"stack_trace", stackTrace,
 			)
 
-			errDto := &dto.BaseErrorResponse{
-				Error: &dto.ErrorResponse{
-					Message: fmt.Sprintf("Panic occurred: %v", errMsg),
-					Details: stackTrace,
-				},
-			}
-
-			c.JSON(http.StatusInternalServerError, errDto)
+			nethttp.SetInternalServerErrorResponse(c, fmt.Sprintf("Painic occurred: %v", errMsg), stackTrace, nil)
 		},
 	)
 }
