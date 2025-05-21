@@ -2,7 +2,9 @@ package utils
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
+	"strings"
 )
 
 func ToString(input interface{}) (string, error) {
@@ -18,4 +20,13 @@ func ToString(input interface{}) (string, error) {
 	default:
 		return "", fmt.Errorf("undefined type to convert %T", v)
 	}
+}
+
+func CheckKeyMatch(pattern, s string) (bool, error) {
+	pattern = strings.ReplaceAll(pattern, "/*", "/.*")
+
+	re := regexp.MustCompile(`:[^/]+`)
+	pattern = re.ReplaceAllString(pattern, "$1[^/]+$2")
+
+	return regexp.MatchString("^"+pattern+"$", s)
 }

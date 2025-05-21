@@ -18,6 +18,11 @@ const (
 	PemPrivateKeyFooter = "-----END PRIVATE KEY-----"
 )
 
+var (
+	ErrMissingToken = errors.New("token is required")
+	ErrInvalidToken = errors.New("token is invalid")
+)
+
 func GenerateES256JWT(keyID, secret string, payload map[string]interface{}) (string, error) {
 	block, _ := pem.Decode([]byte(PemPrivateKeyHeader + "\n" + secret + "\n" + PemPrivateKeyFooter))
 	if block == nil || block.Type != "PRIVATE KEY" {
@@ -68,13 +73,13 @@ func DecodeJWTUnverified(tokenStr string) (*jwt.Token, error) {
 	return token, nil
 }
 
-func GetKeycloakUserID(claims jwt.MapClaims) string {
+func GetKeycloakUserID(claims jwt.Claims) string {
 	sub, _ := claims.GetSubject()
 	return sub
 }
 
-func GetEmail(claims jwt.MapClaims) string {
-	email, ok := claims["email"].(string)
+func GetEmail(claims jwt.Claims) string {
+	email, ok := claims.(jwt.MapClaims)["email"].(string)
 	if !ok {
 		return ""
 	}
