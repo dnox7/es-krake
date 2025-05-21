@@ -15,6 +15,7 @@ import (
 	"github.com/dpe27/es-krake/internal/infrastructure/httpclient"
 	kcdto "github.com/dpe27/es-krake/internal/infrastructure/keycloak/dto"
 	"github.com/dpe27/es-krake/pkg/log"
+	"github.com/dpe27/es-krake/pkg/nethttp"
 	"github.com/dpe27/es-krake/pkg/utils"
 )
 
@@ -76,7 +77,7 @@ func (u *userService) GetUserByID(
 
 	q := req.URL.Query()
 	req.URL.RawQuery = q.Encode()
-	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	req.Header.Add(nethttp.HeaderAuthorization, nethttp.AuthSchemeBearer+token)
 
 	opts := httpclient.ReqOptBuidler().
 		Log().
@@ -143,7 +144,7 @@ func (u *userService) GetUserList(
 		q.Add(k, input)
 	}
 	req.URL.RawQuery = q.Encode()
-	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	req.Header.Add(nethttp.HeaderAuthorization, nethttp.AuthSchemeBearer+token)
 
 	opts := httpclient.ReqOptBuidler().
 		Log().
@@ -204,8 +205,8 @@ func (u *userService) PostUser(
 		return kcdto.KcUser{}, err
 	}
 
-	req.Header.Add(httpclient.HeaderContentType, httpclient.MIMEApplicationJSON)
-	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	req.Header.Add(nethttp.HeaderContentType, nethttp.MIMEApplicationJSON)
+	req.Header.Add(nethttp.HeaderAuthorization, nethttp.AuthSchemeBearer+token)
 	opts := httpclient.ReqOptBuidler().
 		Log().
 		LogReqBodyOnlyError().
@@ -225,7 +226,7 @@ func (u *userService) PostUser(
 	}()
 
 	if res.StatusCode == http.StatusCreated {
-		locations := strings.Split(res.Header.Get(httpclient.HeaderLocation), "/")
+		locations := strings.Split(res.Header.Get(nethttp.HeaderLocation), "/")
 		return kcdto.KcUser{
 			ID: locations[len(locations)-1],
 		}, nil
@@ -255,8 +256,8 @@ func (u *userService) UpdateUser(
 		return err
 	}
 
-	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
-	req.Header.Add(httpclient.HeaderContentType, httpclient.MIMEApplicationJSON)
+	req.Header.Add(nethttp.HeaderAuthorization, nethttp.AuthSchemeBearer+token)
+	req.Header.Add(nethttp.HeaderContentType, nethttp.MIMEApplicationJSON)
 	opts := httpclient.ReqOptBuidler().
 		Log().
 		LogReqBodyOnlyError().
@@ -296,7 +297,7 @@ func (u *userService) DeleteUser(
 		return err
 	}
 
-	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	req.Header.Add(nethttp.HeaderAuthorization, nethttp.AuthSchemeBearer+token)
 	opts := httpclient.ReqOptBuidler().
 		Log().
 		LogReqBodyOnlyError().
@@ -347,7 +348,7 @@ func (u *userService) CountUsers(
 	}
 
 	req.URL.RawQuery = query.Encode()
-	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	req.Header.Add(nethttp.HeaderAuthorization, nethttp.AuthSchemeBearer+token)
 	opts := httpclient.ReqOptBuidler().
 		Log().
 		LogReqBodyOnlyError().
@@ -410,8 +411,8 @@ func (u *userService) LogoutOIDC(
 		return err
 	}
 
-	req.Header.Add(httpclient.HeaderContentType, httpclient.MIMEApplicationForm)
-	req.Header.Add(httpclient.HeaderContentLength, strconv.Itoa(len(data.Encode())))
+	req.Header.Add(nethttp.HeaderContentType, nethttp.MIMEApplicationForm)
+	req.Header.Add(nethttp.HeaderContentLength, strconv.Itoa(len(data.Encode())))
 	opts := httpclient.ReqOptBuidler().
 		Log().
 		LogReqBodyOnlyError().
@@ -468,7 +469,7 @@ func (u *userService) LogoutAll(
 		return err
 	}
 
-	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	req.Header.Add(nethttp.HeaderAuthorization, nethttp.AuthSchemeBearer+token)
 	opts := httpclient.ReqOptBuidler().
 		Log().
 		LoggedReqBody([]string{}).
@@ -516,8 +517,8 @@ func (u *userService) ResetPassword(
 		return err
 	}
 
-	req.Header.Add(httpclient.HeaderContentType, httpclient.MIMEApplicationJSON)
-	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	req.Header.Add(nethttp.HeaderContentType, nethttp.MIMEApplicationJSON)
+	req.Header.Add(nethttp.HeaderAuthorization, nethttp.AuthSchemeBearer+token)
 	opts := httpclient.ReqOptBuidler().
 		Log().
 		LogReqBodyOnlyError().
@@ -557,7 +558,7 @@ func (u *userService) CheckPasswordExist(
 		return false, err
 	}
 
-	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	req.Header.Add(nethttp.HeaderAuthorization, nethttp.AuthSchemeBearer+token)
 	opts := httpclient.ReqOptBuidler().
 		Log().
 		LogReqBodyOnlyError().
@@ -613,7 +614,7 @@ func (u *userService) GetFederatedIdPs(
 		return nil, err
 	}
 
-	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	req.Header.Add(nethttp.HeaderAuthorization, nethttp.AuthSchemeBearer+token)
 	opts := httpclient.ReqOptBuidler().
 		Log().
 		LogReqBodyOnlyError().
@@ -682,8 +683,8 @@ func (u *userService) AddFederatedIdP(
 		return err
 	}
 
-	req.Header.Add(httpclient.HeaderContentType, httpclient.MIMEApplicationJSON)
-	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	req.Header.Add(nethttp.HeaderContentType, nethttp.MIMEApplicationJSON)
+	req.Header.Add(nethttp.HeaderAuthorization, nethttp.AuthSchemeBearer+token)
 	opts := httpclient.ReqOptBuidler().
 		Log().
 		LogReqBodyOnlyError().
@@ -718,7 +719,7 @@ func (u *userService) RemoveFederatedIdP(ctx context.Context, realm string, user
 		return err
 	}
 
-	req.Header.Add(httpclient.HeaderAuthorization, httpclient.AuthSchemeBearer+token)
+	req.Header.Add(nethttp.HeaderAuthorization, nethttp.AuthSchemeBearer+token)
 	opts := httpclient.ReqOptBuidler().
 		Log().
 		LogReqBodyOnlyError().

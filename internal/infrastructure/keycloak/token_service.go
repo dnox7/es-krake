@@ -14,6 +14,7 @@ import (
 	"github.com/dpe27/es-krake/internal/infrastructure/httpclient"
 	kcdto "github.com/dpe27/es-krake/internal/infrastructure/keycloak/dto"
 	"github.com/dpe27/es-krake/pkg/log"
+	"github.com/dpe27/es-krake/pkg/nethttp"
 	"github.com/dpe27/es-krake/pkg/utils"
 )
 
@@ -115,8 +116,8 @@ func (t *tokenService) requestToken(
 		return kcdto.TokenEndpointResp{}, err
 	}
 
-	req.Header.Add(httpclient.HeaderContentType, httpclient.MIMEApplicationForm)
-	req.Header.Add(httpclient.HeaderContentLength, strconv.Itoa(len(data.Encode())))
+	req.Header.Add(nethttp.HeaderContentType, nethttp.MIMEApplicationForm)
+	req.Header.Add(nethttp.HeaderContentLength, strconv.Itoa(len(data.Encode())))
 	opts := httpclient.ReqOptBuidler().
 		Log().
 		LogReqBodyOnlyError().
