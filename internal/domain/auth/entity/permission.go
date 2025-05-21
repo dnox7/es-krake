@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/dpe27/es-krake/internal/domain/shared/model"
+	"github.com/dpe27/es-krake/pkg/utils"
+	"golang.org/x/sync/errgroup"
 )
 
 type Permission struct {
@@ -35,7 +37,9 @@ func (p Permission) Codes() ([]string, error) {
 	return codes, nil
 }
 
-func MapPermissionsToCodes(perms []Permission) ([]string, error) {
+type PermissionSlice []Permission
+
+func (perms PermissionSlice) MapPermissionsToCodes() ([]string, error) {
 	codes := []string{}
 	for _, p := range perms {
 		c, err := p.Codes()
@@ -45,4 +49,30 @@ func MapPermissionsToCodes(perms []Permission) ([]string, error) {
 		codes = append(codes, c...)
 	}
 	return codes, nil
+}
+
+func (perms PermissionSlice) HasRequiredOperations(requiredOps []AccessOperation) (bool, error) {
+	var (
+		g         errgroup.Group
+		permCodes []string
+		opCodes   []string
+	)
+
+	g.Go(func() error {
+		var err error
+		permCodes, err = perms.MapPermissionsToCodes()
+		return err
+	})
+
+	g.Go(func() error {
+		var err error
+		opCodes, err = MapOperationsToCodes(requiredOps)
+		return err
+	})
+
+	if err := g.Wait(); err != nil {
+		return false, err
+	}
+
+	return utils.IsSubSet(opCodes, permCodes), nil
 }
