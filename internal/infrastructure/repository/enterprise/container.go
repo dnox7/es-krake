@@ -1,4 +1,4 @@
-package enterprise
+package repository
 
 import (
 	domainRepo "github.com/dpe27/es-krake/internal/domain/enterprise/repository"
