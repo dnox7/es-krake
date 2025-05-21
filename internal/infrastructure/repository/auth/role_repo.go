@@ -27,6 +27,30 @@ func NewRoleRepository(pg *rdb.PostgreSQL) domainRepo.RoleRepository {
 	}
 }
 
+// CheckExists implements repository.RoleRepository.
+func (r *roleRepo) CheckExists(
+	ctx context.Context,
+	conditions map[string]interface{},
+	spec specification.Base,
+) (bool, error) {
+	scopes, err := gormScope.ToGormScopes(spec)
+	if err != nil {
+		r.logger.Error(ctx, err.Error())
+		return false, err
+	}
+
+	var exists bool
+	err = r.pg.DB.
+		WithContext(ctx).
+		Model(&entity.Role{}).
+		Select("1").
+		Where(conditions).
+		Scopes(scopes...).
+		Limit(1).
+		Scan(&exists).Error
+	return exists, err
+}
+
 // TakeByConditions implements repository.RoleRepository.
 func (r *roleRepo) TakeByConditions(
 	ctx context.Context,

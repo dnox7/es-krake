@@ -11,6 +11,8 @@ import (
 const RoleTableName = "roles"
 
 type RoleRepository interface {
+	CheckExists(ctx context.Context, conditions map[string]interface{}, spec specification.Base) (bool, error)
+
 	TakeByConditions(ctx context.Context, conditions map[string]interface{}, spec specification.Base) (entity.Role, error)
 
 	FindByConditions(ctx context.Context, conditions map[string]interface{}, spec specification.Base) ([]entity.Role, error)

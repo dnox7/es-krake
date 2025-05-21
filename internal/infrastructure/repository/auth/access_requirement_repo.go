@@ -23,6 +23,29 @@ func NewAccessRequirementRepository(pg *rdb.PostgreSQL) domainRepo.AccessRequire
 	}
 }
 
+// CheckExists implements repository.AccessRequirementRepository.
+func (a *accessRequirementRepo) CheckExists(
+	ctx context.Context,
+	conditions map[string]interface{},
+	spec specification.Base,
+) (bool, error) {
+	scopes, err := gormScope.ToGormScopes(spec)
+	if err != nil {
+		a.logger.Error(ctx, err.Error())
+		return false, err
+	}
+
+	var res bool
+	err = a.pg.DB.
+		WithContext(ctx).
+		Scopes(scopes...).
+		Where(conditions).
+		Select("1").
+		Limit(1).
+		Scan(&res).Error
+	return res, err
+}
+
 // TakeByConditions implements repository.AccessRequirementRepository.
 func (a *accessRequirementRepo) TakeByConditions(
 	ctx context.Context,
