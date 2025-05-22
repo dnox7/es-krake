@@ -104,7 +104,7 @@ func (pm *permMiddleware) checkPerm(c *gin.Context, isPfAcc bool) {
 
 	wg.Wait()
 	close(errChan)
-	for te := range errChan {
+	if te, ok := <-errChan; ok {
 		if te.id == 1 {
 			nethttp.AbortWithInternalServerErrorResponse(c, te.err.Error(), nil, nil)
 		} else {
