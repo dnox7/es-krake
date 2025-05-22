@@ -23,15 +23,15 @@ const keyPath = "/keys"
 type KcKeyService interface {
 	// GetJWKSKeysFromEndpoint retrieves the current public keys from the OIDC JWKS endpoint.
 	// These keys are used by clients to verify JWT signatures.
-	GetJWKSKeysFromEndpoint(ctx context.Context, realm string) (kcdto.CertEndpointResp, error)
+	GetJWKSKeysFromEndpoint(ctx context.Context, issuer string) (kcdto.CertEndpointResp, error)
 	// GetJWKSKeysFromCache retrieves the cached JWKS for the specified realm.
 	// It returns the cached CertEndpointResp and a boolean indicating whether the cache was hit.
 	// If the cache is not found or expired, the boolean will be false.
-	GetJWKSKeysFromCache(realm string) (kcdto.CertEndpointResp, bool)
+	GetJWKSKeysFromCache(issuer string) (kcdto.CertEndpointResp, bool)
 	// CacheJWKSKeyForRealm stores the provided JWKS (JSON Web Key Set) for the specified realm
 	// into the local cache. This function allows preloading or updating the cached keys without
 	// fetching them from the Keycloak server.
-	CacheJWKSKeyForRealm(realm string, pubKeys kcdto.CertEndpointResp)
+	CacheJWKSKeyForRealm(issuer string, pubKeys kcdto.CertEndpointResp)
 	// ExtractKey searches for a public key in the CertEndpointResp that matches the provided keyID.
 	// It returns the first certificate (x5c[0]) associated with the matching key.
 	// If no matching key is found or the key list is empty, it returns an error.
@@ -57,9 +57,9 @@ func NewKcKeyService(base BaseKcService) KcKeyService {
 // GetJWKSKeysFromEndpoint implements KcKeyService.
 func (k *keyService) GetJWKSKeysFromEndpoint(
 	ctx context.Context,
-	realm string,
+	issuer string,
 ) (kcdto.CertEndpointResp, error) {
-	url := k.PublicKeyUrl(realm)
+	url := k.PublicKeyUrl(issuer)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		k.logger.Error(ctx, utils.ErrorCreateReq, "error", err.Error())
@@ -101,16 +101,16 @@ func (k *keyService) GetJWKSKeysFromEndpoint(
 }
 
 // GetJWKSKeysFromCache implements KcKeyService.
-func (k *keyService) GetJWKSKeysFromCache(realm string) (kcdto.CertEndpointResp, bool) {
-	pubKeys, ok := k.cache[realm]
+func (k *keyService) GetJWKSKeysFromCache(issuer string) (kcdto.CertEndpointResp, bool) {
+	pubKeys, ok := k.cache[issuer]
 	return pubKeys, ok
 }
 
 // CacheJWKSKeyForRealm implements KcKeyService.
-func (k *keyService) CacheJWKSKeyForRealm(realm string, pubKeys kcdto.CertEndpointResp) {
+func (k *keyService) CacheJWKSKeyForRealm(issuer string, pubKeys kcdto.CertEndpointResp) {
 	mu := &sync.Mutex{}
 	mu.Lock()
-	k.cache[realm] = pubKeys
+	k.cache[issuer] = pubKeys
 	mu.Unlock()
 }
 

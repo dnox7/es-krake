@@ -34,6 +34,13 @@ func NewErrorResponse(message, details, debugInfo interface{}) *BaseErrorRespons
 	}
 }
 
+func AbortWithBadRequestResponse(c *gin.Context, msg, detail, debugInfo interface{}) {
+	c.AbortWithStatusJSON(
+		http.StatusBadRequest,
+		NewErrorResponse(msg, detail, debugInfo),
+	)
+}
+
 func AbortWithForbiddenResponse(c *gin.Context, msg, detail, debugInfo interface{}) {
 	c.AbortWithStatusJSON(
 		http.StatusForbidden,
@@ -51,6 +58,13 @@ func AbortWithUnauthorizedResponse(c *gin.Context, msg, detail, debugInfo interf
 func AbortWithInternalServerErrorResponse(c *gin.Context, msg, detail, debugInfo interface{}) {
 	c.AbortWithStatusJSON(
 		http.StatusInternalServerError,
+		NewErrorResponse(msg, detail, debugInfo),
+	)
+}
+
+func AbortWithRequestTimeoutResponse(c *gin.Context, msg, detail, debugInfo interface{}) {
+	c.AbortWithStatusJSON(
+		http.StatusRequestTimeout,
 		NewErrorResponse(msg, detail, debugInfo),
 	)
 }

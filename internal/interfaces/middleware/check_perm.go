@@ -4,7 +4,6 @@ import (
 	"errors"
 	"net/http"
 	"regexp"
-	"strings"
 	"sync"
 
 	authEntities "github.com/dpe27/es-krake/internal/domain/auth/entity"
@@ -22,7 +21,7 @@ import (
 
 const (
 	ErrGetAccessReqCode      = "failed to take access_requirement_code from request"
-	ErrAccessReqCodeNotFound = "access_requirement_code doesn not exists"
+	ErrAccessReqCodeNotFound = "access_requirement_code does not exists"
 )
 
 type permMiddleware struct {
@@ -78,28 +77,24 @@ func (pm *permMiddleware) checkPerm(c *gin.Context, isPfAcc bool) {
 		operations  []authEntities.AccessOperation
 	)
 	errChan := make(chan taskErr, 2)
-
 	wg.Add(2)
+
 	go func() {
 		defer wg.Done()
-
-		ops, err := pm.getReqOperationsFromReq(c)
+		var err error
+		operations, err = pm.getReqOperationsFromReq(c)
 		if err != nil {
 			errChan <- taskErr{id: 1, err: err}
-			return
 		}
-		operations = ops
 	}()
 
 	go func() {
 		defer wg.Done()
-
-		perms, err := pm.getPermssionsFromKcUserID(c, isPfAcc)
+		var err error
+		permissions, err = pm.getPermssionsFromKcUserID(c, isPfAcc)
 		if err != nil {
 			errChan <- taskErr{id: 2, err: err}
-			return
 		}
-		permissions = perms
 	}()
 
 	wg.Wait()
@@ -231,12 +226,4 @@ func getKcUserIDFromReq(c *gin.Context) (string, error) {
 	}
 
 	return kcUserID, nil
-}
-
-func getTokenFromReq(c *gin.Context) string {
-	authHeader := c.Request.Header.Get(nethttp.HeaderAuthorization)
-	if authHeader != "" && strings.Index(authHeader, nethttp.AuthSchemeBearer) == 0 {
-		return authHeader[7:]
-	}
-	return ""
 }

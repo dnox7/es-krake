@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/dpe27/es-krake/pkg/utils"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -119,20 +118,20 @@ func (validator *JsonSchemaValidator) GetErrorField(
 	return field
 }
 
-func (validator *JsonSchemaValidator) GetCustomErrorMessage(
-	res gojsonschema.ResultError,
-) string {
-	details := res.Details()
-	format, formatExists := details["format"]
-
-	if res.Type() == "format" && formatExists {
-		switch format {
-		case "email", "idn-email":
-			return utils.ErrEmailFail
-		case "password", "strong-password":
-			return utils.ErrPasswordFail
-		}
-	}
-
-	return utils.ErrInputFail
-}
+// func (validator *JsonSchemaValidator) GetCustomErrorMessage(
+// 	res gojsonschema.ResultError,
+// ) string {
+// 	details := res.Details()
+// 	format, formatExists := details["format"]
+//
+// 	if res.Type() == "format" && formatExists {
+// 		switch format {
+// 		case "email", "idn-email":
+// 			return utils.ErrEmailFail
+// 		case "password", "strong-password":
+// 			return utils.ErrPasswordFail
+// 		}
+// 	}
+//
+// 	return utils.ErrInputFail
+// }
