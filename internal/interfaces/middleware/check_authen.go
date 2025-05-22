@@ -69,8 +69,6 @@ func (am *authenMiddleware) CheckAuthentication() gin.HandlerFunc {
 			return
 		}
 
-		splitStr := strings.Split(issuer, "/")
-		realm := splitStr[len(splitStr)-1]
 		pubKeys, ok := am.kcKeyService.GetJWKSKeysFromCache(issuer)
 		_, err = am.kcKeyService.ExtractKey(keyID.(string), pubKeys)
 
@@ -99,6 +97,10 @@ func (am *authenMiddleware) CheckAuthentication() gin.HandlerFunc {
 			nethttp.AbortWithUnauthorizedResponse(c, err.Error(), nil, nil)
 			return
 		}
+
+		c.Set("kc_user_id", subject)
+		c.Set("user", claims)
+		c.Next()
 	}
 }
 
