@@ -16,6 +16,8 @@ const (
 	PemPublicKeyFooter  = "-----END PUBLIC KEY-----"
 	PemPrivateKeyHeader = "-----BEGIN PRIVATE KEY-----"
 	PemPrivateKeyFooter = "-----END PRIVATE KEY-----"
+
+	ErrorTokenExpiredMsg = "Token is expired"
 )
 
 var (

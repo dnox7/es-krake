@@ -4,7 +4,6 @@ import (
 	"errors"
 	"net/http"
 	"regexp"
-	"strings"
 	"sync"
 
 	authEntities "github.com/dpe27/es-krake/internal/domain/auth/entity"
@@ -22,7 +21,7 @@ import (
 
 const (
 	ErrGetAccessReqCode      = "failed to take access_requirement_code from request"
-	ErrAccessReqCodeNotFound = "access_requirement_code doesn not exists"
+	ErrAccessReqCodeNotFound = "access_requirement_code does not exists"
 )
 
 type permMiddleware struct {
@@ -227,12 +226,4 @@ func getKcUserIDFromReq(c *gin.Context) (string, error) {
 	}
 
 	return kcUserID, nil
-}
-
-func getTokenFromReq(c *gin.Context) string {
-	authHeader := c.Request.Header.Get(nethttp.HeaderAuthorization)
-	if authHeader != "" && strings.Index(authHeader, nethttp.AuthSchemeBearer) == 0 {
-		return authHeader[7:]
-	}
-	return ""
 }

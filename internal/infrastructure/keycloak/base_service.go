@@ -25,8 +25,8 @@ type BaseKcService interface {
 
 	AdminApiBaseUrl() string
 	AdminRealmUrl(realm string) string
-	PublicKeyUrl(realm string) string
-	TokenUrl(realm string) string
+	PublicKeyUrl(issuer string) string
+	TokenUrl(realmUrl string) string
 	LogoutUrl(realm string) string
 }
 
@@ -86,8 +86,8 @@ func (b *baseKcService) AdminRealmUrl(realm string) string {
 }
 
 // PublicKeyUrl implements BaseKcService.
-func (b *baseKcService) PublicKeyUrl(realm string) string {
-	return b.domain + realmPath + "/" + realm + pubKeyPath
+func (b *baseKcService) PublicKeyUrl(issuer string) string {
+	return issuer + pubKeyPath
 }
 
 // TokenUrl implements BaseKcService.
