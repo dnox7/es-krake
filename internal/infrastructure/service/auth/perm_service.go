@@ -42,9 +42,6 @@ func (p *permService) GetPermissionsWithRoleID(
 		)).
 		Where("r.id = ?", roleID).
 		Preload("Operations").
-		Preload("Operations.AccessOperation").
-		Preload("Operations.AccessOperation.Action").
-		Preload("Operations.AccessOperation.Resource")
-
+		Preload("Operations.AccessOperation")
 	return p.permRepo.FindByConditions(ctx, nil, scopes)
 }

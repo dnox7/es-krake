@@ -40,8 +40,6 @@ func (a *accessOperationService) GetOperationsWithAccessReqCode(
 			"INNER JOIN %s AS ar ON ar.id = aro.access_requirement_id",
 			repository.AccessRequirementTableName,
 		)).
-		Where("ar.code = ?", code).
-		Preload("Action").
-		Preload("Resource")
+		Where("ar.code = ?", code)
 	return a.accessOpRepo.FindByConditions(ctx, nil, scopes)
 }

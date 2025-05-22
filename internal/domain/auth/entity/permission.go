@@ -26,12 +26,7 @@ func (p Permission) Codes() ([]string, error) {
 			return nil, fmt.Errorf("failed to map permissionOperation to code: id=%d", po.ID)
 		}
 
-		c, err := po.AccessOperation.Code()
-		if err != nil {
-			return nil, err
-		}
-
-		codes = append(codes, c)
+		codes = append(codes, po.AccessOperation.Code)
 	}
 
 	return codes, nil
