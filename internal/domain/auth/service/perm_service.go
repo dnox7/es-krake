@@ -7,5 +7,5 @@ import (
 )
 
 type PermissionService interface {
-	GetPermissionsWithKcUserID(ctx context.Context, kcUserID int) ([]entity.Permission, error)
+	GetPermissionsWithRoleID(ctx context.Context, roleID int) ([]entity.Permission, error)
 }

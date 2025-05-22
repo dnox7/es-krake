@@ -1,24 +1,24 @@
 package wraperror
 
-type ApiDisplayableError struct {
+type apiError struct {
 	httpStatus int
 	message    interface{}
 	err        error
 }
 
-func NewApiDisplayableError(
+func APIError(
 	httpStatus int,
 	message interface{},
 	err error,
-) *ApiDisplayableError {
-	return &ApiDisplayableError{
+) *apiError {
+	return &apiError{
 		httpStatus: httpStatus,
 		message:    message,
 		err:        err,
 	}
 }
 
-func (e *ApiDisplayableError) Error() string {
+func (e *apiError) Error() string {
 	if e.err != nil {
 		return e.err.Error()
 	}
@@ -30,14 +30,14 @@ func (e *ApiDisplayableError) Error() string {
 	return "Unknown error"
 }
 
-func (e *ApiDisplayableError) Unwrap() error {
+func (e *apiError) Unwrap() error {
 	return e.err
 }
 
-func (e *ApiDisplayableError) Message() interface{} {
+func (e *apiError) Message() interface{} {
 	return e.message
 }
 
-func (e *ApiDisplayableError) HttpStatus() int {
+func (e *apiError) HttpStatus() int {
 	return e.httpStatus
 }

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/dpe27/es-krake/pkg/nethttp"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,31 +14,31 @@ const (
 
 func AccessControlHeaders() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Credentials", "true")
-		c.Header("Cache-Control", "no-store")
-		c.Header("Pragma", "no-store")
-		c.Header("X-Content-Type-Options", "nosiff")
+		c.Header(nethttp.HeaderAccessControlAllowCredentials, "true")
+		c.Header(nethttp.HeaderCacheControl, "no-store")
+		c.Header(nethttp.HeaderPragma, "no-store")
+		c.Header(nethttp.HeaderXContentTypeOptions, "nosiff")
 
-		if origin := c.Request.Header.Get("Origin"); origin != "" {
-			c.Header("Access-Control-Allow-Origin", origin)
+		if origin := c.Request.Header.Get(nethttp.HeaderOrigin); origin != "" {
+			c.Header(nethttp.HeaderAccessControlAllowOrigin, origin)
 		} else {
-			c.Header("Access-Control-Allow-Origin", "*")
+			c.Header(nethttp.HeaderAccessControlAllowOrigin, "*")
 		}
 
-		if requestedHeaders := c.Request.Header.Get("Access-Control-Request-Headers"); requestedHeaders != "" {
-			c.Header("Access-Control-Allow-Headers", requestedHeaders)
+		if requestedHeaders := c.Request.Header.Get(nethttp.HeaderAccessControlRequestHeaders); requestedHeaders != "" {
+			c.Header(nethttp.HeaderAccessControlAllowHeaders, requestedHeaders)
 		} else {
-			c.Header("Access-Control-Allow-Headers", "*")
+			c.Header(nethttp.HeaderAccessControlAllowHeaders, "*")
 		}
 
-		if requestedMethod := c.Request.Header.Get("Access-Control-Request-Method"); requestedMethod != "" {
-			c.Header("Access-Control-Allow-Method", requestedMethod)
+		if requestedMethod := c.Request.Header.Get(nethttp.HeaderAccessControlRequestMethod); requestedMethod != "" {
+			c.Header(nethttp.HeaderAccessControlAllowMethod, requestedMethod)
 		} else {
-			c.Header("Access-Control-Allow-Method", "*")
+			c.Header(nethttp.HeaderAccessControlAllowMethod, "*")
 		}
 
 		if c.Request.Method == http.MethodOptions {
-			c.Header("Access-Control-Max-Age", strconv.Itoa(defaultMaxAge))
+			c.Header(nethttp.HeaderAccessControlMaxAge, strconv.Itoa(defaultMaxAge))
 			c.AbortWithStatus(http.StatusNoContent)
 		} else {
 			c.Next()

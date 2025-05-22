@@ -13,7 +13,7 @@ type ServiceContainer struct {
 func NewServiceContainer(repos repository.RepositoryContainer) ServiceContainer {
 	return ServiceContainer{
 		AccessOperationService: NewAccessOperationService(
-			repos.AccessRequirementRepo,
+			repos.AccessOperationRepo,
 		),
 		PermissionService: NewPermissionService(
 			repos.PermissionRepo,

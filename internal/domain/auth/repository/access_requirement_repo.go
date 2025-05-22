@@ -10,5 +10,7 @@ import (
 const AccessRequirementTableName = "access_requirements"
 
 type AccessRequirementRepository interface {
+	CheckExists(ctx context.Context, conditions map[string]interface{}, spec specification.Base) (bool, error)
+
 	TakeByConditions(ctx context.Context, conditions map[string]interface{}, spec specification.Base) (entity.AccessRequirement, error)
 }

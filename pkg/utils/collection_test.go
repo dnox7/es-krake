@@ -52,3 +52,41 @@ func TestIsSubSet(t *testing.T) {
 		})
 	}
 }
+
+func equalIgnoreOrder[T comparable](a, b []T) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	// Dùng map để đếm số lượng phần tử
+	counts := make(map[T]int)
+	for _, v := range a {
+		counts[v]++
+	}
+	for _, v := range b {
+		counts[v]--
+		if counts[v] < 0 {
+			return false
+		}
+	}
+	return true
+}
+
+func TestToSet_Int(t *testing.T) {
+	input := []int{1, 2, 2, 3, 1}
+	expected := []int{1, 2, 3}
+	result := ToSet(input)
+
+	if !equalIgnoreOrder(result, expected) {
+		t.Errorf("ToSet(%v) = %v, want %v", input, result, expected)
+	}
+}
+
+func TestToSet_String(t *testing.T) {
+	input := []string{"a", "b", "a", "c", "b"}
+	expected := []string{"a", "b", "c"}
+	result := ToSet(input)
+
+	if !equalIgnoreOrder(result, expected) {
+		t.Errorf("ToSet(%v) = %v, want %v", input, result, expected)
+	}
+}
