@@ -10,9 +10,19 @@ lint:
 fix-lint:
 	golangci-lint run --fix --timeout=10m
 
-.PHONY: run-migration
-run-migration:
-	go run cmd/migrate/main.go
+.PHONY: migrate-up
+migrate-up:
+	go run cmd/migrate/main.go --type up
+
+.PHONY: migrate-down
+migrate-down:
+	go run cmd/migrate/main.go --type down
+
+.PHONY: migrate-step
+migrate-step:
+	@read -p "Module name: " module; \
+	read -p "Step (integer): " step; \
+	go run cmd/migrate/main.go --type step --module $$module --step $$step
 
 .PHONY: run-kc
 run-kc:

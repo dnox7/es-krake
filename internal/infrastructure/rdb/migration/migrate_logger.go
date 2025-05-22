@@ -5,11 +5,18 @@ import (
 	"fmt"
 
 	"github.com/dpe27/es-krake/pkg/log"
+	"github.com/golang-migrate/migrate/v4"
 )
 
 // this type is required to implement the Logger interface of golang-migrate
 type migrationLogger struct {
-	*log.Logger
+	logger *log.Logger
+}
+
+func newMigrationLogger() migrate.Logger {
+	return migrationLogger{
+		logger: log.With("object", "migration"),
+	}
 }
 
 func (l migrationLogger) Verbose() bool {
@@ -17,5 +24,5 @@ func (l migrationLogger) Verbose() bool {
 }
 
 func (l migrationLogger) Printf(format string, v ...interface{}) {
-	l.With("service", "database").Info(context.Background(), fmt.Sprintf(format, v...))
+	l.logger.Info(context.Background(), fmt.Sprintf(format, v...))
 }
