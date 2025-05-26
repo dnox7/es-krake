@@ -19,6 +19,7 @@ type (
 		RDB      *rdb      `yaml:"rdb"`
 		MDB      *mongo    `yaml:"mdb"`
 		Keycloak *keycloak `yaml:"keycloak"`
+		Redis    *Redis    `yaml:"redis"`
 	}
 
 	app struct {

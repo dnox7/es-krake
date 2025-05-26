@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/dpe27/es-krake/config"
+	gormlog "github.com/dpe27/es-krake/internal/infrastructure/rdb/gorm/log"
 	"github.com/dpe27/es-krake/pkg/log"
-	gormlog "github.com/dpe27/es-krake/pkg/log/gorm"
 	"github.com/dpe27/es-krake/pkg/wraperror"
 	pgDriver "gorm.io/driver/postgres"
 	"gorm.io/gorm"
