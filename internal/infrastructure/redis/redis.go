@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"context"
 	"time"
 
 	"github.com/dpe27/es-krake/config"
@@ -9,6 +10,10 @@ import (
 )
 
 type RedisRepository interface {
+	SetString(ctx context.Context, key string, val interface{}, ttl time.Duration) error
+	GetString(ctx context.Context, key string) ([]byte, error)
+
+	DelKeys(ctx context.Context, keys ...string) error
 }
 
 type redisRepo struct {
@@ -16,7 +21,7 @@ type redisRepo struct {
 	client *redis.Client
 }
 
-func NewRedisRespository(cfg *config.Config) RedisRepository {
+func NewRedisRespository(cfg *config.Config) *redisRepo {
 	opts := redis.Options{
 		Addr:            cfg.Redis.Host + ":" + cfg.Redis.Port,
 		ClientName:      cfg.Redis.ClientName,
@@ -36,4 +41,27 @@ func NewRedisRespository(cfg *config.Config) RedisRepository {
 		logger: logger,
 		client: redis.NewClient(&opts),
 	}
+}
+
+func (r *redisRepo) Ping(ctx context.Context) error {
+	return r.client.Ping(ctx).Err()
+}
+
+func (r *redisRepo) Close(ctx context.Context) {
+	r.logger.Info(ctx, "Closing Redis")
+	if err := r.client.Close(); err != nil {
+		r.logger.Error(ctx, "Error while closing Redis", "error", err.Error())
+	}
+}
+
+func (r *redisRepo) SetString(ctx context.Context, key string, val interface{}, ttl time.Duration) error {
+	return r.client.Set(ctx, key, val, ttl).Err()
+}
+
+func (r *redisRepo) GetString(ctx context.Context, key string) ([]byte, error) {
+	return r.client.Get(ctx, key).Bytes()
+}
+
+func (r *redisRepo) DelKeys(ctx context.Context, key ...string) error {
+	return r.client.Del(ctx, key...).Err()
 }
