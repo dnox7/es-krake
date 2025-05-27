@@ -13,26 +13,27 @@ const cfgFilePath = ".env"
 
 type (
 	Config struct {
-		App      *app      `yaml:"application"`
-		Log      *log      `yaml:"logger"`
-		Server   *server   `yaml:"server"`
-		RDB      *rdb      `yaml:"rdb"`
-		MDB      *mongo    `yaml:"mdb"`
-		Keycloak *keycloak `yaml:"keycloak"`
+		App      *app
+		Log      *log
+		Server   *server
+		RDB      *rdb
+		MDB      *mongo
+		Keycloak *keycloak
+		Vault    *vault
 	}
 
 	app struct {
-		Name    string `yaml:"name" env:"APP_NAME" env-required:"true"`
-		Version string `yaml:"version" env:"APP_VERSION" env-required:"true"`
-		Env     string `yaml:"env" env:"APP_ENV" env-required:"true"`
+		Name    string `env:"APP_NAME"    env-required:"true"`
+		Version string `env:"APP_VERSION" env-required:"true"`
+		Env     string `env:"APP_ENV"     env-required:"true"`
 	}
 
 	server struct {
-		Port string `yaml:"port" env:"SERVER_PORT" env-required:"true"`
+		Port string `env:"SERVER_PORT" env-required:"true"`
 	}
 
 	log struct {
-		Level string `yaml:"level" env:"LOG_LEVEL" env-required:"true"`
+		Level string `env:"LOG_LEVEL" env-required:"true"`
 	}
 )
 
