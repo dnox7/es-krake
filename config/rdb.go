@@ -18,3 +18,8 @@ type rdb struct {
 
 	MigrationsPath string `yaml:"migrations_path" env:"DB_MIGRATIONS_PATH" env-required:"true"`
 }
+
+type RdbCredentials struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
