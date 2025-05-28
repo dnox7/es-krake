@@ -102,18 +102,35 @@ func (v *Vault) GetRdbCredentials(ctx context.Context) (*config.RdbCredentials, 
 	return credentials, lease, nil
 }
 
-func (v *Vault) AutoRenewToken(ctx context.Context, stopCh <-chan struct{}) {
-	for {
-		select {
-		case <-stopCh:
-			v.logger.Warn(ctx, "stopping token auto-renew")
-			return
-		case <-time.After(30 * time.Second):
-			secret, err := v.client.Auth().Token().LookupSelfWithContext(ctx)
-			if err != nil {
-				v.logger.Error(ctx, "failed to lookup token", "error", err.Error())
-				continue
+func (v *Vault) AutoRenewToken(ctx context.Context) func() {
+	stop := make(chan struct{})
+	go func() {
+		for {
+			select {
+			case <-stop:
+				v.logger.Warn(ctx, "stopping token auto-renew")
+				return
+			case <-time.After(30 * time.Second):
+				secret, err := v.client.Auth().Token().LookupSelfWithContext(ctx)
+				if err != nil {
+					v.logger.Error(ctx, "failed to lookup token", "error", err.Error())
+					continue
+				}
+
+				if secret.Auth == nil || !secret.Auth.Renewable {
+					v.logger.Error(ctx, "token is not renewable")
+					return
+				}
+
+				_, err = v.client.Auth().Token().RenewSelf(3600)
+				if err != nil {
+					v.logger.Error(ctx, "failed to renew token", "error", err.Error())
+				}
 			}
 		}
+	}()
+
+	return func() {
+		stop <- struct{}{}
 	}
 }
