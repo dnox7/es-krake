@@ -1,11 +1,13 @@
 package config
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
 
+	vaultcli "github.com/dpe27/es-krake/internal/infrastructure/vault"
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
@@ -37,19 +39,19 @@ type (
 	}
 )
 
-func NewConfig() *Config {
+func NewConfig(ctx context.Context) *Config {
 	cfg := &Config{}
 	root := projectRoot()
 	configFilePath := root + cfgFilePath
 
-	err := loadCfgFile(configFilePath, cfg)
+	err := loadCfg(ctx, configFilePath, cfg)
 	if err != nil {
 		panic(err)
 	}
 	return cfg
 }
 
-func loadCfgFile(cfgFilePath string, cfg *Config) error {
+func loadCfg(ctx context.Context, cfgFilePath string, cfg *Config) error {
 	envFileExists := checkFileExists(cfgFilePath)
 	if envFileExists {
 		err := cleanenv.ReadConfig(cfgFilePath, cfg)
@@ -64,6 +66,16 @@ func loadCfgFile(cfgFilePath string, cfg *Config) error {
 			}
 			return err
 		}
+	}
+
+	vcli, token, err := vaultcli.NewVaultAppRoleClient(ctx, vaultcli.VaultParams{
+		Address:            cfg.Vault.Address,
+		RoleID:             cfg.Vault.RoleID,
+		SecretIDFile:       cfg.Vault.SecretIDFile,
+		RdbCredentialsPath: cfg.Vault.RdbCredentialsPath,
+	})
+	if err != nil {
+		return err
 	}
 	return nil
 }

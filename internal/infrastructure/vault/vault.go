@@ -1,9 +1,10 @@
-package vault
+package vaultcli
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/dpe27/es-krake/config"
 	"github.com/dpe27/es-krake/pkg/log"
@@ -13,14 +14,11 @@ import (
 
 type VaultParams struct {
 	// connection parameters
-	Address             string
-	ApproleRoleID       string
-	ApproleSecretIDFile string
+	Address      string
+	RoleID       string
+	SecretIDFile string
 
-	APIKeyPath              string
-	APIKeyMountPath         string
-	APIKeyField             string
-	DatabaseCredentialsPath string
+	RdbCredentialsPath string
 }
 
 type Vault struct {
@@ -57,13 +55,13 @@ func NewVaultAppRoleClient(ctx context.Context, params VaultParams) (*Vault, *va
 }
 
 func (v *Vault) login(ctx context.Context) (*vault.Secret, error) {
-	v.logger.Info(ctx, "logging in to vault with approle auth", "role id", v.params.ApproleRoleID)
+	v.logger.Info(ctx, "logging in to vault with approle auth", "role id", v.params.RoleID)
 	approleSecretID := &approle.SecretID{
-		FromFile: v.params.ApproleSecretIDFile,
+		FromFile: v.params.SecretIDFile,
 	}
 
 	approleAuth, err := approle.NewAppRoleAuth(
-		v.params.ApproleRoleID,
+		v.params.RoleID,
 		approleSecretID,
 		approle.WithWrappingToken(),
 	)
@@ -83,9 +81,9 @@ func (v *Vault) login(ctx context.Context) (*vault.Secret, error) {
 	return authInfo, nil
 }
 
-func (v *Vault) GetDatabaseCredentials(ctx context.Context) (*config.RdbCredentials, *vault.Secret, error) {
+func (v *Vault) GetRdbCredentials(ctx context.Context) (*config.RdbCredentials, *vault.Secret, error) {
 	v.logger.Info(ctx, "getting database credentials from vault")
-	lease, err := v.client.Logical().ReadWithContext(ctx, v.params.DatabaseCredentialsPath)
+	lease, err := v.client.Logical().ReadWithContext(ctx, v.params.RdbCredentialsPath)
 	if err != nil {
 		return nil, nil, fmt.Errorf("unable to read secret: %w", err)
 	}
@@ -102,4 +100,20 @@ func (v *Vault) GetDatabaseCredentials(ctx context.Context) (*config.RdbCredenti
 
 	v.logger.Info(ctx, "getting database credentials from vault: success!")
 	return credentials, lease, nil
+}
+
+func (v *Vault) AutoRenewToken(ctx context.Context, stopCh <-chan struct{}) {
+	for {
+		select {
+		case <-stopCh:
+			v.logger.Warn(ctx, "stopping token auto-renew")
+			return
+		case <-time.After(30 * time.Second):
+			secret, err := v.client.Auth().Token().LookupSelfWithContext(ctx)
+			if err != nil {
+				v.logger.Error(ctx, "failed to lookup token", "error", err.Error())
+				continue
+			}
+		}
+	}
 }
