@@ -24,6 +24,12 @@ migrate-step:
 	read -p "Step (integer): " step; \
 	go run cmd/migrate/main.go --type step --module $$module --step $$step
 
+.PHONY: gen-migration
+gen-migration:
+	@read -p "Module: " module; \
+	read -p "Description: " desc; \
+	migrate create -ext sql -digits 14 -dir ./migrations/$$module $$desc
+
 .PHONY: run-kc
 run-kc:
 	docker compose -f deploy/compose/keycloak.yaml up -d
