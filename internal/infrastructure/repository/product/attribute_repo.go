@@ -39,7 +39,7 @@ func (r *attributeRepo) TakeByConditions(
 		return entity.Attribute{}, err
 	}
 	var attribute entity.Attribute
-	err = r.pg.DB.
+	err = r.pg.GormDB().
 		WithContext(ctx).
 		Scopes(gormScopes...).
 		Where(conditions).
@@ -59,7 +59,7 @@ func (r *attributeRepo) FindByConditions(
 		return nil, err
 	}
 	attributes := []entity.Attribute{}
-	err = r.pg.DB.
+	err = r.pg.GormDB().
 		WithContext(ctx).
 		Scopes(gormScopes...).
 		Where(conditions).
@@ -79,7 +79,7 @@ func (r *attributeRepo) Create(
 		return entity.Attribute{}, err
 	}
 
-	err = r.pg.DB.WithContext(ctx).Create(&attributeEntity).Error
+	err = r.pg.GormDB().WithContext(ctx).Create(&attributeEntity).Error
 	return attributeEntity, err
 }
 
@@ -117,7 +117,7 @@ func (r *attributeRepo) Update(
 		return entity.Attribute{}, err
 	}
 
-	err = r.pg.DB.
+	err = r.pg.GormDB().
 		WithContext(ctx).
 		Model(attribute).
 		Updates(attributesToUpdate).Error

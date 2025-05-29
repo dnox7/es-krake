@@ -32,7 +32,7 @@ func (r *roleTypeRepo) FindByConditions(ctx context.Context, conditions map[stri
 	}
 
 	types := []entity.RoleType{}
-	err = r.pg.DB.
+	err = r.pg.GormDB().
 		WithContext(ctx).
 		Scopes(scopes...).
 		Where(conditions).

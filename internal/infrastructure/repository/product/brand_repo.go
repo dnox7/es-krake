@@ -36,7 +36,7 @@ func (b *brandRepo) Create(
 		return entity.Brand{}, err
 	}
 
-	err = b.pg.DB.WithContext(ctx).Create(&brand).Error
+	err = b.pg.GormDB().WithContext(ctx).Create(&brand).Error
 	return brand, err
 }
 
@@ -53,7 +53,7 @@ func (b *brandRepo) FindByConditions(
 	}
 
 	brands := []entity.Brand{}
-	err = b.pg.DB.
+	err = b.pg.GormDB().
 		WithContext(ctx).
 		Scopes(gormScopes...).
 		Where(conditions).
@@ -74,7 +74,7 @@ func (b *brandRepo) TakeByConditions(
 	}
 
 	brand := entity.Brand{}
-	err = b.pg.DB.
+	err = b.pg.GormDB().
 		WithContext(ctx).
 		Scopes(gormScopes...).
 		Where(conditions).
@@ -94,7 +94,7 @@ func (b *brandRepo) Update(
 		return entity.Brand{}, err
 	}
 
-	err = b.pg.DB.
+	err = b.pg.GormDB().
 		WithContext(ctx).
 		Model(brand).
 		Updates(attributesToUpdate).Error

@@ -75,12 +75,10 @@ func initPostgres(cfg *config.Config, cred *config.RdbCredentials) (*PostgreSQL,
 			connAttempts: cfg.RDB.ConnAttempts,
 		},
 	}
-
 	pg.setGormConfig()
-	pg.RetryConn(cred)
 
-	if pg.db == nil {
-		return nil, fmt.Errorf("PostgreSQL (initDB): connection failed")
+	if err := pg.RetryConn(cred); err != nil {
+		return nil, err
 	}
 
 	return pg, nil
@@ -105,7 +103,7 @@ func (pg *PostgreSQL) updateDB(newDB *gorm.DB, newConn *sql.DB) {
 	pg.conn = newConn
 }
 
-func (pg *PostgreSQL) RetryConn(cred *config.RdbCredentials) {
+func (pg *PostgreSQL) RetryConn(cred *config.RdbCredentials) error {
 	connAttempts := pg.params.connAttempts
 	for connAttempts > 0 {
 		err := pg.connect(cred)
@@ -118,6 +116,12 @@ func (pg *PostgreSQL) RetryConn(cred *config.RdbCredentials) {
 		time.Sleep(pg.params.connTimeout)
 		connAttempts--
 	}
+
+	if pg.db == nil {
+		return fmt.Errorf("PostgreSQL (initDB): connection failed")
+	}
+
+	return nil
 }
 
 func (pg *PostgreSQL) connect(
@@ -170,36 +174,31 @@ func (pg *PostgreSQL) Close() {
 	}
 }
 
-func (pg *PostgreSQL) StartLoggingPoolSize() func() {
-	stop := make(chan bool)
+func (pg *PostgreSQL) LoggingPoolSize(ctx context.Context) {
 	go func() {
 		previousOpened := 0
 		for {
 			time.Sleep(time.Second)
 			select {
-			case <-stop:
-				pg.logPoolSize(pg.Conn().Stats())
+			case <-ctx.Done():
+				pg.logPoolSize(ctx, pg.Conn().Stats())
 				return
 			default:
 				curr := pg.Conn().Stats()
 				if previousOpened != curr.OpenConnections {
-					pg.logPoolSize(curr)
+					pg.logPoolSize(ctx, curr)
 					previousOpened = curr.OpenConnections
 				}
 			}
 		}
 	}()
-
-	return func() {
-		stop <- true
-	}
 }
 
-func (pg *PostgreSQL) logPoolSize(stats sql.DBStats) {
+func (pg *PostgreSQL) logPoolSize(ctx context.Context, stats sql.DBStats) {
 	pg.logger.With("inUse", stats.InUse).
 		With("idle", stats.Idle).
 		With("opened", stats.OpenConnections).
-		Info(context.Background(), "Current  number of opened connections in the pool")
+		Info(ctx, "Current  number of opened connections in the pool")
 }
 
 func (pg *PostgreSQL) buildDSN(cred *config.RdbCredentials) (string, error) {

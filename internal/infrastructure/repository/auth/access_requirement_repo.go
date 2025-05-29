@@ -36,7 +36,7 @@ func (a *accessRequirementRepo) CheckExists(
 	}
 
 	var res bool
-	err = a.pg.DB.
+	err = a.pg.GormDB().
 		WithContext(ctx).
 		Scopes(scopes...).
 		Where(conditions).
@@ -59,7 +59,7 @@ func (a *accessRequirementRepo) TakeByConditions(
 	}
 
 	accessReq := entity.AccessRequirement{}
-	err = a.pg.DB.
+	err = a.pg.GormDB().
 		WithContext(ctx).
 		Scopes(scopes...).
 		Where(conditions).

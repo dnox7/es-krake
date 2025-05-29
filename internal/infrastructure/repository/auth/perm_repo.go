@@ -36,7 +36,7 @@ func (p *permRepo) TakeByConditions(
 	}
 
 	perm := entity.Permission{}
-	err = p.pg.DB.
+	err = p.pg.GormDB().
 		WithContext(ctx).
 		Scopes(scopes...).
 		Where(conditions).
@@ -57,7 +57,7 @@ func (p *permRepo) FindByConditions(
 	}
 
 	perms := []entity.Permission{}
-	err = p.pg.DB.
+	err = p.pg.GormDB().
 		WithContext(ctx).
 		Scopes(scopes...).
 		Where(conditions).

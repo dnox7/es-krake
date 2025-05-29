@@ -24,7 +24,7 @@ func NewAttributeTypeRepository(pg *rdb.PostgreSQL) domainRepo.AttributeTypeRepo
 // TakeByID implements repository.AttributeTypeRepository.
 func (r *attributeTypeRepo) TakeByID(ctx context.Context, ID int) (entity.AttributeType, error) {
 	attrType := entity.AttributeType{}
-	db := r.pg.DB.WithContext(ctx)
+	db := r.pg.GormDB().WithContext(ctx)
 	err := db.Take(&attrType, ID).Error
 	return attrType, err
 }
@@ -33,7 +33,7 @@ func (r *attributeTypeRepo) TakeByID(ctx context.Context, ID int) (entity.Attrib
 func (r *attributeTypeRepo) GetAsDictionary(ctx context.Context) (map[int]string, error) {
 	var attrTypes []entity.AttributeType
 
-	err := r.pg.DB.
+	err := r.pg.GormDB().
 		WithContext(ctx).
 		Table(domainRepo.AttributeTypeTableName).
 		Select("id", "name").

@@ -40,7 +40,7 @@ func (r *roleRepo) CheckExists(
 	}
 
 	var exists bool
-	err = r.pg.DB.
+	err = r.pg.GormDB().
 		WithContext(ctx).
 		Model(&entity.Role{}).
 		Select("1").
@@ -64,7 +64,7 @@ func (r *roleRepo) TakeByConditions(
 	}
 
 	role := entity.Role{}
-	err = r.pg.DB.
+	err = r.pg.GormDB().
 		WithContext(ctx).
 		Scopes(scopes...).
 		Where(conditions).
@@ -85,7 +85,7 @@ func (r *roleRepo) FindByConditions(
 	}
 
 	roles := []entity.Role{}
-	err = r.pg.DB.
+	err = r.pg.GormDB().
 		WithContext(ctx).
 		Scopes(scopes...).
 		Where(conditions).

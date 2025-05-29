@@ -36,7 +36,7 @@ func (f *accessOpetationRepo) FindByConditions(
 	}
 
 	funcCodes := []entity.AccessOperation{}
-	err = f.pg.DB.
+	err = f.pg.GormDB().
 		WithContext(ctx).
 		Scopes(scopes...).
 		Where(conditions).

@@ -1,13 +1,11 @@
 package config
 
 type rdb struct {
-	Driver   string `env:"DB_DRIVER"   env-required:"true"`
-	Host     string `env:"DB_HOST"     env-required:"true"`
-	Port     string `env:"DB_PORT"     env-required:"true"`
-	Username string `env:"DB_USERNAME" env-required:"true"`
-	Password string `env:"DB_PASSWORD" env-required:"true"`
-	Name     string `env:"DB_NAME"     env-required:"true"`
-	SSLMode  string `env:"DB_SSLMODE"  env-default:"disable"`
+	Driver  string `env:"DB_DRIVER"   env-required:"true"`
+	Host    string `env:"DB_HOST"     env-required:"true"`
+	Port    string `env:"DB_PORT"     env-required:"true"`
+	Name    string `env:"DB_NAME"     env-required:"true"`
+	SSLMode string `env:"DB_SSLMODE"  env-default:"disable"`
 
 	MaxOpenConns int `env:"DB_MAX_OPEN_CONNS" env-required:"true"`
 	MaxIdleConns int `env:"DB_MAX_IDLE_CONNS" env-required:"true"`
