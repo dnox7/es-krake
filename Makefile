@@ -30,6 +30,18 @@ gen-migration:
 	read -p "Description: " desc; \
 	migrate create -ext sql -digits 14 -dir ./migrations/$$module $$desc
 
+.PHONY: run-rdb
+run-rdb:
+	docker compose -f deploy/compose/rdb.yaml up -d
+
+.PHONY: stop-rdb
+stop-rdb:
+	docker compose -f deploy/compose/rdb.yaml stop
+
+.PHONY: clean-rdb
+clean-rdb:
+	docker compose -f deploy/compose/rdb.yaml down
+
 .PHONY: run-kc
 run-kc:
 	docker compose -f deploy/compose/keycloak.yaml up -d
@@ -61,3 +73,11 @@ stop-pgadmin:
 .PHONY: export-realm
 export-realm:
 	scripts/export-realm.sh
+
+.PHONY: run-vault
+run-vault:
+	docker compose -f deploy/compose/vault-server.yaml up -d
+
+.PHONY: stop-vault
+stop-vault:
+	docker compose -f deploy/compose/vault-server.yaml stop
