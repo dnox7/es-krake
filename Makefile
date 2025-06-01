@@ -76,8 +76,16 @@ export-realm:
 
 .PHONY: run-vault
 run-vault:
-	docker compose -f deploy/compose/vault-server.yaml up -d
+	docker compose -f deploy/compose/vault-dev.yaml up -d
 
 .PHONY: stop-vault
 stop-vault:
-	docker compose -f deploy/compose/vault-server.yaml stop
+	docker compose -f deploy/compose/vault-dev.yaml stop
+
+.PHONY: down-vault
+down-vault:
+	docker compose -f deploy/compose/vault-dev.yaml down --volumes
+
+.PHONY: export-vault-env
+export-vault-env:
+	./scripts/export-vaul-env.sh
