@@ -40,7 +40,7 @@ stop-rdb:
 
 .PHONY: clean-rdb
 clean-rdb:
-	docker compose -f deploy/compose/rdb.yaml down
+	docker compose -f deploy/compose/rdb.yaml down --volumes
 
 .PHONY: run-kc
 run-kc:

@@ -37,11 +37,18 @@ vault write -f auth/approle/role/es-krake/secret-id | grep '^secret_id[[:space:]
 
 vault secrets enable database || true
 
-vault write database/config/my-rds-database \
+vault write database/config/esk-rdb \
     plugin_name=postgresql-database-plugin \
-    allowed_roles="my-role" \
-    connection_url="postgresql://{{username}}:{{password}}@$ESK_RDB_ENDPOINT:5432/dbname?sslmode=require" \
-    username="admin-user" \
-    password="admin-password"
+    allowed_roles="postgres-app-role" \
+    connection_url="$ESK_RDB_CONN_URL" \
+    username="$ESK_RDB_MASTER_USERNAME" \
+    password="$ESK_RDB_MASTER_PASSWORD"
+
+vault write database/roles/postgres-app-role \
+    db_name="esk-rdb" \
+    creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO \"{{name}}\";" \
+    default_ttl="1h" \
+    max_ttl="24h"
+
 
 wait $VAULT_PID

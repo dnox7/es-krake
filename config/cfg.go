@@ -46,6 +46,8 @@ func NewConfig() *Config {
 	if err != nil {
 		panic(err)
 	}
+
+	cfg.RDB.MigrationsPath = root + cfg.RDB.MigrationsPath
 	return cfg
 }
 

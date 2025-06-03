@@ -1,3 +1,3 @@
-path "secret/data/test" {
-  capabilities = ["read", "list"]
+path "database/creds/postgres-app-role" {
+    capabilities = ["read"]
 }

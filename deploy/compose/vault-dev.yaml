@@ -10,10 +10,15 @@ services:
       - VAULT_DEV_ROOT_TOKEN_ID=root
       - VAULT_SKIP_VERIFY=true
       - VAULT_ADDR=https://127.0.0.1:8200
+      - ESK_RDB_MASTER_USERNAME=krake
+      - ESK_RDB_MASTER_PASSWORD=123456
+      - ESK_RDB_CONN_URL=postgres://krake:123456@esk-rdb:5432/krake?sslmode=disable
     volumes:
       - vault-data:/vault
       - ./policies:/vault/policies
-      - ../../scripts/init-dev-vault.sh:/entrypoint.sh
+      - ../../scripts/init-vault-dev.sh:/entrypoint.sh
+    networks:
+        - esk-rdb
     cap_add:
       - IPC_LOCK
     entrypoint: ["/entrypoint.sh"]
@@ -21,3 +26,7 @@ services:
 volumes:
   vault-data: 
     name: vault-data
+
+networks:
+  esk-rdb:
+    external: true
