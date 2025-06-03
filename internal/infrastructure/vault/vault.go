@@ -42,7 +42,7 @@ func NewVaultAppRoleClient(ctx context.Context, cfg *config.Config) (*Vault, *va
 
 	client, err := vault.NewClient(conf)
 	if err != nil {
-		return nil, nil, fmt.Errorf("unable to intialize vault client: %w", err)
+		return nil, nil, fmt.Errorf("unable to initialize vault client: %w", err)
 	}
 
 	v := &Vault{
@@ -72,7 +72,7 @@ func (v *Vault) login(ctx context.Context) (*vault.Secret, error) {
 		approle.WithWrappingToken(),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("unable to intialize approle authentication method: %w", err)
+		return nil, fmt.Errorf("unable to initialize approle authentication method: %w", err)
 	}
 
 	authInfo, err := v.client.Auth().Login(ctx, approleAuth)

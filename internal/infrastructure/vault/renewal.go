@@ -86,7 +86,6 @@ func (v *Vault) renewLeases(ctx context.Context, leases map[leaseType]*vault.Sec
 	eventCh := make(chan leaseEvent)
 	defer close(eventCh)
 
-	watchers := []*vault.LifetimeWatcher{}
 	for name, secret := range leases {
 		w, err := v.client.NewLifetimeWatcher(&vault.LifetimeWatcherInput{
 			Secret: secret,
@@ -95,7 +94,6 @@ func (v *Vault) renewLeases(ctx context.Context, leases map[leaseType]*vault.Sec
 			return renewError, fmt.Errorf("unable to init watcher for %s: %w", name, err)
 		}
 
-		watchers = append(watchers, w)
 		go func(name leaseType, w *vault.LifetimeWatcher) {
 			w.Start()
 			defer w.Stop()
