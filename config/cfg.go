@@ -48,6 +48,7 @@ func NewConfig() *Config {
 	}
 
 	cfg.RDB.MigrationsPath = root + cfg.RDB.MigrationsPath
+	cfg.Vault.SecretIDFile = root + cfg.Vault.SecretIDFile
 	return cfg
 }
 
