@@ -2,11 +2,14 @@ package vaultcli
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 
 	"github.com/dpe27/es-krake/config"
 	"github.com/dpe27/es-krake/pkg/log"
+	"github.com/dpe27/es-krake/pkg/utils"
+	"github.com/hashicorp/go-cleanhttp"
 	vault "github.com/hashicorp/vault/api"
 	"github.com/hashicorp/vault/api/auth/approle"
 )
@@ -35,10 +38,17 @@ func NewVaultAppRoleClient(ctx context.Context, cfg *config.Config) (*Vault, *va
 		rdbCredentialsPath: cfg.Vault.RdbCredentialsPath,
 	}
 
-	logger.Info(ctx, "connecting to vault @ %s", params.address)
+	logger.Info(ctx, "connecting to vault @", "address", params.address)
 
 	conf := vault.DefaultConfig()
 	conf.Address = params.address
+	if cfg.App.Env == utils.DevEnv {
+		tp := cleanhttp.DefaultPooledTransport()
+		tp.TLSClientConfig = &tls.Config{
+			InsecureSkipVerify: true,
+		}
+		conf.HttpClient.Transport = tp
+	}
 
 	client, err := vault.NewClient(conf)
 	if err != nil {
@@ -69,7 +79,6 @@ func (v *Vault) login(ctx context.Context) (*vault.Secret, error) {
 	approleAuth, err := approle.NewAppRoleAuth(
 		v.params.roleID,
 		approleSecretID,
-		approle.WithWrappingToken(),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize approle authentication method: %w", err)

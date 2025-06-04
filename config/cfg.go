@@ -13,13 +13,13 @@ const cfgFilePath = ".env"
 
 type (
 	Config struct {
-		App      *app
-		Log      *log
-		Server   *server
-		RDB      *rdb
+		App      app
+		Log      log
+		Server   server
+		RDB      rdb
 		MDB      *mongo
 		Keycloak *keycloak
-		Vault    *vault
+		Vault    vault
 	}
 
 	app struct {

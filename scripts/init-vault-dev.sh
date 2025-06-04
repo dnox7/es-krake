@@ -44,11 +44,22 @@ vault write database/config/esk-rdb \
     username="$ESK_RDB_MASTER_USERNAME" \
     password="$ESK_RDB_MASTER_PASSWORD"
 
+# for api-server
+# vault write database/roles/postgres-app-role \
+#     db_name="esk-rdb" \
+#     creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; \
+#     GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO \"{{name}}\";" \
+#     default_ttl="1h" \
+#     max_ttl="24h"
+
+# for migration
 vault write database/roles/postgres-app-role \
     db_name="esk-rdb" \
-    creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO \"{{name}}\";" \
+    creation_statements="CREATE ROLE \"{{username}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; \
+    GRANT CONNECT ON DATABASE $ESK_RDB_NAME TO \"{{username}}\"; \
+    GRANT CREATE ON SCHEMA public TO \"{{name}}\"; \
+    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO \"{{username}}\";" \
     default_ttl="1h" \
     max_ttl="24h"
-
 
 wait $VAULT_PID

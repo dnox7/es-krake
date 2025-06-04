@@ -104,9 +104,14 @@ func (pg *PostgreSQL) updateDB(newDB *gorm.DB, newConn *sql.DB) {
 }
 
 func (pg *PostgreSQL) RetryConn(cred *config.RdbCredentials) error {
+	pg.logger.Debug(context.Background(), "", "username", cred.Username)
+	pg.logger.Debug(context.Background(), "", "password", cred.Password)
 	connAttempts := pg.params.connAttempts
 	for connAttempts > 0 {
 		err := pg.connect(cred)
+		if err == nil {
+			break
+		}
 		pg.logger.Warn(
 			context.Background(),
 			"PostgreSQL is trying to connect",

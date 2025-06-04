@@ -10,6 +10,10 @@ lint:
 fix-lint:
 	golangci-lint run --fix --timeout=10m
 
+.PHONY: run-api
+run-api:
+	go run cmd/api/main.go
+
 .PHONY: migrate-up
 migrate-up:
 	go run cmd/migrate/main.go --type up
