@@ -7,12 +7,14 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/dpe27/es-krake/config"
 	"github.com/dpe27/es-krake/internal/interfaces/middleware"
+	"github.com/dpe27/es-krake/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
 
-func NewServer() *gin.Engine {
-	if os.Getenv("PE_DEBUG") == "true" {
+func NewGinRouter(cfg *config.Config) *gin.Engine {
+	if cfg.App.Env != utils.ProdEnv {
 		gin.SetMode(gin.DebugMode)
 	} else {
 		gin.SetMode(gin.ReleaseMode)

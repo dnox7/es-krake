@@ -24,8 +24,7 @@ var (
 func Initialize(w io.Writer, cfg *config.Config, keyInput []string) {
 	keys = append(keys, keyInput...)
 	level := slog.LevelInfo
-	Debug(context.Background(), "load config", "level", cfg.Log.Level)
-	if cfg.Log.Level == "DEBUG" {
+	if cfg.App.LogLevel == "DEBUG" {
 		level = slog.LevelDebug
 	}
 

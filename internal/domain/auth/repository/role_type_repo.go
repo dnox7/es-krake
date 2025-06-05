@@ -17,5 +17,6 @@ const (
 )
 
 type RoleTypeRepository interface {
+	TakeByConditions(ctx context.Context, conditions map[string]interface{}, spec specification.Base) (entity.RoleType, error)
 	FindByConditions(ctx context.Context, conditions map[string]interface{}, spec specification.Base) ([]entity.RoleType, error)
 }

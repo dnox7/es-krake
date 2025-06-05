@@ -2,11 +2,12 @@ package main
 
 import (
 	"context"
-	"log/slog"
+	"net/http"
 	"os"
 	"sync"
 
 	"github.com/dpe27/es-krake/config"
+	"github.com/dpe27/es-krake/internal/infrastructure"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb/migration"
 	"github.com/dpe27/es-krake/internal/infrastructure/repository"
@@ -39,13 +40,13 @@ func main() {
 	defer stopLogging()
 
 	if err := pg.Ping(ctx); err != nil {
-		log.Error(ctx, "database ping failed", "detail", err)
+		log.Error(ctx, "database ping failed", "error", err.Error())
 		return
 	}
 
 	err = migration.CheckAll(cfg, pg.Conn())
 	if err != nil {
-		slog.Error("The database is not up-to-date: %v", "detail", err)
+		log.Error(ctx, "The database is not up-to-date", "error", err.Error())
 		return
 	}
 
@@ -70,5 +71,19 @@ func main() {
 	err = initializer.MountAll(repositories, pg)
 	if err != nil {
 		panic(err)
+	}
+
+	router := infrastructure.NewGinRouter(cfg)
+	server := &http.Server{
+		Addr:    cfg.App.Port,
+		Handler: router,
+	}
+	infrastructure.OnShutdown(func() error {
+		return server.Shutdown(ctx)
+	})
+
+	err = server.ListenAndServe()
+	if err != nil && err != http.ErrServerClosed {
+		log.Fatal(ctx, "an error happened while starting the HTTP server", "error", err.Error())
 	}
 }

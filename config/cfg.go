@@ -14,8 +14,6 @@ const cfgFilePath = ".env"
 type (
 	Config struct {
 		App      app
-		Log      log
-		Server   server
 		RDB      rdb
 		MDB      *mongo
 		Keycloak *keycloak
@@ -23,17 +21,11 @@ type (
 	}
 
 	app struct {
-		Name    string `env:"APP_NAME"    env-required:"true"`
-		Version string `env:"APP_VERSION" env-required:"true"`
-		Env     string `env:"APP_ENV"     env-required:"true"`
-	}
-
-	server struct {
-		Port string `env:"SERVER_PORT" env-required:"true"`
-	}
-
-	log struct {
-		Level string `env:"LOG_LEVEL" env-required:"true"`
+		Name     string `env:"APP_NAME"    env-required:"true"`
+		Version  string `env:"APP_VERSION" env-required:"true"`
+		Env      string `env:"APP_ENV"     env-required:"true"`
+		Port     string `env:"APP_PORT"    env-required:"true"`
+		LogLevel string `env:"LOG_LEVEL"   env-required:"true"`
 	}
 )
 
