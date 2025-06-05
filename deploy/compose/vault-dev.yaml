@@ -12,7 +12,7 @@ services:
       - VAULT_ADDR=https://127.0.0.1:8200
       - ESK_RDB_MASTER_USERNAME=krake
       - ESK_RDB_MASTER_PASSWORD=123456
-      - ESK_RDB_CONN_URL=postgres://krake:123456@esk-rdb:5432/krake?sslmode=disable
+      - ESK_RDB_CONN_URL=postgres://krake:123456@esk-rdb:5432/esk_dev_1?sslmode=disable
       - ESK_RDB_NAME=esk_dev_1
     volumes:
       - vault-data:/vault

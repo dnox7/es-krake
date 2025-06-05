@@ -41,9 +41,10 @@ func main() {
 	}
 
 	migrateType := flag.String("type", "up", "Migration type: up, down, step (required)")
-	step := flag.Int("st", 0, "Number of steps for 'step' action")
+	step := flag.Int("step", 0, "Number of steps for 'step' action")
 	module := flag.String("module", "", "Name of the module to migrate (required)")
 
+	flag.Parse()
 	switch *migrateType {
 	case "step":
 		err = migration.MigrateStep(cfg, pg.Conn(), *module, *step)

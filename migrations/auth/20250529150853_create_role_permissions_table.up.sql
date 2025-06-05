@@ -8,9 +8,9 @@ CREATE TABLE IF NOT EXISTS role_permissions (
     CONSTRAINT fk_role
             FOREIGN KEY (role_id) REFERENCES roles(id)
                 ON DELETE RESTRICT
-                ON UPDATE RESTRICT
+                ON UPDATE RESTRICT,
     CONSTRAINT fk_permission
-            FOREIGN KEY (permission_id) REFERENCES permission_id(id)
+            FOREIGN KEY (permission_id) REFERENCES permissions(id)
                 ON DELETE RESTRICT
                 ON UPDATE RESTRICT
 );

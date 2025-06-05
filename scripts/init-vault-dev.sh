@@ -55,10 +55,26 @@ vault write database/config/esk-rdb \
 # for migration
 vault write database/roles/postgres-app-role \
     db_name="esk-rdb" \
-    creation_statements="CREATE ROLE \"{{username}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; \
-    GRANT CONNECT ON DATABASE $ESK_RDB_NAME TO \"{{username}}\"; \
-    GRANT CREATE ON SCHEMA public TO \"{{name}}\"; \
-    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO \"{{username}}\";" \
+    creation_statements="
+        CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}';
+        GRANT CONNECT ON DATABASE $ESK_RDB_NAME TO \"{{name}}\";
+        GRANT USAGE, CREATE ON SCHEMA public TO \"{{name}}\";
+        GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO \"{{name}}\";
+        GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO \"{{name}}\";
+        ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO \"{{name}}\";
+        ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO \"{{name}}\";
+
+        -- Transfer ownership of existing tables
+        DO \$\$
+        DECLARE
+            r RECORD;
+        BEGIN
+            FOR r IN SELECT tablename FROM pg_tables WHERE schemaname = 'public' LOOP
+                EXECUTE format('ALTER TABLE public.%I OWNER TO \"{{name}}\"', r.tablename);
+            END LOOP;
+        END
+        \$\$;
+    " \
     default_ttl="1h" \
     max_ttl="24h"
 

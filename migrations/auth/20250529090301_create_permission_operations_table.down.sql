@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS perrmission_operations RESTRICT;
+DROP TABLE IF EXISTS permission_operations RESTRICT;

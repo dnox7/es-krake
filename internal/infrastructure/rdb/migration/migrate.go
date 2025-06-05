@@ -54,7 +54,7 @@ func MigrateUp(
 	keys := getSortedMigrationTableKeys()
 	for _, module := range keys {
 		if err := migrateModule(cfg, db, module, migrationTables[module], migrateUpAll, 0); err != nil {
-			return fmt.Errorf("Failed to migrate module %v: %w", module, err)
+			return fmt.Errorf("failed to migrate up module %v: %w", module, err)
 		}
 	}
 	return nil
@@ -118,8 +118,8 @@ func migrateModule(
 		return err
 	}
 
-	ver, _, err := m.Version()
-	if err != nil && err != migrate.ErrNilVersion {
+	ver, dirty, err := m.Version()
+	if err != nil && err != migrate.ErrNilVersion && migType != migrateDownAll {
 		return err
 	}
 
@@ -138,6 +138,9 @@ func migrateModule(
 			}
 		}
 	case migrateDownAll:
+		if dirty {
+			return m.Force(-1)
+		}
 		err = m.Down()
 		if err != nil && err != migrate.ErrNoChange {
 			return err
