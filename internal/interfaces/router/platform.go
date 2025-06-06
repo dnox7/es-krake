@@ -6,5 +6,5 @@ import (
 )
 
 func BindPlatformRoute(router *gin.RouterGroup, handler *pf.PlatformHandler) {
-
+	router.GET("/role_type/:role_type_id", handler.GetRoleType)
 }

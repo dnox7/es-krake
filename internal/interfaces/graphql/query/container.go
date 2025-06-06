@@ -10,7 +10,12 @@ func NewQueriesContainer(
 	outputTypes map[string]*graphql.Object,
 ) *graphql.Object {
 	return graphql.NewObject(graphql.ObjectConfig{
-		Name:   "Query",
-		Fields: graphql.Fields{},
+		Name: "Query",
+		Fields: graphql.Fields{
+			"get_role_type": GetRoleType(
+				outputTypes,
+				usecases.AuthUsecase,
+			),
+		},
 	})
 }

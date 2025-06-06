@@ -8,7 +8,9 @@ import (
 func NewOutputTypes(usecases *usecase.UsecasesContainer) map[string]*graphql.Object {
 	outputTypes := make(map[string]*graphql.Object)
 
-	for _, graphqlType := range []*graphql.Object{} {
+	for _, graphqlType := range []*graphql.Object{
+		RoleTypeOutput(),
+	} {
 		outputTypes[graphqlType.Name()] = graphqlType
 	}
 

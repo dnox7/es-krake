@@ -10,7 +10,6 @@ import (
 	"github.com/dpe27/es-krake/internal/infrastructure"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb/migration"
-	"github.com/dpe27/es-krake/internal/infrastructure/repository"
 	vaultcli "github.com/dpe27/es-krake/internal/infrastructure/vault"
 	"github.com/dpe27/es-krake/internal/initializer"
 	"github.com/dpe27/es-krake/pkg/log"
@@ -67,17 +66,17 @@ func main() {
 		wg.Wait()
 	}()
 
-	repositories := repository.NewRepositoriesContainer(pg)
-	err = initializer.MountAll(repositories, pg)
-	if err != nil {
-		panic(err)
-	}
-
 	router := infrastructure.NewGinRouter(cfg)
 	server := &http.Server{
 		Addr:    cfg.App.Port,
 		Handler: router,
 	}
+
+	err = initializer.MountAll(pg, router, cfg)
+	if err != nil {
+		log.Fatal(ctx, "failed to mount dependencies", "error", err.Error())
+	}
+
 	infrastructure.OnShutdown(func() error {
 		return server.Shutdown(ctx)
 	})

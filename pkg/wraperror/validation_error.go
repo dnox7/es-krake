@@ -13,7 +13,7 @@ func ValidationError(
 ) *validationError {
 	return &validationError{
 		messages: messages,
-		Err: APIError(
+		Err: NewAPIError(
 			http.StatusBadRequest,
 			messages,
 			err,

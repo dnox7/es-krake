@@ -10,7 +10,7 @@ import (
 func GetInputAsMap(c *gin.Context) (map[string]interface{}, error) {
 	contentType := c.ContentType()
 	if contentType != MIMEApplicationJSON {
-		return nil, wraperror.APIError(
+		return nil, wraperror.NewAPIError(
 			http.StatusBadRequest,
 			"Expected 'application/json' for Content-Type, got '"+contentType+"'",
 			nil,

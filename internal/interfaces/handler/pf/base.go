@@ -7,12 +7,14 @@ import (
 
 type PlatformHandler struct {
 	logger  *log.Logger
+	debug   bool
 	graphql graphql.Schema
 }
 
-func NewPlatformHandler(schema graphql.Schema) *PlatformHandler {
+func NewPlatformHandler(debug bool, schema graphql.Schema) *PlatformHandler {
 	return &PlatformHandler{
 		logger:  log.With("handler", "platform_handler"),
+		debug:   debug,
 		graphql: schema,
 	}
 }

@@ -9,8 +9,8 @@ type HTTPHandler struct {
 	PF *pf.PlatformHandler
 }
 
-func NewHTTPHandler(schema graphql.Schema) HTTPHandler {
+func NewHTTPHandler(debug bool, schema graphql.Schema) HTTPHandler {
 	return HTTPHandler{
-		PF: pf.NewPlatformHandler(schema),
+		PF: pf.NewPlatformHandler(debug, schema),
 	}
 }
