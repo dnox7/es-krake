@@ -8,11 +8,17 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+const PermissionTableName = "permissions"
+
 type Permission struct {
 	ID         int                   `gorm:"column:id;primaryKey;type:bigint;autoIncrement;not null" json:"id"`
 	Name       string                `gorm:"column:name;type:varchar(50);not null"                   json:"name"`
 	Operations []PermissionOperation `gorm:"foreignKey:PermissionID"`
 	model.BaseModel
+}
+
+func (Permission) TableName() string {
+	return PermissionTableName
 }
 
 func (p Permission) Codes() ([]string, error) {

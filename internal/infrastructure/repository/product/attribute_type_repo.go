@@ -35,7 +35,7 @@ func (r *attributeTypeRepo) GetAsDictionary(ctx context.Context) (map[int]string
 
 	err := r.pg.GormDB().
 		WithContext(ctx).
-		Table(domainRepo.AttributeTypeTableName).
+		Table(entity.AttributeTypeTableName).
 		Select("id", "name").
 		Find(&attrTypes).Error
 	if err != nil {

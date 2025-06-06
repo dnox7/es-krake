@@ -7,8 +7,6 @@ import (
 	"github.com/dpe27/es-krake/internal/domain/shared/specification"
 )
 
-const BrandTableName = "brands"
-
 type BrandRepository interface {
 	TakeByConditions(ctx context.Context, conditions map[string]interface{}, spec specification.Base) (entity.Brand, error)
 

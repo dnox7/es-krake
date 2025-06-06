@@ -3,6 +3,7 @@ package query
 import (
 	"github.com/dpe27/es-krake/internal/interfaces/graphql/output"
 	usecase "github.com/dpe27/es-krake/internal/usecase/auth"
+	"github.com/dpe27/es-krake/pkg/log"
 	"github.com/graphql-go/graphql"
 )
 
@@ -19,6 +20,7 @@ func GetRoleType(
 			},
 		},
 		Resolve: func(params graphql.ResolveParams) (interface{}, error) {
+			log.Debug(params.Context, "get role_type")
 			return authUsecase.GetRoleTypeByID(
 				params.Context,
 				params.Args["role_type_id"].(int),

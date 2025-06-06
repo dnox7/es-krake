@@ -10,8 +10,6 @@ import (
 type RoleType int
 
 const (
-	RoleTypeTableName = "role_types"
-
 	PlatformRoleType   RoleType = 1
 	EnterpriseRoleType RoleType = 2
 )

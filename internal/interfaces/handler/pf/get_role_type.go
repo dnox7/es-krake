@@ -37,7 +37,7 @@ func (h *PlatformHandler) GetRoleType(c *gin.Context) {
 	})
 
 	if res.HasErrors() {
-		nethttp.SetGenericErrorResponse(c, res.Errors[0], true)
+		nethttp.SetGenericErrorResponse(c, res.Errors[0], h.debug)
 		return
 	}
 	nethttp.SetOKReponse(c, res.Data)

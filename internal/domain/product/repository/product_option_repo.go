@@ -8,8 +8,6 @@ import (
 	"github.com/dpe27/es-krake/internal/domain/shared/transaction"
 )
 
-const ProductOptionTableName = "product_options"
-
 type ProductOptionRepository interface {
 	TakeByConditions(ctx context.Context, conditions map[string]interface{}, spec specification.Base) (entity.ProductOption, error)
 

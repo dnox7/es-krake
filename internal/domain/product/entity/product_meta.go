@@ -6,6 +6,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+const ProductMetaTableName = "productmetas"
+
 type ProductMeta struct {
 	ID                     primitive.ObjectID     `bson:"_id,omitempty"                      json:"id"`
 	ProductID              int                    `bson:"product_id"                         json:"product_id"`

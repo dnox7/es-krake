@@ -15,7 +15,6 @@ type AuthUsecase struct {
 }
 
 func NewAuthUsecase(deps *AuthUsecaseDeps) AuthUsecase {
-
 	return AuthUsecase{
 		logger: log.With("object", "auth_usecase"),
 		deps:   deps,

@@ -8,8 +8,6 @@ import (
 	"github.com/dpe27/es-krake/internal/domain/shared/transaction"
 )
 
-const AttributeTableName = "attributes"
-
 type AttributeRepository interface {
 	TakeByConditions(ctx context.Context, conditions map[string]interface{}, spec specification.Base) (entity.Attribute, error)
 
