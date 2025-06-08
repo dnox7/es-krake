@@ -39,7 +39,7 @@ func (c *categoryRepo) Create(
 		return entity.Category{}, err
 	}
 
-	err = c.pg.DB.WithContext(ctx).Create(&category).Error
+	err = c.pg.GormDB().WithContext(ctx).Create(&category).Error
 	return category, err
 }
 
@@ -78,7 +78,7 @@ func (c *categoryRepo) FindByConditions(
 	}
 
 	categories := []entity.Category{}
-	err = c.pg.DB.
+	err = c.pg.GormDB().
 		WithContext(ctx).
 		Scopes(gormScopes...).
 		Where(conditions).
@@ -99,7 +99,7 @@ func (c *categoryRepo) TakeByConditions(
 	}
 
 	category := entity.Category{}
-	err = c.pg.DB.
+	err = c.pg.GormDB().
 		WithContext(ctx).
 		Scopes(gormScopes...).
 		Where(conditions).
@@ -119,7 +119,7 @@ func (c *categoryRepo) Update(
 		return entity.Category{}, err
 	}
 
-	err = c.pg.DB.
+	err = c.pg.GormDB().
 		WithContext(ctx).
 		Model(category).
 		Updates(attributesToUpdate).Error

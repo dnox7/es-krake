@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 	"sync"
 	"time"
 
@@ -19,10 +18,21 @@ import (
 )
 
 type PostgreSQL struct {
-	DB     *gorm.DB
-	conn   *sql.DB
-	logger *log.Logger
+	mu   sync.RWMutex
+	db   *gorm.DB
+	conn *sql.DB
 
+	logger  *log.Logger
+	gormCfg *gorm.Config
+	params  pgParams
+}
+
+type pgParams struct {
+	driver       string
+	host         string
+	port         string
+	name         string
+	sslmode      string
 	maxOpenConns int
 	maxIdleConns int
 	maxLifeTime  time.Duration
@@ -36,9 +46,9 @@ var (
 	once             sync.Once
 )
 
-func NewOrGetSingleton(cfg *config.Config) *PostgreSQL {
+func NewOrGetSingleton(cfg *config.Config, cred *config.RdbCredentials) *PostgreSQL {
 	once.Do(func() {
-		pg, err := initPostgres(cfg)
+		pg, err := initPostgres(cfg, cred)
 		if err != nil {
 			panic(err)
 		}
@@ -47,50 +57,112 @@ func NewOrGetSingleton(cfg *config.Config) *PostgreSQL {
 	return postgresInstance
 }
 
-func initPostgres(cfg *config.Config) (*PostgreSQL, error) {
+func initPostgres(cfg *config.Config, cred *config.RdbCredentials) (*PostgreSQL, error) {
 	pg := &PostgreSQL{
-		logger:       log.With("service", "postgres"),
-		maxOpenConns: cfg.RDB.MaxOpenConns,
-		maxIdleConns: cfg.RDB.MaxIdleConns,
-		maxLifeTime:  time.Duration(cfg.RDB.MaxIdleTime) * time.Millisecond,
-		maxIdleTime:  time.Duration(cfg.RDB.MaxIdleTime) * time.Millisecond,
-		connTimeout:  time.Duration(cfg.RDB.ConnTimeout) * time.Millisecond,
-		connAttempts: cfg.RDB.ConnAttempts,
+		logger: log.With("service", "postgres"),
+		params: pgParams{
+			driver:       cfg.RDB.Driver,
+			host:         cfg.RDB.Host,
+			port:         cfg.RDB.Port,
+			name:         cfg.RDB.Name,
+			sslmode:      cfg.RDB.SSLMode,
+			maxOpenConns: cfg.RDB.MaxOpenConns,
+			maxIdleConns: cfg.RDB.MaxIdleConns,
+			maxLifeTime:  time.Duration(cfg.RDB.MaxIdleTime) * time.Millisecond,
+			maxIdleTime:  time.Duration(cfg.RDB.MaxIdleTime) * time.Millisecond,
+			connTimeout:  time.Duration(cfg.RDB.ConnTimeout) * time.Millisecond,
+			connAttempts: cfg.RDB.ConnAttempts,
+		},
 	}
+	pg.setGormConfig()
 
-	dsn, err := pg.buildDSN(cfg)
-	if err != nil {
-		slog.Error("Error while building data source name", "detail", err.Error())
+	if err := pg.RetryConn(cred); err != nil {
 		return nil, err
-	}
-
-	gormCfg := pg.getGormConfig()
-
-	for pg.connAttempts > 0 {
-		err = pg.retryConn(dsn, cfg.RDB.Driver, gormCfg)
-		if err == nil {
-			break
-		}
-
-		pg.logger.Warn(
-			context.Background(),
-			"PostgreSQL is trying to connect",
-			"error", err.Error(),
-			"attempts left", pg.connAttempts,
-		)
-		time.Sleep(pg.connTimeout)
-		pg.connAttempts--
-	}
-
-	if pg.DB == nil {
-		return nil, fmt.Errorf("PostgreSQL (initDB): connection failed")
 	}
 
 	return pg, nil
 }
 
+func (pg *PostgreSQL) GormDB() *gorm.DB {
+	pg.mu.RLock()
+	defer pg.mu.RUnlock()
+	return pg.db
+}
+
+func (pg *PostgreSQL) Conn() *sql.DB {
+	pg.mu.RLock()
+	defer pg.mu.RUnlock()
+	return pg.conn
+}
+
+func (pg *PostgreSQL) updateDB(newDB *gorm.DB, newConn *sql.DB) {
+	pg.mu.Lock()
+	defer pg.mu.Unlock()
+	pg.db = newDB
+	pg.conn = newConn
+}
+
+func (pg *PostgreSQL) RetryConn(cred *config.RdbCredentials) error {
+	connAttempts := pg.params.connAttempts
+	for connAttempts > 0 {
+		err := pg.connect(cred)
+		if err == nil {
+			break
+		}
+		pg.logger.Warn(
+			context.Background(),
+			"PostgreSQL is trying to connect",
+			"error", err.Error(),
+			"attempts left", pg.params.connAttempts,
+		)
+		time.Sleep(pg.params.connTimeout)
+		connAttempts--
+	}
+
+	if pg.db == nil {
+		return fmt.Errorf("PostgreSQL (initDB): connection failed")
+	}
+
+	return nil
+}
+
+func (pg *PostgreSQL) connect(
+	cred *config.RdbCredentials,
+) error {
+	dsn, err := pg.buildDSN(cred)
+	if err != nil {
+		pg.logger.Error(context.Background(), "Error while building data source name", "error", err.Error())
+		return err
+	}
+
+	conn, err := sql.Open("postgres", dsn)
+	if err != nil {
+		pg.logger.Error(context.Background(), "failed to open sql conn", "detail", err.Error())
+		return err
+	}
+
+	conn.SetMaxOpenConns(pg.params.maxOpenConns)
+	conn.SetMaxIdleConns(pg.params.maxIdleConns)
+	conn.SetConnMaxLifetime(pg.params.maxLifeTime)
+	conn.SetConnMaxIdleTime(pg.params.maxIdleTime)
+
+	driver := pgDriver.New(pgDriver.Config{
+		WithoutQuotingCheck: true,
+		Conn:                conn,
+	})
+
+	db, err := gorm.Open(driver, pg.gormCfg)
+	if err != nil {
+		err = wraperror.WithTrace(err, nil, nil)
+		pg.logger.Error(context.Background(), err.Error())
+	}
+
+	pg.updateDB(db, conn)
+	return nil
+}
+
 func (pg *PostgreSQL) Ping(ctx context.Context) error {
-	pgDB, err := pg.DB.DB()
+	pgDB, err := pg.GormDB().DB()
 	if err != nil {
 		return nil
 	}
@@ -99,96 +171,59 @@ func (pg *PostgreSQL) Ping(ctx context.Context) error {
 
 func (pg *PostgreSQL) Close() {
 	pg.logger.Info(context.Background(), "Closing the DB connaction pool")
-	if err := pg.conn.Close(); err != nil {
+	if err := pg.Conn().Close(); err != nil {
 		pg.logger.Error(context.Background(), "Error while closing the DB connactio pool")
 	}
 }
 
-func (pg *PostgreSQL) Conn() *sql.DB {
-	return pg.conn
-}
-
-func (pg *PostgreSQL) StartLoggingPoolSize() func() {
-	stop := make(chan bool)
+func (pg *PostgreSQL) LoggingPoolSize(ctx context.Context) {
 	go func() {
 		previousOpened := 0
 		for {
 			time.Sleep(time.Second)
 			select {
-			case <-stop:
-				pg.logPoolSize(pg.conn.Stats())
+			case <-ctx.Done():
+				pg.logPoolSize(ctx, pg.Conn().Stats())
 				return
 			default:
-				curr := pg.conn.Stats()
+				curr := pg.Conn().Stats()
 				if previousOpened != curr.OpenConnections {
-					pg.logPoolSize(curr)
+					pg.logPoolSize(ctx, curr)
 					previousOpened = curr.OpenConnections
 				}
 			}
 		}
 	}()
-
-	return func() {
-		stop <- true
-	}
 }
 
-func (pg *PostgreSQL) logPoolSize(stats sql.DBStats) {
+func (pg *PostgreSQL) logPoolSize(ctx context.Context, stats sql.DBStats) {
 	pg.logger.With("inUse", stats.InUse).
 		With("idle", stats.Idle).
 		With("opened", stats.OpenConnections).
-		Info(context.Background(), "Current  number of opened connections in the pool")
+		Info(ctx, "Current  number of opened connections in the pool")
 }
 
-func (pg *PostgreSQL) retryConn(dsn string, driverName string, gormCfg *gorm.Config) error {
-	conn, err := sql.Open(driverName, dsn)
-	if err != nil {
-		slog.Error("failed to open sql conn", "detail", err.Error())
-		return err
-	}
-
-	conn.SetMaxOpenConns(pg.maxOpenConns)
-	conn.SetMaxIdleConns(pg.maxIdleConns)
-	conn.SetConnMaxLifetime(pg.maxLifeTime)
-	conn.SetConnMaxIdleTime(pg.maxIdleTime)
-
-	driver := pgDriver.New(pgDriver.Config{
-		WithoutQuotingCheck: true,
-		Conn:                conn,
-	})
-
-	db, err := gorm.Open(driver, gormCfg)
-	if err != nil {
-		err = wraperror.WithTrace(err, nil, nil)
-		slog.Error(err.Error())
-	}
-
-	pg.conn = conn
-	pg.DB = db
-	return nil
-}
-
-func (pg *PostgreSQL) buildDSN(cfg *config.Config) (string, error) {
-	if cfg.RDB.Driver != "postgres" {
+func (pg *PostgreSQL) buildDSN(cred *config.RdbCredentials) (string, error) {
+	if pg.params.driver != "postgres" {
 		return "", fmt.Errorf("Database driver is invalid")
 	}
 
 	dsn := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-		cfg.RDB.Host,
-		cfg.RDB.Port,
-		cfg.RDB.Username,
-		cfg.RDB.Password,
-		cfg.RDB.Name,
-		cfg.RDB.SSLMode,
+		pg.params.host,
+		pg.params.port,
+		cred.Username,
+		cred.Password,
+		pg.params.name,
+		pg.params.sslmode,
 	)
 
 	return dsn, nil
 }
 
-func (pg *PostgreSQL) getGormConfig() *gorm.Config {
+func (pg *PostgreSQL) setGormConfig() {
 	gormLogger := gormlog.DefaultGormLogger().LogMode(logger.Info)
-	return &gorm.Config{
+	pg.gormCfg = &gorm.Config{
 		DisableAutomaticPing:   true,
 		SkipDefaultTransaction: true,
 		Logger:                 gormLogger,

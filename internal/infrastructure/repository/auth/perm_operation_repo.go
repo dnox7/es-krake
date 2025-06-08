@@ -38,7 +38,7 @@ func (p *permOperationRepo) PluckOperationIDByConditions(
 	}
 
 	var opIDs []int
-	err = p.pg.DB.
+	err = p.pg.GormDB().
 		WithContext(ctx).
 		Model(entity.PermissionOperation{}).
 		Scopes(scopes...).

@@ -38,7 +38,7 @@ func (a *accessReqOpRepo) PluckOperationIDByConditions(
 	}
 
 	var opIDs []int
-	err = a.pg.DB.
+	err = a.pg.GormDB().
 		WithContext(ctx).
 		Model(entity.AccessRequirementOperation{}).
 		Scopes(scopes...).

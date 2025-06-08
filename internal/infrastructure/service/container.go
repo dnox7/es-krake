@@ -9,7 +9,7 @@ type ServicesContainer struct {
 	AuthContainer authService.ServiceContainer
 }
 
-func NewServicesContainer(repos repository.RepositoriesContainer) *ServicesContainer {
+func NewServicesContainer(repos *repository.RepositoriesContainer) *ServicesContainer {
 	return &ServicesContainer{
 		AuthContainer: authService.NewServiceContainer(repos.AuthContainer),
 	}

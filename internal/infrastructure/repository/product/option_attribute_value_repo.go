@@ -39,7 +39,7 @@ func (p *optionAttributeValueRepo) TakeByConditions(
 		return entity.OptionAttributeValue{}, err
 	}
 	pav := entity.OptionAttributeValue{}
-	err = p.pg.DB.
+	err = p.pg.GormDB().
 		WithContext(ctx).
 		Scopes(gormScopes...).
 		Where(conditions).
@@ -59,7 +59,7 @@ func (p *optionAttributeValueRepo) FindByConditions(
 		return nil, err
 	}
 	pavSlice := []entity.OptionAttributeValue{}
-	err = p.pg.DB.
+	err = p.pg.GormDB().
 		WithContext(ctx).
 		Scopes(gormScopes...).
 		Where(conditions).
@@ -108,7 +108,7 @@ func (p *optionAttributeValueRepo) Update(
 		return entity.OptionAttributeValue{}, err
 	}
 
-	err = p.pg.DB.
+	err = p.pg.GormDB().
 		WithContext(ctx).
 		Model(attributeValue).
 		Updates(attributesToUpdate).Error

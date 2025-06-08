@@ -41,7 +41,7 @@ func (p *productMetaRepo) Create(
 
 	coll := p.db.DB.
 		Database(p.db.DBName).
-		Collection(domainRepo.ProductMetaTableName)
+		Collection(entity.ProductMetaTableName)
 
 	prodMeta.PrepareForInsert()
 	res, err := coll.InsertOne(ctx, prodMeta)
@@ -67,7 +67,7 @@ func (p *productMetaRepo) FindByConditions(
 
 	coll := p.db.DB.
 		Database(p.db.DBName).
-		Collection(domainRepo.ProductMetaTableName)
+		Collection(entity.ProductMetaTableName)
 
 	cursor, err := coll.Find(ctx, filter, opts)
 	if err != nil {
@@ -98,7 +98,7 @@ func (p *productMetaRepo) TakeByConditions(
 	prodMeta := entity.ProductMeta{}
 	coll := p.db.DB.
 		Database(p.db.DBName).
-		Collection(domainRepo.ProductMetaTableName)
+		Collection(entity.ProductMetaTableName)
 
 	err = coll.FindOne(ctx, filter, opts).Decode(&prodMeta)
 	return prodMeta, err
@@ -118,7 +118,7 @@ func (p *productMetaRepo) UpdateByID(
 
 	coll := p.db.DB.
 		Database(p.db.DBName).
-		Collection(domainRepo.ProductMetaTableName)
+		Collection(entity.ProductMetaTableName)
 	opt := options.FindOneAndUpdate().SetReturnDocument(options.After)
 
 	updatedDoc := entity.ProductMeta{}

@@ -2,6 +2,8 @@ package entity
 
 import "github.com/dpe27/es-krake/internal/domain/shared/model"
 
+const ProductTableName = "products"
+
 type Product struct {
 	ID                    int              `gorm:"column:id;primaryKey;type:bigint;not null;autoIncrement"     json:"id"`
 	Name                  string           `gorm:"column:name;type:varchar(250);not null"                      json:"name"`
@@ -19,4 +21,8 @@ type Product struct {
 	Options               []*ProductOption `gorm:"-"`
 	Categories            []*Category      `gorm:"-"`
 	model.BaseModel
+}
+
+func (Product) TableName() string {
+	return ProductTableName
 }

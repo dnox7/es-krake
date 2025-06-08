@@ -33,12 +33,12 @@ func (p *permService) GetPermissionsWithRoleID(
 	scopes := scope.GormScope().
 		Join(fmt.Sprintf(
 			"INNER JOIN %s AS rp ON rp.permission_id = %s.id",
-			repository.RolePermissionTableName,
-			repository.PermissionTableName,
+			entity.RolePermissionTableName,
+			entity.PermissionTableName,
 		)).
 		Join(fmt.Sprintf(
 			"INNER JOIN %s AS r ON r.id = rp.role_id",
-			repository.RoleTableName,
+			entity.RoleTableName,
 		)).
 		Where("r.id = ?", roleID).
 		Preload("Operations").

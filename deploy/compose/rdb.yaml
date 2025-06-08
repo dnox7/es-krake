@@ -1,0 +1,26 @@
+services:
+  esk-rdb:
+    image: postgres:17-alpine3.21
+    container_name: esk-rdb
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "krake"]
+    environment:
+      POSTGRES_DB: esk_dev_1
+      POSTGRES_USER: krake
+      POSTGRES_PASSWORD: 123456
+    ports:
+      - 5432:5432
+    volumes:
+      - esk-rdb-data:/var/lib/postgresql/data
+      - ./db-init:/docker-entrypoint-initdb.d
+    networks:
+        - esk-rdb
+
+volumes:
+  esk-rdb-data: 
+    name: esk-rdb-data
+
+networks:
+  esk-rdb:
+    driver: bridge
+    name: esk-rdb

@@ -7,8 +7,6 @@ import (
 	"github.com/dpe27/es-krake/internal/domain/shared/specification"
 )
 
-const ProductMetaTableName = "productmetas"
-
 type ProductMetaRespository interface {
 	TakeByConditions(ctx context.Context, filter interface{}, spec specification.Base) (entity.ProductMeta, error)
 

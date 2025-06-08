@@ -40,7 +40,7 @@ func (p *platformAccRepo) TakeByConditions(
 	}
 
 	var acc entity.PlatformAccount
-	err = p.pg.DB.
+	err = p.pg.GormDB().
 		WithContext(ctx).
 		Scopes(gormScopes...).
 		Where(conditions).
@@ -61,7 +61,7 @@ func (p *platformAccRepo) FindByConditions(
 	}
 
 	accs := []entity.PlatformAccount{}
-	err = p.pg.DB.
+	err = p.pg.GormDB().
 		WithContext(ctx).
 		Scopes(gormScopes...).
 		Where(conditions).
@@ -81,7 +81,7 @@ func (p *platformAccRepo) Create(
 		return entity.PlatformAccount{}, err
 	}
 
-	err = p.pg.DB.WithContext(ctx).Create(&acc).Error
+	err = p.pg.GormDB().WithContext(ctx).Create(&acc).Error
 	return acc, err
 }
 
@@ -119,7 +119,7 @@ func (p *platformAccRepo) Update(
 		return entity.PlatformAccount{}, err
 	}
 
-	err = p.pg.DB.
+	err = p.pg.GormDB().
 		WithContext(ctx).
 		Model(acc).
 		Updates(attributesToUpdate).Error

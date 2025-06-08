@@ -42,7 +42,7 @@ func (e *enterpriseAccRepo) TakeByConditions(
 	}
 
 	var acc entity.EnterpriseAccount
-	err = e.pg.DB.
+	err = e.pg.GormDB().
 		WithContext(ctx).
 		Scopes(gormScopes...).
 		Where(conditions).
@@ -63,7 +63,7 @@ func (e *enterpriseAccRepo) FindByConditions(
 	}
 
 	accs := []entity.EnterpriseAccount{}
-	err = e.pg.DB.
+	err = e.pg.GormDB().
 		WithContext(ctx).
 		Scopes(gormScopes...).
 		Where(conditions).
@@ -83,7 +83,7 @@ func (e *enterpriseAccRepo) Create(
 		return entity.EnterpriseAccount{}, err
 	}
 
-	err = e.pg.DB.WithContext(ctx).Create(&acc).Error
+	err = e.pg.GormDB().WithContext(ctx).Create(&acc).Error
 	return acc, err
 }
 
@@ -121,7 +121,7 @@ func (e *enterpriseAccRepo) Update(
 		return entity.EnterpriseAccount{}, err
 	}
 
-	err = e.pg.DB.
+	err = e.pg.GormDB().
 		WithContext(ctx).
 		Model(acc).
 		Updates(attributesToUpdate).Error

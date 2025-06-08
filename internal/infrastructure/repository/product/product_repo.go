@@ -39,7 +39,7 @@ func (p *productRepo) Create(
 		return entity.Product{}, err
 	}
 
-	err = p.pg.DB.WithContext(ctx).Create(&product).Error
+	err = p.pg.GormDB().WithContext(ctx).Create(&product).Error
 	return product, err
 }
 
@@ -77,7 +77,7 @@ func (p *productRepo) FindByConditions(
 		return nil, err
 	}
 	products := []entity.Product{}
-	err = p.pg.DB.
+	err = p.pg.GormDB().
 		WithContext(ctx).
 		Scopes(gormScopes...).
 		Where(conditions).
@@ -98,7 +98,7 @@ func (p *productRepo) TakeByConditions(
 	}
 
 	var product entity.Product
-	err = p.pg.DB.
+	err = p.pg.GormDB().
 		WithContext(ctx).
 		Scopes(gormScopes...).
 		Where(conditions).
@@ -118,7 +118,7 @@ func (p *productRepo) Update(
 		return entity.Product{}, err
 	}
 
-	err = p.pg.DB.
+	err = p.pg.GormDB().
 		WithContext(ctx).
 		Model(product).
 		Updates(attributesToUpdate).Error
