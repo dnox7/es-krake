@@ -3,32 +3,32 @@ package repository
 import (
 	"context"
 	"fmt"
-	"pech/es-krake/internal/domain/product/entity"
-	domainRepo "pech/es-krake/internal/domain/product/repository"
-	domainScope "pech/es-krake/internal/domain/shared/scope"
-	"pech/es-krake/internal/domain/shared/transaction"
-	"pech/es-krake/internal/infrastructure/db"
-	gormScope "pech/es-krake/internal/infrastructure/db/gorm/scope"
-	"pech/es-krake/pkg/log"
-	"pech/es-krake/pkg/utils"
 
+	"github.com/dpe27/es-krake/internal/domain/product/entity"
+	domainRepo "github.com/dpe27/es-krake/internal/domain/product/repository"
+	"github.com/dpe27/es-krake/internal/domain/shared/specification"
+	"github.com/dpe27/es-krake/internal/domain/shared/transaction"
+	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
+	gormScope "github.com/dpe27/es-krake/internal/infrastructure/rdb/gorm/scope"
+	"github.com/dpe27/es-krake/pkg/log"
+	"github.com/dpe27/es-krake/pkg/utils"
 	"gorm.io/gorm"
 )
 
-type categoryRepository struct {
+type categoryRepo struct {
 	logger *log.Logger
-	pg     *db.PostgreSQL
+	pg     *rdb.PostgreSQL
 }
 
-func NewCategoryRepository(pg *db.PostgreSQL) domainRepo.CategoryRepository {
-	return &categoryRepository{
-		logger: log.With("repo", "category_repo"),
+func NewCategoryRepository(pg *rdb.PostgreSQL) domainRepo.CategoryRepository {
+	return &categoryRepo{
+		logger: log.With("repository", "category_repo"),
 		pg:     pg,
 	}
 }
 
 // Create implements repository.CategoryRepository.
-func (c *categoryRepository) Create(
+func (c *categoryRepo) Create(
 	ctx context.Context,
 	attributes map[string]interface{},
 ) (entity.Category, error) {
@@ -39,12 +39,12 @@ func (c *categoryRepository) Create(
 		return entity.Category{}, err
 	}
 
-	err = c.pg.DB.WithContext(ctx).Create(&category).Error
+	err = c.pg.GormDB().WithContext(ctx).Create(&category).Error
 	return category, err
 }
 
 // CreateWithTx implements repository.CategoryRepository.
-func (c *categoryRepository) CreateWithTx(
+func (c *categoryRepo) CreateWithTx(
 	ctx context.Context,
 	tx transaction.Base,
 	attributes map[string]interface{},
@@ -66,42 +66,40 @@ func (c *categoryRepository) CreateWithTx(
 }
 
 // FindByConditions implements repository.CategoryRepository.
-func (c *categoryRepository) FindByConditions(
+func (c *categoryRepo) FindByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
-	scopes ...domainScope.Base,
+	spec specification.Base,
 ) ([]entity.Category, error) {
-	gormScopes, err := gormScope.ToGormScopes(scopes...)
+	gormScopes, err := gormScope.ToGormScopes(spec)
 	if err != nil {
 		c.logger.Error(ctx, err.Error())
 		return nil, err
 	}
 
 	categories := []entity.Category{}
-	err = c.pg.DB.
+	err = c.pg.GormDB().
 		WithContext(ctx).
 		Scopes(gormScopes...).
 		Where(conditions).
 		Find(&categories).Error
 	return categories, err
-
 }
 
 // TakeByConditions implements repository.CategoryRepository.
-func (c *categoryRepository) TakeByConditions(
+func (c *categoryRepo) TakeByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
-	scopes ...domainScope.Base,
+	spec specification.Base,
 ) (entity.Category, error) {
-
-	gormScopes, err := gormScope.ToGormScopes(scopes...)
+	gormScopes, err := gormScope.ToGormScopes(spec)
 	if err != nil {
 		c.logger.Error(ctx, err.Error())
 		return entity.Category{}, err
 	}
 
 	category := entity.Category{}
-	err = c.pg.DB.
+	err = c.pg.GormDB().
 		WithContext(ctx).
 		Scopes(gormScopes...).
 		Where(conditions).
@@ -110,7 +108,7 @@ func (c *categoryRepository) TakeByConditions(
 }
 
 // Update implements repository.CategoryRepository.
-func (c *categoryRepository) Update(
+func (c *categoryRepo) Update(
 	ctx context.Context,
 	category entity.Category,
 	attributesToUpdate map[string]interface{},
@@ -121,7 +119,7 @@ func (c *categoryRepository) Update(
 		return entity.Category{}, err
 	}
 
-	err = c.pg.DB.
+	err = c.pg.GormDB().
 		WithContext(ctx).
 		Model(category).
 		Updates(attributesToUpdate).Error
@@ -129,7 +127,7 @@ func (c *categoryRepository) Update(
 }
 
 // UpdateWithTx implements repository.CategoryRepository.
-func (c *categoryRepository) UpdateWithTx(
+func (c *categoryRepo) UpdateWithTx(
 	ctx context.Context,
 	tx transaction.Base,
 	category entity.Category,

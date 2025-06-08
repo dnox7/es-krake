@@ -2,10 +2,9 @@ package repository
 
 import (
 	"context"
-	"pech/es-krake/internal/domain/product/entity"
-)
 
-const AttributeTypeTableName = "attribute_types"
+	"github.com/dpe27/es-krake/internal/domain/product/entity"
+)
 
 type AttributeTypeRepository interface {
 	TakeByID(ctx context.Context, ID int) (entity.AttributeType, error)

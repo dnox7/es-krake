@@ -3,9 +3,9 @@ package gormlog
 import (
 	"context"
 	"errors"
-	"pech/es-krake/pkg/log"
 	"time"
 
+	"github.com/dpe27/es-krake/pkg/log"
 	"gorm.io/gorm/logger"
 )
 
@@ -37,7 +37,7 @@ func NewGormLogger(config logger.Config) logger.Interface {
 	return &gormLogger{
 		Level:  config.LogLevel,
 		cfg:    config,
-		logger: log.With("service", "database"),
+		logger: log.With("service", "postgres"),
 	}
 }
 
@@ -71,9 +71,9 @@ func (l *gormLogger) Trace(ctx context.Context, begin time.Time,
 	sql, rows := fc()
 	duration := time.Since(begin)
 	logEntry := l.logger.
-		With(durationKey, duration.String()).
-		With(sqlKey, sql).
-		With(rowsKey, rows)
+		With("duration", duration.String()).
+		With("sql", sql).
+		With("keys", rows)
 
 	if err == nil {
 		if duration.Milliseconds() > l.cfg.SlowThreshold.Milliseconds() {

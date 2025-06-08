@@ -2,39 +2,40 @@ package repository
 
 import (
 	"context"
-	"pech/es-krake/internal/domain/product/entity"
-	domainRepo "pech/es-krake/internal/domain/product/repository"
-	"pech/es-krake/internal/infrastructure/db"
-	"pech/es-krake/pkg/log"
+
+	"github.com/dpe27/es-krake/internal/domain/product/entity"
+	domainRepo "github.com/dpe27/es-krake/internal/domain/product/repository"
+	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
+	"github.com/dpe27/es-krake/pkg/log"
 )
 
-type attributeTypeRepository struct {
+type attributeTypeRepo struct {
 	logger *log.Logger
-	pg     *db.PostgreSQL
+	pg     *rdb.PostgreSQL
 }
 
-func NewAttributeTypeRepository(pg *db.PostgreSQL) domainRepo.AttributeTypeRepository {
-	return &attributeTypeRepository{
-		logger: log.With("repo", "attribute_type_repo"),
+func NewAttributeTypeRepository(pg *rdb.PostgreSQL) domainRepo.AttributeTypeRepository {
+	return &attributeTypeRepo{
+		logger: log.With("repository", "attribute_type_repo"),
 		pg:     pg,
 	}
 }
 
 // TakeByID implements repository.AttributeTypeRepository.
-func (r *attributeTypeRepository) TakeByID(ctx context.Context, ID int) (entity.AttributeType, error) {
+func (r *attributeTypeRepo) TakeByID(ctx context.Context, ID int) (entity.AttributeType, error) {
 	attrType := entity.AttributeType{}
-	db := r.pg.DB.WithContext(ctx)
+	db := r.pg.GormDB().WithContext(ctx)
 	err := db.Take(&attrType, ID).Error
 	return attrType, err
 }
 
 // GetAsDictionary implements repository.AttributeTypeRepository.
-func (r *attributeTypeRepository) GetAsDictionary(ctx context.Context) (map[int]string, error) {
+func (r *attributeTypeRepo) GetAsDictionary(ctx context.Context) (map[int]string, error) {
 	var attrTypes []entity.AttributeType
 
-	err := r.pg.DB.
+	err := r.pg.GormDB().
 		WithContext(ctx).
-		Table(domainRepo.AttributeTypeTableName).
+		Table(entity.AttributeTypeTableName).
 		Select("id", "name").
 		Find(&attrTypes).Error
 	if err != nil {

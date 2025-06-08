@@ -3,43 +3,43 @@ package repository
 import (
 	"context"
 	"fmt"
-	"pech/es-krake/internal/domain/product/entity"
-	domainRepo "pech/es-krake/internal/domain/product/repository"
-	domainScope "pech/es-krake/internal/domain/shared/scope"
-	"pech/es-krake/internal/domain/shared/transaction"
-	"pech/es-krake/internal/infrastructure/db"
-	gormScope "pech/es-krake/internal/infrastructure/db/gorm/scope"
-	"pech/es-krake/pkg/log"
-	"pech/es-krake/pkg/utils"
 
+	"github.com/dpe27/es-krake/internal/domain/product/entity"
+	domainRepo "github.com/dpe27/es-krake/internal/domain/product/repository"
+	"github.com/dpe27/es-krake/internal/domain/shared/specification"
+	"github.com/dpe27/es-krake/internal/domain/shared/transaction"
+	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
+	gormScope "github.com/dpe27/es-krake/internal/infrastructure/rdb/gorm/scope"
+	"github.com/dpe27/es-krake/pkg/log"
+	"github.com/dpe27/es-krake/pkg/utils"
 	"gorm.io/gorm"
 )
 
-type attributeRepository struct {
+type attributeRepo struct {
 	logger *log.Logger
-	pg     *db.PostgreSQL
+	pg     *rdb.PostgreSQL
 }
 
-func NewAttributeRepository(pg *db.PostgreSQL) domainRepo.AttributeRepository {
-	return &attributeRepository{
-		logger: log.With("repo", "attribute_repo"),
+func NewAttributeRepository(pg *rdb.PostgreSQL) domainRepo.AttributeRepository {
+	return &attributeRepo{
+		logger: log.With("repository", "attribute_repo"),
 		pg:     pg,
 	}
 }
 
 // TakeByConditions implements repository.AttributeRepository.
-func (r *attributeRepository) TakeByConditions(
+func (r *attributeRepo) TakeByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
-	scopes ...domainScope.Base,
+	spec specification.Base,
 ) (entity.Attribute, error) {
-	gormScopes, err := gormScope.ToGormScopes(scopes...)
+	gormScopes, err := gormScope.ToGormScopes(spec)
 	if err != nil {
 		r.logger.Error(ctx, err.Error())
 		return entity.Attribute{}, err
 	}
 	var attribute entity.Attribute
-	err = r.pg.DB.
+	err = r.pg.GormDB().
 		WithContext(ctx).
 		Scopes(gormScopes...).
 		Where(conditions).
@@ -48,28 +48,27 @@ func (r *attributeRepository) TakeByConditions(
 }
 
 // FindByConditions implements repository.AttributeRepository.
-func (r *attributeRepository) FindByConditions(
+func (r *attributeRepo) FindByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
-	scopes ...domainScope.Base,
+	spec specification.Base,
 ) ([]entity.Attribute, error) {
-	gormScopes, err := gormScope.ToGormScopes(scopes...)
+	gormScopes, err := gormScope.ToGormScopes(spec)
 	if err != nil {
 		r.logger.Error(ctx, err.Error())
 		return nil, err
 	}
 	attributes := []entity.Attribute{}
-	err = r.pg.DB.
+	err = r.pg.GormDB().
 		WithContext(ctx).
 		Scopes(gormScopes...).
 		Where(conditions).
 		Find(&attributes).Error
 	return attributes, err
-
 }
 
 // Create implements repository.AttributeRepository.
-func (r *attributeRepository) Create(
+func (r *attributeRepo) Create(
 	ctx context.Context,
 	attributes map[string]interface{},
 ) (entity.Attribute, error) {
@@ -80,12 +79,12 @@ func (r *attributeRepository) Create(
 		return entity.Attribute{}, err
 	}
 
-	err = r.pg.DB.WithContext(ctx).Create(&attributeEntity).Error
+	err = r.pg.GormDB().WithContext(ctx).Create(&attributeEntity).Error
 	return attributeEntity, err
 }
 
 // CreateWithTx implements repository.AttributeRepository.
-func (r *attributeRepository) CreateWithTx(
+func (r *attributeRepo) CreateWithTx(
 	ctx context.Context,
 	tx transaction.Base,
 	attributes map[string]interface{},
@@ -107,7 +106,7 @@ func (r *attributeRepository) CreateWithTx(
 }
 
 // Update implements repository.AttributeRepository.
-func (r *attributeRepository) Update(
+func (r *attributeRepo) Update(
 	ctx context.Context,
 	attribute entity.Attribute,
 	attributesToUpdate map[string]interface{},
@@ -118,7 +117,7 @@ func (r *attributeRepository) Update(
 		return entity.Attribute{}, err
 	}
 
-	err = r.pg.DB.
+	err = r.pg.GormDB().
 		WithContext(ctx).
 		Model(attribute).
 		Updates(attributesToUpdate).Error
@@ -126,7 +125,7 @@ func (r *attributeRepository) Update(
 }
 
 // UpdateWithTx implements repository.AttributeRepository.
-func (r *attributeRepository) UpdateWithTx(
+func (r *attributeRepo) UpdateWithTx(
 	ctx context.Context,
 	tx transaction.Base,
 	attribute entity.Attribute,

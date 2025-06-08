@@ -1,3 +1,0 @@
-#!/bin/sh
-export DB_MIGRATIONS_PATH="$(pwd)/migrations"
-export DSN="postgres://postgres:123456@localhost:5432/ek_t1?sslmode=disable"

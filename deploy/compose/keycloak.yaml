@@ -1,0 +1,41 @@
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.1.4
+    restart: unless-stopped
+    container_name: keycloak
+    environment:
+      KC_DB: postgres
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: 123456
+      KC_DB_URL: "jdbc:postgresql://kcdb:5432/keycloak"
+      KC_LOG_LEVEL: DEBUG
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    networks:
+        - kc
+    command: ["start-dev"]
+
+  kcdb:
+    image: postgres:17-alpine3.21
+    container_name: kcdb
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "keycloak"]
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: 123456
+    volumes:
+      - kcdb-data:/var/lib/postgresql/data
+    networks:
+        - kc
+
+volumes:
+  kcdb-data: 
+    name: kcdb-data
+
+networks:
+  kc:
+    driver: bridge
+    name: kc

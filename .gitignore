@@ -24,3 +24,9 @@ vendor/
 
 # coverage files
 coverage.txt
+
+# golangci-lint report
+report.xml
+
+# vault_secret_id file
+vault_secret

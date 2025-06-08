@@ -3,32 +3,32 @@ package repository
 import (
 	"context"
 	"fmt"
-	"pech/es-krake/internal/domain/product/entity"
-	domainRepo "pech/es-krake/internal/domain/product/repository"
-	domainScope "pech/es-krake/internal/domain/shared/scope"
-	"pech/es-krake/internal/domain/shared/transaction"
-	"pech/es-krake/internal/infrastructure/db"
-	gormScope "pech/es-krake/internal/infrastructure/db/gorm/scope"
-	"pech/es-krake/pkg/log"
-	"pech/es-krake/pkg/utils"
 
+	"github.com/dpe27/es-krake/internal/domain/product/entity"
+	domainRepo "github.com/dpe27/es-krake/internal/domain/product/repository"
+	"github.com/dpe27/es-krake/internal/domain/shared/specification"
+	"github.com/dpe27/es-krake/internal/domain/shared/transaction"
+	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
+	gormScope "github.com/dpe27/es-krake/internal/infrastructure/rdb/gorm/scope"
+	"github.com/dpe27/es-krake/pkg/log"
+	"github.com/dpe27/es-krake/pkg/utils"
 	"gorm.io/gorm"
 )
 
-type productOptionRepository struct {
+type productOptionRepo struct {
 	logger *log.Logger
-	pg     *db.PostgreSQL
+	pg     *rdb.PostgreSQL
 }
 
-func NewProductOptionRepository(pg *db.PostgreSQL) domainRepo.ProductOptionRepository {
-	return &productOptionRepository{
-		logger: log.With("repo", "product_option_repo"),
+func NewProductOptionRepository(pg *rdb.PostgreSQL) domainRepo.ProductOptionRepository {
+	return &productOptionRepo{
+		logger: log.With("repository", "product_option_repo"),
 		pg:     pg,
 	}
 }
 
 // CreateBatchWithTx implements repository.ProductOptionRepository.
-func (p *productOptionRepository) CreateBatchWithTx(
+func (p *productOptionRepo) CreateBatchWithTx(
 	ctx context.Context,
 	tx transaction.Base,
 	attributes []map[string]interface{},
@@ -57,18 +57,18 @@ func (p *productOptionRepository) CreateBatchWithTx(
 }
 
 // DeleteByConditionWithTx implements repository.ProductOptionRepository.
-func (p *productOptionRepository) DeleteByConditionWithTx(
+func (p *productOptionRepo) DeleteByConditionWithTx(
 	ctx context.Context,
 	tx transaction.Base,
 	conditions map[string]interface{},
-	scopes ...domainScope.Base,
+	spec specification.Base,
 ) error {
 	gormTx, ok := tx.GetTx().(*gorm.DB)
 	if !ok {
 		return fmt.Errorf(utils.ErrorGetTx)
 	}
 
-	gormScopes, err := gormScope.ToGormScopes(scopes...)
+	gormScopes, err := gormScope.ToGormScopes(spec)
 	if err != nil {
 		p.logger.Error(ctx, err.Error())
 		return err
@@ -80,19 +80,19 @@ func (p *productOptionRepository) DeleteByConditionWithTx(
 }
 
 // FindByConditions implements repository.ProductOptionRepository.
-func (p *productOptionRepository) FindByConditions(
+func (p *productOptionRepo) FindByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
-	scopes ...domainScope.Base,
+	spec specification.Base,
 ) ([]entity.ProductOption, error) {
-	gormScopes, err := gormScope.ToGormScopes(scopes...)
+	gormScopes, err := gormScope.ToGormScopes(spec)
 	if err != nil {
 		p.logger.Error(ctx, err.Error())
 		return nil, err
 	}
 
 	optSlice := []entity.ProductOption{}
-	err = p.pg.DB.
+	err = p.pg.GormDB().
 		WithContext(ctx).
 		Scopes(gormScopes...).
 		Where(conditions).
@@ -101,19 +101,19 @@ func (p *productOptionRepository) FindByConditions(
 }
 
 // TakeByConditions implements repository.ProductOptionRepository.
-func (p *productOptionRepository) TakeByConditions(
+func (p *productOptionRepo) TakeByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
-	scopes ...domainScope.Base,
+	spec specification.Base,
 ) (entity.ProductOption, error) {
-	gormScopes, err := gormScope.ToGormScopes(scopes...)
+	gormScopes, err := gormScope.ToGormScopes(spec)
 	if err != nil {
 		p.logger.Error(ctx, err.Error())
 		return entity.ProductOption{}, err
 	}
 
 	opt := entity.ProductOption{}
-	err = p.pg.DB.
+	err = p.pg.GormDB().
 		WithContext(ctx).
 		Scopes(gormScopes...).
 		Where(conditions).
@@ -122,7 +122,7 @@ func (p *productOptionRepository) TakeByConditions(
 }
 
 // Update implements repository.ProductOptionRepository.
-func (p *productOptionRepository) Update(
+func (p *productOptionRepo) Update(
 	ctx context.Context,
 	option entity.ProductOption,
 	attributesToUpdate map[string]interface{},
@@ -133,7 +133,7 @@ func (p *productOptionRepository) Update(
 		return entity.ProductOption{}, err
 	}
 
-	err = p.pg.DB.
+	err = p.pg.GormDB().
 		WithContext(ctx).
 		Model(option).
 		Updates(attributesToUpdate).Error

@@ -3,32 +3,32 @@ package repository
 import (
 	"context"
 	"fmt"
-	"pech/es-krake/internal/domain/product/entity"
-	domainRepo "pech/es-krake/internal/domain/product/repository"
-	domainScope "pech/es-krake/internal/domain/shared/scope"
-	"pech/es-krake/internal/domain/shared/transaction"
-	"pech/es-krake/internal/infrastructure/db"
-	gormScope "pech/es-krake/internal/infrastructure/db/gorm/scope"
-	"pech/es-krake/pkg/log"
-	"pech/es-krake/pkg/utils"
 
+	"github.com/dpe27/es-krake/internal/domain/product/entity"
+	domainRepo "github.com/dpe27/es-krake/internal/domain/product/repository"
+	"github.com/dpe27/es-krake/internal/domain/shared/specification"
+	"github.com/dpe27/es-krake/internal/domain/shared/transaction"
+	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
+	gormScope "github.com/dpe27/es-krake/internal/infrastructure/rdb/gorm/scope"
+	"github.com/dpe27/es-krake/pkg/log"
+	"github.com/dpe27/es-krake/pkg/utils"
 	"gorm.io/gorm"
 )
 
-type productRepository struct {
+type productRepo struct {
 	logger *log.Logger
-	pg     *db.PostgreSQL
+	pg     *rdb.PostgreSQL
 }
 
-func NewProductRepository(pg *db.PostgreSQL) domainRepo.ProductRepository {
-	return &productRepository{
-		logger: log.With("repo", "product_repo"),
+func NewProductRepository(pg *rdb.PostgreSQL) domainRepo.ProductRepository {
+	return &productRepo{
+		logger: log.With("repository", "product_repo"),
 		pg:     pg,
 	}
 }
 
 // Create implements repository.ProductRepository.
-func (p *productRepository) Create(
+func (p *productRepo) Create(
 	ctx context.Context,
 	attributes map[string]interface{},
 ) (entity.Product, error) {
@@ -39,12 +39,12 @@ func (p *productRepository) Create(
 		return entity.Product{}, err
 	}
 
-	err = p.pg.DB.WithContext(ctx).Create(&product).Error
+	err = p.pg.GormDB().WithContext(ctx).Create(&product).Error
 	return product, err
 }
 
 // CreateWithTx implements repository.ProductRepository.
-func (p *productRepository) CreateWithTx(
+func (p *productRepo) CreateWithTx(
 	ctx context.Context,
 	tx transaction.Base,
 	attributes map[string]interface{},
@@ -66,18 +66,18 @@ func (p *productRepository) CreateWithTx(
 }
 
 // FindByConditions implements repository.ProductRepository.
-func (p *productRepository) FindByConditions(
+func (p *productRepo) FindByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
-	scopes ...domainScope.Base,
+	spec specification.Base,
 ) ([]entity.Product, error) {
-	gormScopes, err := gormScope.ToGormScopes(scopes...)
+	gormScopes, err := gormScope.ToGormScopes(spec)
 	if err != nil {
 		p.logger.Error(ctx, err.Error())
 		return nil, err
 	}
 	products := []entity.Product{}
-	err = p.pg.DB.
+	err = p.pg.GormDB().
 		WithContext(ctx).
 		Scopes(gormScopes...).
 		Where(conditions).
@@ -86,19 +86,19 @@ func (p *productRepository) FindByConditions(
 }
 
 // TakeByConditions implements repository.ProductRepository.
-func (p *productRepository) TakeByConditions(
+func (p *productRepo) TakeByConditions(
 	ctx context.Context,
 	conditions map[string]interface{},
-	scopes ...domainScope.Base,
+	spec specification.Base,
 ) (entity.Product, error) {
-	gormScopes, err := gormScope.ToGormScopes(scopes...)
+	gormScopes, err := gormScope.ToGormScopes(spec)
 	if err != nil {
 		p.logger.Error(ctx, err.Error())
 		return entity.Product{}, err
 	}
 
 	var product entity.Product
-	err = p.pg.DB.
+	err = p.pg.GormDB().
 		WithContext(ctx).
 		Scopes(gormScopes...).
 		Where(conditions).
@@ -107,7 +107,7 @@ func (p *productRepository) TakeByConditions(
 }
 
 // Update implements repository.ProductRepository.
-func (p *productRepository) Update(
+func (p *productRepo) Update(
 	ctx context.Context,
 	product entity.Product,
 	attributesToUpdate map[string]interface{},
@@ -118,7 +118,7 @@ func (p *productRepository) Update(
 		return entity.Product{}, err
 	}
 
-	err = p.pg.DB.
+	err = p.pg.GormDB().
 		WithContext(ctx).
 		Model(product).
 		Updates(attributesToUpdate).Error
@@ -126,7 +126,7 @@ func (p *productRepository) Update(
 }
 
 // UpdateWithTx implements repository.ProductRepository.
-func (p *productRepository) UpdateWithTx(
+func (p *productRepo) UpdateWithTx(
 	ctx context.Context,
 	tx transaction.Base,
 	product entity.Product,

@@ -3,10 +3,11 @@ package log
 import (
 	"io"
 	"log/slog"
-	"pech/es-krake/config"
+	"os"
 	"sync"
 	"time"
 
+	"github.com/dpe27/es-krake/config"
 	"golang.org/x/net/context"
 )
 
@@ -23,7 +24,7 @@ var (
 func Initialize(w io.Writer, cfg *config.Config, keyInput []string) {
 	keys = append(keys, keyInput...)
 	level := slog.LevelInfo
-	if cfg.Log.Level == "DEBUG" {
+	if cfg.App.LogLevel == "DEBUG" {
 		level = slog.LevelDebug
 	}
 
@@ -44,7 +45,6 @@ func Initialize(w io.Writer, cfg *config.Config, keyInput []string) {
 	slog.SetDefault(slog.New(&handler{
 		Handler: slog.NewJSONHandler(w, opts),
 	}))
-	return
 }
 
 // AddLogValToCtx adds a key-val pair to the context in sync.Map for thread safely
@@ -60,4 +60,25 @@ func AddLogValToCtx(ctx context.Context, key string, val interface{}) context.Co
 
 func Group(key string, args ...any) slog.Attr {
 	return slog.Group(key, args...)
+}
+
+func Info(ctx context.Context, msg string, args ...any) {
+	slog.InfoContext(ctx, msg, args...)
+}
+
+func Debug(ctx context.Context, msg string, args ...any) {
+	slog.DebugContext(ctx, msg, args...)
+}
+
+func Warn(ctx context.Context, msg string, args ...any) {
+	slog.WarnContext(ctx, msg, args...)
+}
+
+func Error(ctx context.Context, msg string, args ...any) {
+	slog.ErrorContext(ctx, msg, args...)
+}
+
+func Fatal(ctx context.Context, msg string, args ...any) {
+	slog.ErrorContext(ctx, msg, args...)
+	os.Exit(1)
 }

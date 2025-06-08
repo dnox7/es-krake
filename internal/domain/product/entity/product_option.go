@@ -1,6 +1,8 @@
 package entity
 
-import "pech/es-krake/internal/domain/shared/model"
+import "github.com/dpe27/es-krake/internal/domain/shared/model"
+
+const ProductOptionTableName = "product_options"
 
 type ProductOption struct {
 	ID          int                     `gorm:"column:id;primaryKey;type:bigint;not null;autoIncrement" json:"id"`
@@ -9,4 +11,8 @@ type ProductOption struct {
 	Description *string                 `gorm:"column:description;type:text"                            json:"description"`
 	Attributes  []*OptionAttributeValue `gorm:"-:all"`
 	model.BaseModel
+}
+
+func (ProductOption) TableName() string {
+	return ProductOptionTableName
 }

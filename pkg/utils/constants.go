@@ -1,20 +1,22 @@
 package utils
 
+import "time"
+
 const (
-	ErrInputFail    = "ERR001"
-	ErrInputRequire = "ERR002"
-	ErrEmailFail    = "ERR003"
-	ErrPasswordFail = "ERROO4"
+	ErrorInputRequired = "ERR001"
+	ErrorInputFail     = "ERR002"
+	ErrorEmailFail     = "ERR003"
+	ErrorPasswordFail  = "ERROO4"
 
 	DefaultPageNo   = 1
 	DefaultPageSize = 30
 
 	FormatYearISO     = "2006"
-	FormatDateISO     = "2006-01-02"
+	FormatDateISO     = time.DateOnly
 	FormatTimeHHMM    = "15:04"
-	FormatTimeHHMMSS  = "15:04:05"
-	FormatDateTimeISO = "2006-01-02T15:04:05Z07:00"
-	FormatDateTimeSQL = "2006-01-02 15:04:05"
+	FormatTimeHHMMSS  = time.TimeOnly
+	FormatDateTimeISO = time.RFC3339
+	FormatDateTimeSQL = time.DateTime
 	FormatDateCompact = "20060102150405"
 
 	ProdEnv    = "prod"
@@ -34,4 +36,7 @@ const (
 	ErrorDecodeBody        = "failed to decode body"
 	ErrorMapToStruct       = "failed to map to struct"
 	ErrorGetTx             = "failed to get Tx"
+	ErrorGetSpec           = "failed to get specification"
+	ErrorCreateReq         = "failed to create new HTTP request"
+	ErrorMarshalFailed     = "failed to marshal object to JSON"
 )
