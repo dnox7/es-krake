@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 	"sync"
 	"time"
 
@@ -104,8 +103,6 @@ func (pg *PostgreSQL) updateDB(newDB *gorm.DB, newConn *sql.DB) {
 }
 
 func (pg *PostgreSQL) RetryConn(cred *config.RdbCredentials) error {
-	pg.logger.Debug(context.Background(), "", "username", cred.Username)
-	pg.logger.Debug(context.Background(), "", "password", cred.Password)
 	connAttempts := pg.params.connAttempts
 	for connAttempts > 0 {
 		err := pg.connect(cred)
@@ -157,7 +154,7 @@ func (pg *PostgreSQL) connect(
 	db, err := gorm.Open(driver, pg.gormCfg)
 	if err != nil {
 		err = wraperror.WithTrace(err, nil, nil)
-		slog.Error(err.Error())
+		pg.logger.Error(context.Background(), err.Error())
 	}
 
 	pg.updateDB(db, conn)

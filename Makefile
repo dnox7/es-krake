@@ -12,18 +12,26 @@ fix-lint:
 
 .PHONY: run-api
 run-api:
+	@sed -i 's#^VAULT_RDB_ROLE=.*#VAULT_RDB_ROLE=creds/postgres-app-role#' .env
+	@SERVICE=api ./scripts/export-vaul-env.sh
 	go run cmd/api/main.go
 
 .PHONY: migrate-up
 migrate-up:
-	go run cmd/migrate/main.go --type up
+	@sed -i 's#^VAULT_RDB_ROLE=.*#VAULT_RDB_ROLE=static-creds/postgres-migrate-role#' .env
+	@SERVICE=migration ./scripts/export-vaul-env.sh
+	@go run cmd/migrate/main.go --type up
 
 .PHONY: migrate-down
 migrate-down:
-	go run cmd/migrate/main.go --type down
+	@sed -i 's#^VAULT_RDB_ROLE=.*#VAULT_RDB_ROLE=static-creds/postgres-migrate-role#' .env
+	@SERVICE=migration ./scripts/export-vaul-env.sh
+	@go run cmd/migrate/main.go --type down
 
 .PHONY: migrate-step
 migrate-step:
+	@sed -i 's#^VAULT_RDB_ROLE=.*#VAULT_RDB_ROLE=static-creds/postgres-migrate-role#' .env
+	@SERVICE=migration ./scripts/export-vaul-env.sh
 	@read -p "Module name: " module; \
 	read -p "Step (integer): " step; \
 	go run cmd/migrate/main.go --type step --module $$module --step $$step
@@ -81,7 +89,3 @@ stop-vault:
 .PHONY: down-vault
 down-vault:
 	docker compose -f deploy/compose/vault-dev.yaml down --volumes
-
-.PHONY: export-vault-env
-export-vault-env:
-	./scripts/export-vaul-env.sh

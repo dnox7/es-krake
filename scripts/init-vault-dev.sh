@@ -11,7 +11,6 @@ done
 
 echo "Vault server is up!"
 
-echo ">>> Logging in to Vault..."
 vault login root >/dev/null
 
 vault auth enable approle || true
@@ -22,60 +21,57 @@ for file in /vault/policies/*.hcl; do
     vault policy write "$name" "$file"
 done
 
-echo ">>> Creating approle..."
-vault write auth/approle/role/es-krake \
+vault write auth/approle/role/es-krake-migration \
     token_type=service \
     secret_id_ttl=0m \
     secret_id_num_uses=0 \
-    token_ttl=60m \
-    token_max_ttl=120m \
+    token_ttl=10m \
+    token_max_ttl=12m \
     token_renewable=true \
-    token_policies="read-secret,default"
+    token_policies="read-migration-secret,default"
 
-vault read auth/approle/role/es-krake/role-id | awk '/role_id/ {print $2}' >/vault/config/role_id
-vault write -f auth/approle/role/es-krake/secret-id | grep '^secret_id[[:space:]]' | awk '{ print $2 }' >/vault/config/secret_id
+vault read auth/approle/role/es-krake-migration/role-id | awk '/role_id/ {print $2}' >/vault/config/role_id_migration
+vault write -f auth/approle/role/es-krake-migration/secret-id | grep '^secret_id[[:space:]]' | awk '{ print $2 }' >/vault/config/secret_id_migration
+
+vault write auth/approle/role/es-krake-api \
+    token_type=service \
+    secret_id_ttl=0m \
+    secret_id_num_uses=0 \
+    token_ttl=1h \
+    token_max_ttl=12h \
+    token_renewable=true \
+    token_policies="read-app-secret,default"
+
+vault read auth/approle/role/es-krake-api/role-id | awk '/role_id/ {print $2}' >/vault/config/role_id_api
+vault write -f auth/approle/role/es-krake-api/secret-id | grep '^secret_id[[:space:]]' | awk '{ print $2 }' >/vault/config/secret_id_api
 
 vault secrets enable database || true
 
 vault write database/config/esk-rdb \
     plugin_name=postgresql-database-plugin \
-    allowed_roles="postgres-app-role" \
+    allowed_roles="postgres-app-role,postgres-migrate-role" \
     connection_url="$ESK_RDB_CONN_URL" \
     username="$ESK_RDB_MASTER_USERNAME" \
     password="$ESK_RDB_MASTER_PASSWORD"
 
-# for api-server
-# vault write database/roles/postgres-app-role \
-#     db_name="esk-rdb" \
-#     creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; \
-#     GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO \"{{name}}\";" \
-#     default_ttl="1h" \
-#     max_ttl="24h"
-
-# for migration
+# for api and batch
 vault write database/roles/postgres-app-role \
     db_name="esk-rdb" \
-    creation_statements="
-        CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}';
+    creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; \
         GRANT CONNECT ON DATABASE $ESK_RDB_NAME TO \"{{name}}\";
-        GRANT USAGE, CREATE ON SCHEMA public TO \"{{name}}\";
-        GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO \"{{name}}\";
-        GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO \"{{name}}\";
-        ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO \"{{name}}\";
-        ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO \"{{name}}\";
+        GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO \"{{name}}\";" \
+    revocation_statements="
+        REVOKE ALL PRIVILEGES ON DATABASE esk_dev_1 FROM \"{{name}}\";
+        REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM \"{{name}}\";
+        DROP ROLE \"{{name}}\";" \
+    default_ttl="10m" \
+    max_ttl="20m"
 
-        -- Transfer ownership of existing tables
-        DO \$\$
-        DECLARE
-            r RECORD;
-        BEGIN
-            FOR r IN SELECT tablename FROM pg_tables WHERE schemaname = 'public' LOOP
-                EXECUTE format('ALTER TABLE public.%I OWNER TO \"{{name}}\"', r.tablename);
-            END LOOP;
-        END
-        \$\$;
-    " \
-    default_ttl="1h" \
-    max_ttl="24h"
+# for migration
+vault write database/static-roles/postgres-migrate-role \
+    db_name="esk-rdb" \
+    rotation_statements="ALTER ROLE \"esk_dev_migrator\" WITH PASSWORD '{{password}}';" \
+    username="esk_dev_migrator" \
+    rotation_period="20m"
 
 wait $VAULT_PID

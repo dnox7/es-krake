@@ -5,8 +5,8 @@ CONTAINER_NAME="vault-dev"
 ENV_FILE_PATH="./.env"
 SECRET_ID_FILE_PATH="./vault_secret"
 
-ROLE_ID=$(docker exec "$CONTAINER_NAME" cat /vault/config/role_id)
-SECRET_ID=$(docker exec "$CONTAINER_NAME" cat /vault/config/secret_id)
+ROLE_ID=$(docker exec "$CONTAINER_NAME" cat /vault/config/role_id_$SERVICE)
+SECRET_ID=$(docker exec "$CONTAINER_NAME" cat /vault/config/secret_id_$SERVICE)
 
 if [ -z "$ROLE_ID" ] || [ -z "$SECRET_ID" ]; then
     echo "failed to get role_id and secret_id"
