@@ -4,7 +4,7 @@ CONTAINER_NAME=keycloak
 REALM_NAME=krake
 EXPORT_DIR=/opt/keycloak/data/export
 EXPORT_FILE=$REALM_NAME-realm.json
-HOST_EXPORT_DIR=./deploy/compose
+HOST_EXPORT_DIR=./deploy/compose/realms
 
 if [ ! -d "${HOST_EXPORT_DIR}" ] || [ ! -w "${HOST_EXPORT_DIR}" ]; then
     echo "Error: HOST_EXPORT_DIR '${HOST_EXPORT_DIR}' is not a valid writable directory."

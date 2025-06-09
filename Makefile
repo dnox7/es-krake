@@ -44,35 +44,35 @@ gen-migration:
 
 .PHONY: run-rdb
 run-rdb:
-	docker compose -f deploy/compose/rdb.yaml up -d
+	docker compose -f deploy/compose/rdb.yml up -d
 
 .PHONY: stop-rdb
 stop-rdb:
-	docker compose -f deploy/compose/rdb.yaml stop
+	docker compose -f deploy/compose/rdb.yml stop
 
 .PHONY: clean-rdb
 clean-rdb:
-	docker compose -f deploy/compose/rdb.yaml down --volumes
+	docker compose -f deploy/compose/rdb.yml down --volumes
 
 .PHONY: run-kc
 run-kc:
-	docker compose -f deploy/compose/keycloak.yaml up -d
+	docker compose -f deploy/compose/keycloak.yml up -d
 
 .PHONY: stop-kc
 stop-kc:
-	docker compose -f deploy/compose/keycloak.yaml stop
+	docker compose -f deploy/compose/keycloak.yml stop
 
 .PHONY: run-mdb
 run-mdb:
-	docker compose -f deploy/compose/mongo.yaml up -d
+	docker compose -f deploy/compose/mongo.yml up -d
 
 .PHONY: stop-mdb
 stop-mdb:
-	docker compose -f deploy/compose/mongo.yaml stop
+	docker compose -f deploy/compose/mongo.yml stop
 
 .PHONY: clean-mdb
 clean-mdb:
-	docker compose -f deploy/compose/mongo.yaml down --volumes
+	docker compose -f deploy/compose/mongo.yml down --volumes
 
 .PHONY: export-realm
 export-realm:
@@ -80,20 +80,28 @@ export-realm:
 
 .PHONY: run-redis
 run-redis:
-	docker compose -f deploy/compose/redis.yaml up -d
+	docker compose -f deploy/compose/redis.yml up -d
 
 .PHONY: stop-redis
 stop-redis:
-	docker compose -f deploy/compose/redis.yaml stop
+	docker compose -f deploy/compose/redis.yml stop
 
 .PHONY: run-vault
 run-vault:
-	docker compose -f deploy/compose/vault-dev.yaml up -d
+	docker compose -f deploy/compose/vault-dev.yml up -d
 
 .PHONY: stop-vault
 stop-vault:
-	docker compose -f deploy/compose/vault-dev.yaml stop
+	docker compose -f deploy/compose/vault-dev.yml stop
 
 .PHONY: down-vault
 down-vault:
-	docker compose -f deploy/compose/vault-dev.yaml down --volumes
+	docker compose -f deploy/compose/vault-dev.yml down --volumes
+
+.PHONY: run-monitoring
+run-monitoring:
+	docker compose -f deploy/compose/monitoring.yml up -d
+
+.PHONY: down-monitoring
+down-monitoring:
+	docker compose -f deploy/compose/monitoring.yml down --volumes

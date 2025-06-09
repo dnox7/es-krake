@@ -1,0 +1,52 @@
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prom/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - monitoring
+
+  rdb-exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter
+    container_name: rdb-exporter
+    ports:
+      - "9187:9187"
+    environment:
+      - DATA_SOURCE_URI=esk-rdb:5432/esk_dev_1?sslmode=disable
+      - DATA_SOURCE_USER=postgres_exporter
+      - DATA_SOURCE_PASS=pgex
+    networks:
+        - monitoring
+        - esk-rdb
+
+volumes:
+  prometheus-data:
+    name: prometheus-data
+  grafana-data:
+    name: grafana-data
+
+networks:
+  monitoring:
+    driver: bridge
+    name: monitoring
+  esk-rdb:
+    external: true
