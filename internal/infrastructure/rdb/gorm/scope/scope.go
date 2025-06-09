@@ -74,6 +74,9 @@ func (g *gormScope) Preload(query string, args ...interface{}) *gormScope {
 }
 
 func ToGormScopes(spec specification.Base) ([]func(*gorm.DB) *gorm.DB, error) {
+	if spec == nil {
+		return nil, nil
+	}
 	gormScopes, ok := spec.GetSpec().([]func(*gorm.DB) *gorm.DB)
 	if !ok {
 		return nil, fmt.Errorf(utils.ErrorGetSpec)

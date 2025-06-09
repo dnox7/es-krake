@@ -1,16 +1,16 @@
 package output
 
 import (
-	"github.com/dpe27/es-krake/internal/infrastructure/repository"
+	"github.com/dpe27/es-krake/internal/usecase"
 	"github.com/graphql-go/graphql"
 )
 
-func NewOutputTypes(
-	repositories *repository.RepositoriesContainer,
-) map[string]*graphql.Object {
+func NewOutputTypes(usecases *usecase.UsecasesContainer) map[string]*graphql.Object {
 	outputTypes := make(map[string]*graphql.Object)
 
-	for _, graphqlType := range []*graphql.Object{} {
+	for _, graphqlType := range []*graphql.Object{
+		RoleTypeOutput(),
+	} {
 		outputTypes[graphqlType.Name()] = graphqlType
 	}
 

@@ -36,7 +36,7 @@ func (d *departmentRepo) TakeByConditions(
 	}
 
 	var dep entity.Department
-	err = d.pg.DB.
+	err = d.pg.GormDB().
 		WithContext(ctx).
 		Scopes(gormScopes...).
 		Where(conditions).
@@ -57,7 +57,7 @@ func (d *departmentRepo) FindByConditions(
 	}
 
 	deps := []entity.Department{}
-	err = d.pg.DB.
+	err = d.pg.GormDB().
 		WithContext(ctx).
 		Scopes(gormScopes...).
 		Where(conditions).

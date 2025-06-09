@@ -33,12 +33,12 @@ func (a *accessOperationService) GetOperationsWithAccessReqCode(
 	scopes := scope.GormScope().
 		Join(fmt.Sprintf(
 			"INNER JOIN %s AS aro ON aro.access_operation_id = %s.id",
-			repository.AccessRequirementOperationTableName,
-			repository.AccessOperationsTableName,
+			entity.AccessRequirementOperationTableName,
+			entity.AccessOperationsTableName,
 		)).
 		Join(fmt.Sprintf(
 			"INNER JOIN %s AS ar ON ar.id = aro.access_requirement_id",
-			repository.AccessRequirementTableName,
+			entity.AccessRequirementTableName,
 		)).
 		Where("ar.code = ?", code)
 	return a.accessOpRepo.FindByConditions(ctx, nil, scopes)

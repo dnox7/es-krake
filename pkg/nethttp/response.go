@@ -3,11 +3,16 @@ package nethttp
 import (
 	"archive/zip"
 	"bytes"
+	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/dpe27/es-krake/pkg/log"
 	"github.com/dpe27/es-krake/pkg/utils"
+	"github.com/dpe27/es-krake/pkg/wraperror"
 	"github.com/gin-gonic/gin"
+	"github.com/graphql-go/graphql/gqlerrors"
+	"gorm.io/gorm"
 )
 
 type BaseSuccessResponse struct {
@@ -99,6 +104,48 @@ func SetInternalServerErrorResponse(c *gin.Context, msg, detail, debugInfo inter
 		http.StatusInternalServerError,
 		NewErrorResponse(msg, detail, debugInfo),
 	)
+}
+
+func SetGenericErrorResponse(c *gin.Context, finalErr error, debug bool) {
+	originalErr := finalErr
+	if _, ok := originalErr.(gqlerrors.FormattedError); ok {
+		err := originalErr.(gqlerrors.FormattedError).OriginalError()
+		if err != nil {
+			originalErr = err
+		}
+
+		if _, ok := originalErr.(*gqlerrors.Error); ok {
+			err := originalErr.(*gqlerrors.Error).OriginalError
+			if err != nil {
+				originalErr = err
+			}
+		}
+	}
+
+	apiErr := &wraperror.APIError{}
+	jsonErr := &json.SyntaxError{}
+
+	switch {
+	case errors.Is(originalErr, gorm.ErrRecordNotFound) || originalErr.Error() == gorm.ErrRecordNotFound.Error():
+		SetNotFoundResponse(c, originalErr.Error(), nil, nil)
+	case errors.As(originalErr, &apiErr):
+		var debugInfo interface{}
+		if debug {
+			debugInfo = finalErr
+		}
+		c.JSON(apiErr.HttpStatus(), NewErrorResponse(apiErr.Message(), nil, debugInfo))
+	case errors.As(originalErr, &jsonErr):
+		SetBadRequestResponse(c, "Invalid json", map[string]interface{}{
+			"offset": jsonErr.Offset,
+			"error":  jsonErr.Error(),
+		}, nil)
+	default:
+		var debugInfo interface{}
+		if debug {
+			debugInfo = originalErr.Error()
+		}
+		SetInternalServerErrorResponse(c, utils.ErrorInternalServer, nil, debugInfo)
+	}
 }
 
 func ResponseCSV(c *gin.Context, statusCode int, fileName string, data []byte) {

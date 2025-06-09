@@ -3,32 +3,34 @@ package migration
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
-	"os"
 	"sort"
 
 	"github.com/dpe27/es-krake/config"
-	"github.com/dpe27/es-krake/pkg/log"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
-	"github.com/golang-migrate/migrate/v4/source"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-var migrationTables = map[string]string{
-	"product": "schema_migrations_product",
-}
-
 type (
-	direction string
-	uintSlice []uint
+	migrationType int
+	direction     string
+	uintSlice     []uint
 )
 
 const (
 	Down direction = "down"
 	Up   direction = "up"
+
+	migrateUpAll migrationType = iota + 1
+	migrateDownAll
+	migrateStep
 )
+
+var migrationTables = map[string]string{
+	// "product": "schema_migrations_product",
+	"auth": "schema_migrations_auth",
+}
 
 func getSortedMigrationTableKeys() []string {
 	i := 0
@@ -41,36 +43,56 @@ func getSortedMigrationTableKeys() []string {
 	return keys
 }
 
-func MigrateAll(
+func getMigrationsPath(cfg *config.Config, moduleName string) string {
+	return "file://" + cfg.RDB.MigrationsPath + "/" + moduleName
+}
+
+func MigrateUp(
 	cfg *config.Config,
 	db *sql.DB,
 ) error {
 	keys := getSortedMigrationTableKeys()
 	for _, module := range keys {
-		if err := migrateSingleModule(cfg, db, module, migrationTables[module]); err != nil {
-			return fmt.Errorf("Failed to migrate module %v: %w", module, err)
+		if err := migrateModule(cfg, db, module, migrationTables[module], migrateUpAll, 0); err != nil {
+			return fmt.Errorf("failed to migrate up module %v: %w", module, err)
 		}
 	}
 	return nil
 }
 
-func CheckAll(
+func MigrateDown(
 	cfg *config.Config,
 	db *sql.DB,
 ) error {
-	for moduleName, mt := range migrationTables {
-		if err := checkDatabaseVersion(cfg, db, moduleName, mt); err != nil {
-			return fmt.Errorf("The migrations for module %v are not up-to-date: %w", moduleName, err)
+	keys := getSortedMigrationTableKeys()
+	for _, module := range keys {
+		if err := migrateModule(cfg, db, module, migrationTables[module], migrateDownAll, 0); err != nil {
+			return fmt.Errorf("failed to migrate down module %v: %w", module, err)
 		}
 	}
 	return nil
 }
 
-func migrateSingleModule(
+func MigrateStep(
+	cfg *config.Config,
+	db *sql.DB,
+	module string,
+	step int,
+) error {
+	table, ok := migrationTables[module]
+	if !ok {
+		return fmt.Errorf("migration table of module %s does not exist", module)
+	}
+	return migrateModule(cfg, db, module, table, migrateStep, step)
+}
+
+func migrateModule(
 	cfg *config.Config,
 	db *sql.DB,
 	moduleName string,
 	migrationTable string,
+	migType migrationType,
+	step int,
 ) error {
 	conn, err := db.Conn(context.Background())
 	if err != nil {
@@ -89,84 +111,48 @@ func migrateSingleModule(
 		return err
 	}
 
-	m.Log = migrationLogger{log.With()}
+	m.Log = newMigrationLogger()
 	f := file{}
 	fileSystemMigrations, err := f.Open(cfg.RDB.MigrationsPath + "/" + moduleName)
 	if err != nil {
 		return err
 	}
 
-	ver, _, err := m.Version()
-	if err != nil && err != migrate.ErrNilVersion {
+	ver, dirty, err := m.Version()
+	if err != nil && err != migrate.ErrNilVersion && migType != migrateDownAll {
 		return err
 	}
 
-	latestIndex := fileSystemMigrations.GetLastestIndex()
-	if ver > latestIndex {
-		err = m.Force(int(latestIndex))
-		if err != nil {
+	switch migType {
+	case migrateUpAll:
+		latestIndex := fileSystemMigrations.GetLastestIndex()
+		if ver > latestIndex {
+			err = m.Force(int(latestIndex))
+			if err != nil {
+				return err
+			}
+		} else {
+			err = m.Up()
+			if err != nil && err != migrate.ErrNoChange {
+				return err
+			}
+		}
+	case migrateDownAll:
+		if dirty {
+			return m.Force(-1)
+		}
+		err = m.Down()
+		if err != nil && err != migrate.ErrNoChange {
 			return err
 		}
-	} else {
-		err = m.Up()
+	case migrateStep:
+		err = m.Steps(step)
 		if err != nil && err != migrate.ErrNoChange {
 			return err
 		}
 	}
 
 	return conn.Close()
-}
-
-func checkDatabaseVersion(
-	cfg *config.Config,
-	db *sql.DB,
-	moduleName string,
-	migrationsTable string,
-) error {
-	conn, err := db.Conn(context.Background())
-	if err != nil {
-		return err
-	}
-
-	postgres.DefaultMigrationsTable = migrationsTable
-	driver, err := postgres.WithConnection(context.Background(), conn, &postgres.Config{})
-	if err != nil {
-		return err
-	}
-	defer driver.Close()
-
-	m, err := migrate.NewWithDatabaseInstance(getMigrationsPath(cfg, moduleName), cfg.RDB.Name, driver)
-	if err != nil {
-		return err
-	}
-
-	m.Log = migrationLogger{log.With()}
-	ver, dirty, err := m.Version()
-	if err != nil {
-		return err
-	}
-	if dirty {
-		return migrate.ErrDirty{
-			Version: int(ver),
-		}
-	}
-
-	fileSystemMigrations, err := source.Open(getMigrationsPath(cfg, moduleName))
-	if err != nil {
-		return err
-	}
-
-	_, err = fileSystemMigrations.Next(ver)
-	if errors.Is(err, os.ErrNotExist) {
-		// No higher version is available = the DB is up to date
-		return nil
-	}
-
-	return conn.Close()
-}
-
-func getMigrationsPath(cfg *config.Config, moduleName string) string {
-	return "file://" + cfg.RDB.MigrationsPath + "/" + moduleName
 }
 
 type migration struct {

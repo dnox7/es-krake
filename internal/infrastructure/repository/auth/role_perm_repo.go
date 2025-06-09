@@ -40,7 +40,7 @@ func (r *rolePermRepo) FindByConditions(
 	}
 
 	rolePerms := []entity.RolePermission{}
-	err = r.pg.DB.
+	err = r.pg.GormDB().
 		WithContext(ctx).
 		Scopes(scopes...).
 		Where(conditions).

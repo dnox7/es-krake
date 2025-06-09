@@ -92,7 +92,7 @@ func (p *productOptionRepo) FindByConditions(
 	}
 
 	optSlice := []entity.ProductOption{}
-	err = p.pg.DB.
+	err = p.pg.GormDB().
 		WithContext(ctx).
 		Scopes(gormScopes...).
 		Where(conditions).
@@ -113,7 +113,7 @@ func (p *productOptionRepo) TakeByConditions(
 	}
 
 	opt := entity.ProductOption{}
-	err = p.pg.DB.
+	err = p.pg.GormDB().
 		WithContext(ctx).
 		Scopes(gormScopes...).
 		Where(conditions).
@@ -133,7 +133,7 @@ func (p *productOptionRepo) Update(
 		return entity.ProductOption{}, err
 	}
 
-	err = p.pg.DB.
+	err = p.pg.GormDB().
 		WithContext(ctx).
 		Model(option).
 		Updates(attributesToUpdate).Error

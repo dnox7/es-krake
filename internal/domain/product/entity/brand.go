@@ -2,6 +2,8 @@ package entity
 
 import "github.com/dpe27/es-krake/internal/domain/shared/model"
 
+const BrandTableName = "brands"
+
 type Brand struct {
 	ID                 int     `gorm:"column:id;type:bigint;primaryKey;not null;autoIncrement" json:"id"`
 	Name               string  `gorm:"column:name;type:varchar(100);not null"                  json:"name"`
@@ -10,4 +12,8 @@ type Brand struct {
 	ThumbnailImagePath *string `gorm:"column:thumbnail_image_path;type:varchar(255)"           json:"thumbnail_image_path"`
 	WebsitePath        *string `gorm:"column:website_path;type:varchar(255)"                   json:"website_path"`
 	model.BaseModel
+}
+
+func (Brand) TableName() string {
+	return BrandTableName
 }

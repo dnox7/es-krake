@@ -18,7 +18,7 @@ services:
     command: ["start-dev"]
 
   kcdb:
-    image: postgres:17-bookworm
+    image: postgres:17-alpine3.21
     container_name: kcdb
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "keycloak"]

@@ -13,27 +13,20 @@ const cfgFilePath = ".env"
 
 type (
 	Config struct {
-		App      *app      `yaml:"application"`
-		Log      *log      `yaml:"logger"`
-		Server   *server   `yaml:"server"`
-		RDB      *rdb      `yaml:"rdb"`
-		MDB      *mongo    `yaml:"mdb"`
-		Keycloak *keycloak `yaml:"keycloak"`
-		Redis    *Redis    `yaml:"redis"`
+		App      app
+		RDB      rdb
+		MDB      *mongo
+		Keycloak *keycloak
+		Redis    *redis
+		Vault    vault
 	}
 
 	app struct {
-		Name    string `yaml:"name" env:"APP_NAME" env-required:"true"`
-		Version string `yaml:"version" env:"APP_VERSION" env-required:"true"`
-		Env     string `yaml:"env" env:"APP_ENV" env-required:"true"`
-	}
-
-	server struct {
-		Port string `yaml:"port" env:"SERVER_PORT" env-required:"true"`
-	}
-
-	log struct {
-		Level string `yaml:"level" env:"LOG_LEVEL" env-required:"true"`
+		Name     string `env:"APP_NAME"    env-required:"true"`
+		Version  string `env:"APP_VERSION" env-required:"true"`
+		Env      string `env:"APP_ENV"     env-required:"true"`
+		Port     string `env:"APP_PORT"    env-required:"true"`
+		LogLevel string `env:"LOG_LEVEL"   env-required:"true"`
 	}
 )
 
@@ -42,14 +35,17 @@ func NewConfig() *Config {
 	root := projectRoot()
 	configFilePath := root + cfgFilePath
 
-	err := loadCfgFile(configFilePath, cfg)
+	err := loadCfg(configFilePath, cfg)
 	if err != nil {
 		panic(err)
 	}
+
+	cfg.RDB.MigrationsPath = root + cfg.RDB.MigrationsPath
+	cfg.Vault.SecretIDFile = root + cfg.Vault.SecretIDFile
 	return cfg
 }
 
-func loadCfgFile(cfgFilePath string, cfg *Config) error {
+func loadCfg(cfgFilePath string, cfg *Config) error {
 	envFileExists := checkFileExists(cfgFilePath)
 	if envFileExists {
 		err := cleanenv.ReadConfig(cfgFilePath, cfg)

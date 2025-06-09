@@ -8,8 +8,6 @@ import (
 	"github.com/dpe27/es-krake/internal/domain/shared/transaction"
 )
 
-const RolePermissionTableName = "role_permissions"
-
 type RolePermissionRepository interface {
 	FindByConditions(ctx context.Context, conditions map[string]interface{}, spec specification.Base) ([]entity.RolePermission, error)
 

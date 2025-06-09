@@ -42,7 +42,7 @@ func (e *enterpriseRepo) TakeByConditions(
 	}
 
 	var ent entity.Enterprise
-	err = e.pg.DB.
+	err = e.pg.GormDB().
 		WithContext(ctx).
 		Scopes(gormScopes...).
 		Where(conditions).
@@ -63,7 +63,7 @@ func (e *enterpriseRepo) FindByConditions(
 	}
 
 	ents := []entity.Enterprise{}
-	err = e.pg.DB.
+	err = e.pg.GormDB().
 		WithContext(ctx).
 		Scopes(gormScopes...).
 		Where(conditions).
@@ -84,7 +84,7 @@ func (e *enterpriseRepo) PluckIDByConditions(
 	}
 
 	var IDs []int
-	err = e.pg.DB.
+	err = e.pg.GormDB().
 		WithContext(ctx).
 		Model(entity.Enterprise{}).
 		Scopes(gormScopes...).
@@ -105,7 +105,7 @@ func (e *enterpriseRepo) Create(
 		return entity.Enterprise{}, err
 	}
 
-	err = e.pg.DB.WithContext(ctx).Create(&ent).Error
+	err = e.pg.GormDB().WithContext(ctx).Create(&ent).Error
 	return ent, err
 }
 
@@ -143,7 +143,7 @@ func (e *enterpriseRepo) Update(
 		return entity.Enterprise{}, err
 	}
 
-	err = e.pg.DB.
+	err = e.pg.GormDB().
 		WithContext(ctx).
 		Model(ent).
 		Updates(attributesToUpdate).Error

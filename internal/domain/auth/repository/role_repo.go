@@ -8,8 +8,6 @@ import (
 	"github.com/dpe27/es-krake/internal/domain/shared/transaction"
 )
 
-const RoleTableName = "roles"
-
 type RoleRepository interface {
 	CheckExists(ctx context.Context, conditions map[string]interface{}, spec specification.Base) (bool, error)
 

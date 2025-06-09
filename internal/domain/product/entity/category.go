@@ -4,6 +4,8 @@ import (
 	"github.com/dpe27/es-krake/internal/domain/shared/model"
 )
 
+const CategoryTableName = "categories"
+
 type Category struct {
 	ID              int         `gorm:"column:id;primaryKey;type:bigint;not null;autoIncrement" json:"id"`
 	Name            string      `gorm:"column:name;type:varchar(50);not null"                   json:"name"`
@@ -17,4 +19,8 @@ type Category struct {
 	Children        []*Category `gorm:"-:all"`
 	Parent          *Category   `gorm:"-:all"`
 	model.BaseModel
+}
+
+func (Category) TableName() string {
+	return CategoryTableName
 }
