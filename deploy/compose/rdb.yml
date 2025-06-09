@@ -8,11 +8,14 @@ services:
       POSTGRES_DB: esk_dev_1
       POSTGRES_USER: krake
       POSTGRES_PASSWORD: 123456
+      MIGRATOR_INITIAL_PASSWORD: 123456
+      EXPORTER_USER: postgres_exporter
+      EXPORTER_PASSWORD: pgex
     ports:
       - 5432:5432
     volumes:
       - esk-rdb-data:/var/lib/postgresql/data
-      - ./db-init:/docker-entrypoint-initdb.d
+      - ./db-init/esk_rdb.sh:/docker-entrypoint-initdb.d/esk_rdb.sh
     networks:
         - esk-rdb
 
