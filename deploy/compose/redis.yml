@@ -1,18 +1,20 @@
 services:
   redis:
-    image: redis
+    image: redis:8.0.2-alpine3.21
     container_name: redis
     restart: on-failure:3
     ports:
       - "6379:6379"
+    environment:
+      REDIS_APP_USER: esk
+      REDIS_APP_PASSWORD: esk123
+      REDIS_ADMIN_USER: admin
+      REDIS_ADMIN_PASSWORD: admin123
     volumes:
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+      - ../../scripts/redis-entrypoint.sh:/entrypoint.sh
       - redis-data:/data
-    command: redis-server --save 20 1 --loglevel warning --requirepass 123456
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    entrypoint: ["/entrypoint.sh"]
 
 volumes:
   redis-data:

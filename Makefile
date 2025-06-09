@@ -82,9 +82,9 @@ export-realm:
 run-redis:
 	docker compose -f deploy/compose/redis.yml up -d
 
-.PHONY: stop-redis
-stop-redis:
-	docker compose -f deploy/compose/redis.yml stop
+.PHONY: down-redis
+down-redis:
+	docker compose -f deploy/compose/redis.yml down --volumes
 
 .PHONY: run-vault
 run-vault:
