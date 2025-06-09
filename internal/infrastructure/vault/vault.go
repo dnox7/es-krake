@@ -20,7 +20,8 @@ type vaultParams struct {
 	roleID       string
 	secretIDFile string
 
-	rdbCredentialsPath string
+	rdbCredentialsPath   string
+	redisCredentialsPath string
 }
 
 type Vault struct {
@@ -32,10 +33,11 @@ type Vault struct {
 func NewVaultAppRoleClient(ctx context.Context, cfg *config.Config) (*Vault, *vault.Secret, error) {
 	logger := log.With("service", "vault")
 	params := vaultParams{
-		address:            cfg.Vault.Address,
-		roleID:             cfg.Vault.RoleID,
-		secretIDFile:       cfg.Vault.SecretIDFile,
-		rdbCredentialsPath: cfg.Vault.RdbCredentialsPath,
+		address:              cfg.Vault.Address,
+		roleID:               cfg.Vault.RoleID,
+		secretIDFile:         cfg.Vault.SecretIDFile,
+		rdbCredentialsPath:   cfg.Vault.RdbCredentialsPath,
+		redisCredentialsPath: cfg.Vault.RedisCredentialsPath,
 	}
 
 	logger.Info(ctx, "connecting to vault @", "address", params.address)
@@ -100,19 +102,40 @@ func (v *Vault) GetRdbCredentials(ctx context.Context) (*config.RdbCredentials, 
 	v.logger.Info(ctx, "getting database credentials from vault")
 	lease, err := v.client.Logical().ReadWithContext(ctx, v.params.rdbCredentialsPath)
 	if err != nil {
-		return nil, nil, fmt.Errorf("unable to read secret: %w", err)
+		return nil, nil, fmt.Errorf("unable to read rdb secret: %w", err)
 	}
 
 	bytes, err := json.Marshal(lease.Data)
 	if err != nil {
-		return nil, nil, fmt.Errorf("malformed credentials returned: %w", err)
+		return nil, nil, fmt.Errorf("malformed rdb credentials returned: %w", err)
 	}
 
 	credentials := &config.RdbCredentials{}
 	if err := json.Unmarshal(bytes, credentials); err != nil {
-		return nil, nil, fmt.Errorf("unable to unmarshal credentials: %w", err)
+		return nil, nil, fmt.Errorf("unable to unmarshal rdb credentials: %w", err)
 	}
 
-	v.logger.Info(ctx, "getting database credentials from vault: success!")
+	v.logger.Info(ctx, "getting rdb credentials from vault: success")
+	return credentials, lease, nil
+}
+
+func (v *Vault) GetRedisCredentials(ctx context.Context) (*config.RedisCredentials, *vault.Secret, error) {
+	v.logger.Info(ctx, "getting redis credentials from vault")
+	lease, err := v.client.Logical().ReadWithContext(ctx, v.params.redisCredentialsPath)
+	if err != nil {
+		return nil, nil, fmt.Errorf("unable to read rdb secret: %w", err)
+	}
+
+	bytes, err := json.Marshal(lease.Data)
+	if err != nil {
+		return nil, nil, fmt.Errorf("malformed redis credentials returned: %w", err)
+	}
+
+	credentials := &config.RedisCredentials{}
+	if err := json.Unmarshal(bytes, credentials); err != nil {
+		return nil, nil, fmt.Errorf("unable to unmarshal redis credentials: %w", err)
+	}
+
+	v.logger.Info(ctx, "getting redis credentials from vault: success")
 	return credentials, lease, nil
 }
