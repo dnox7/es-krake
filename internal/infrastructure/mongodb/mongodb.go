@@ -9,7 +9,6 @@ import (
 
 	"github.com/dpe27/es-krake/config"
 	"github.com/dpe27/es-krake/pkg/log"
-	mongolog "github.com/dpe27/es-krake/pkg/log/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
@@ -54,7 +53,7 @@ func initMongo(cfg *config.Config) (*Mongo, error) {
 		DBName:       cfg.MDB.Database,
 	}
 
-	mongoLogger := mongolog.NewMongoLog()
+	mongoLogger := newMongoLog()
 	loggerOptions := options.
 		Logger().
 		SetSink(mongoLogger).

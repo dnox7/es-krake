@@ -17,6 +17,7 @@ type (
 		RDB      rdb
 		MDB      *mongo
 		Keycloak *keycloak
+		Redis    *redis
 		Vault    vault
 	}
 

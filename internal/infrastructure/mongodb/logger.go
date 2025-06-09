@@ -1,4 +1,4 @@
-package mongolog
+package mdb
 
 import (
 	"context"
@@ -11,7 +11,7 @@ type mongoLogger struct {
 	logger *log.Logger
 }
 
-func NewMongoLog() options.LogSink {
+func newMongoLog() options.LogSink {
 	return &mongoLogger{
 		logger: log.With("service", "mongodb"),
 	}

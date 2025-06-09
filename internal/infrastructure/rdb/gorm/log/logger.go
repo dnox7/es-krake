@@ -9,14 +9,6 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-type gormLogKey string
-
-const (
-	rowsKey     gormLogKey = "rows"
-	durationKey gormLogKey = "duration"
-	sqlKey      gormLogKey = "sql"
-)
-
 type gormLogger struct {
 	Level  logger.LogLevel
 	cfg    logger.Config

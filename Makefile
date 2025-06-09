@@ -78,6 +78,14 @@ clean-mdb:
 export-realm:
 	scripts/export-realm.sh
 
+.PHONY: run-redis
+run-redis:
+	docker compose -f deploy/compose/redis.yaml up -d
+
+.PHONY: stop-redis
+stop-redis:
+	docker compose -f deploy/compose/redis.yaml stop
+
 .PHONY: run-vault
 run-vault:
 	docker compose -f deploy/compose/vault-dev.yaml up -d
