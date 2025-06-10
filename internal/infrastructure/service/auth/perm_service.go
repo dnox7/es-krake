@@ -2,25 +2,33 @@ package service
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"time"
 
 	"github.com/dpe27/es-krake/internal/domain/auth/entity"
 	"github.com/dpe27/es-krake/internal/domain/auth/repository"
 	domainService "github.com/dpe27/es-krake/internal/domain/auth/service"
 	scope "github.com/dpe27/es-krake/internal/infrastructure/rdb/gorm/scope"
+	"github.com/dpe27/es-krake/internal/infrastructure/redis"
 	"github.com/dpe27/es-krake/pkg/log"
+	goredis "github.com/redis/go-redis/v9"
 )
 
 type permService struct {
-	permRepo repository.PermissionRepository
-	logger   *log.Logger
+	permRepo  repository.PermissionRepository
+	redisRepo redis.RedisRepository
+	logger    *log.Logger
 }
 
 func NewPermissionService(
 	permRepo repository.PermissionRepository,
+	redisRepo redis.RedisRepository,
 ) domainService.PermissionService {
 	return &permService{
 		permRepo,
+		redisRepo,
 		log.With("service", "permission_serivce"),
 	}
 }
@@ -30,6 +38,18 @@ func (p *permService) GetPermissionsWithRoleID(
 	ctx context.Context,
 	roleID int,
 ) ([]entity.Permission, error) {
+	cacheKey := "perrmissions_with_role_id:" + string(roleID)
+
+	var perms []entity.Permission
+	err := p.redisRepo.GetString(ctx, cacheKey, &perms)
+	if err == nil {
+		return perms, nil
+	}
+
+	if !errors.Is(err, goredis.Nil) {
+		return nil, err
+	}
+
 	scopes := scope.GormScope().
 		Join(fmt.Sprintf(
 			"INNER JOIN %s AS rp ON rp.permission_id = %s.id",
@@ -43,5 +63,17 @@ func (p *permService) GetPermissionsWithRoleID(
 		Where("r.id = ?", roleID).
 		Preload("Operations").
 		Preload("Operations.AccessOperation")
-	return p.permRepo.FindByConditions(ctx, nil, scopes)
+
+	perms, err = p.permRepo.FindByConditions(ctx, nil, scopes)
+	if err != nil {
+		return nil, err
+	}
+
+	bytes, err := json.Marshal(perms)
+	if err != nil {
+		return nil, err
+	}
+
+	err = p.redisRepo.SetString(ctx, cacheKey, bytes, time.Hour)
+	return perms, err
 }

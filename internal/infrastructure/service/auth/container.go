@@ -13,15 +13,16 @@ type ServiceContainer struct {
 
 func NewServiceContainer(
 	repos repository.RepositoryContainer,
-	cache redis.RedisRepository,
+	redisRepo redis.RedisRepository,
 ) ServiceContainer {
 	return ServiceContainer{
 		AccessOperationService: NewAccessOperationService(
 			repos.AccessOperationRepo,
-			cache,
+			redisRepo,
 		),
 		PermissionService: NewPermissionService(
 			repos.PermissionRepo,
+			redisRepo,
 		),
 	}
 }

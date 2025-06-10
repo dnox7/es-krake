@@ -12,15 +12,13 @@ import (
 	domainService "github.com/dpe27/es-krake/internal/domain/auth/service"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb/gorm/scope"
 	"github.com/dpe27/es-krake/internal/infrastructure/redis"
-	goredis "github.com/redis/go-redis/v9"
-
-	// "github.com/dpe27/es-krake/internal/infrastructure/redis"
 	"github.com/dpe27/es-krake/pkg/log"
+	goredis "github.com/redis/go-redis/v9"
 )
 
 type accessOperationService struct {
 	accessOpRepo repository.AccessOperationRepository
-	cache        redis.RedisRepository
+	redisRepo    redis.RedisRepository
 	logger       *log.Logger
 }
 
@@ -43,7 +41,7 @@ func (a *accessOperationService) GetOperationsWithAccessReqCode(
 	cacheKey := "access_operations:access_requirement_code:" + code
 
 	var ops []entity.AccessOperation
-	err := a.cache.GetString(ctx, cacheKey, &ops)
+	err := a.redisRepo.GetString(ctx, cacheKey, &ops)
 	if err == nil {
 		return ops, nil
 	}
@@ -74,6 +72,6 @@ func (a *accessOperationService) GetOperationsWithAccessReqCode(
 		return nil, err
 	}
 
-	err = a.cache.SetString(ctx, cacheKey, opsBytes, time.Hour)
+	err = a.redisRepo.SetString(ctx, cacheKey, opsBytes, time.Hour)
 	return ops, err
 }
