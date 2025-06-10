@@ -25,19 +25,19 @@ func main() {
 	}
 
 	pg, rdbCredLease, stopLoggingPoolSize, err := initializer.InitPostgres(vault, cfg)
-	defer pg.Close()
-	defer stopLoggingPoolSize()
 	if err != nil {
 		log.Error(ctx, "failed to init Postgres", "error", err.Error())
 		return
 	}
+	defer pg.Close()
+	defer stopLoggingPoolSize()
 
 	redisRepo, err := initializer.InitRedis(vault, cfg)
-	defer redisRepo.Close(ctx)
 	if err != nil {
 		log.Error(ctx, "failed to init Redis", "error", err.Error())
 		return
 	}
+	defer redisRepo.Close(ctx)
 
 	var wg sync.WaitGroup
 	renewLeaseCtx, stopRenew := context.WithCancel(ctx)
