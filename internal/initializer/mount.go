@@ -5,6 +5,7 @@ import (
 
 	"github.com/dpe27/es-krake/config"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
+	"github.com/dpe27/es-krake/internal/infrastructure/redis"
 	"github.com/dpe27/es-krake/internal/infrastructure/repository"
 	"github.com/dpe27/es-krake/internal/infrastructure/service"
 	"github.com/dpe27/es-krake/internal/interfaces/graphql"
@@ -14,10 +15,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func MountAll(pg *rdb.PostgreSQL, ginEngine *gin.Engine, cfg *config.Config) error {
+func MountAll(
+	cfg *config.Config,
+	pg *rdb.PostgreSQL,
+	redisRepo redis.RedisRepository,
+	ginEngine *gin.Engine,
+) error {
 	repositories := repository.NewRepositoriesContainer(pg)
-	services := service.NewServicesContainer(repositories)
-	usecases := usecase.NewUsecasesContainer(repositories, services)
+	services := service.NewServicesContainer(repositories, redisRepo)
+	usecases := usecase.NewUsecasesContainer(repositories, services, redisRepo)
 
 	schema, err := graphql.NewGraphQLSchema(&usecases)
 	if err != nil {

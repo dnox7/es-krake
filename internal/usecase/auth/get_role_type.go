@@ -7,6 +7,7 @@ import (
 )
 
 func (au AuthUsecase) GetAllRoleTypes(ctx context.Context) ([]entity.RoleType, error) {
+	cacheKey := "all_role_types"
 	return au.deps.RoleTypeRepo.FindByConditions(ctx, nil, nil)
 }
 

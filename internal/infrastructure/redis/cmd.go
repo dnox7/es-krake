@@ -2,12 +2,13 @@ package redis
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 )
 
 type RedisRepository interface {
 	SetString(ctx context.Context, key string, val interface{}, ttl time.Duration) error
-	GetString(ctx context.Context, key string) ([]byte, error)
+	GetString(ctx context.Context, key string, container interface{}) error
 
 	PushBackList(ctx context.Context, key string, ttl time.Duration, vals ...interface{}) error
 	GetRangeList(ctx context.Context, key string, start, end int64, container interface{}) error
@@ -17,6 +18,7 @@ type RedisRepository interface {
 	GetSet(ctx context.Context, key string, container interface{}) error
 	RemoveEleSet(ctx context.Context, key string, vals ...interface{}) error
 
+	CheckExists(ctx context.Context, key string) (bool, error)
 	DelKeys(ctx context.Context, keys ...string) error
 }
 
@@ -24,8 +26,12 @@ func (r *RedisRepo) SetString(ctx context.Context, key string, val interface{}, 
 	return r.cli().Set(ctx, key, val, ttl).Err()
 }
 
-func (r *RedisRepo) GetString(ctx context.Context, key string) ([]byte, error) {
-	return r.cli().Get(ctx, key).Bytes()
+func (r *RedisRepo) GetString(ctx context.Context, key string, container interface{}) error {
+	bytes, err := r.cli().Get(ctx, key).Bytes()
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(bytes, container)
 }
 
 func (r *RedisRepo) PushBackList(ctx context.Context, key string, ttl time.Duration, vals ...interface{}) error {
@@ -62,6 +68,14 @@ func (r *RedisRepo) GetSet(ctx context.Context, key string, container interface{
 
 func (r *RedisRepo) RemoveEleSet(ctx context.Context, key string, vals ...interface{}) error {
 	return r.cli().SRem(ctx, key, vals...).Err()
+}
+
+func (r *RedisRepo) CheckExists(ctx context.Context, key string) (bool, error) {
+	res := r.cli().Exists(ctx, key)
+	if res.Err() != nil {
+		return false, res.Err()
+	}
+	return res.Val() == 1, nil
 }
 
 func (r *RedisRepo) DelKeys(ctx context.Context, keys ...string) error {

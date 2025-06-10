@@ -60,7 +60,7 @@ func main() {
 		Handler: router,
 	}
 
-	err = initializer.MountAll(pg, router, cfg)
+	err = initializer.MountAll(cfg, pg, redisRepo, router)
 	if err != nil {
 		log.Fatal(ctx, "failed to mount dependencies", "error", err.Error())
 	}
