@@ -46,12 +46,8 @@ gen-migration:
 run-rdb:
 	docker compose -f deploy/compose/rdb.yml up -d
 
-.PHONY: stop-rdb
-stop-rdb:
-	docker compose -f deploy/compose/rdb.yml stop
-
-.PHONY: clean-rdb
-clean-rdb:
+.PHONY: down-rdb
+down-rdb:
 	docker compose -f deploy/compose/rdb.yml down --volumes
 
 .PHONY: run-kc
@@ -82,9 +78,9 @@ export-realm:
 run-redis:
 	docker compose -f deploy/compose/redis.yml up -d
 
-.PHONY: stop-redis
-stop-redis:
-	docker compose -f deploy/compose/redis.yml stop
+.PHONY: down-redis
+down-redis:
+	docker compose -f deploy/compose/redis.yml down --volumes
 
 .PHONY: run-vault
 run-vault:

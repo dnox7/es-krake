@@ -8,9 +8,6 @@ import (
 
 	"github.com/dpe27/es-krake/config"
 	"github.com/dpe27/es-krake/internal/infrastructure"
-	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
-	"github.com/dpe27/es-krake/internal/infrastructure/rdb/migration"
-	vaultcli "github.com/dpe27/es-krake/internal/infrastructure/vault"
 	"github.com/dpe27/es-krake/internal/initializer"
 	"github.com/dpe27/es-krake/pkg/log"
 )
@@ -21,43 +18,34 @@ func main() {
 	ctx := context.Background()
 	log.Initialize(os.Stdout, cfg, []string{"request-id", "recurringID"})
 
-	vault, authToken, err := vaultcli.NewVaultAppRoleClient(ctx, cfg)
+	vault, authToken, err := initializer.InitVault(ctx, cfg)
 	if err != nil {
-		log.Fatal(ctx, "unable to initialize vault connection", "address", cfg.Vault.Address, "error", err.Error())
+		log.Error(ctx, "failed to init Vault", "error", err.Error())
+		return
 	}
 
-	rdbCred, rdbCredLease, err := vault.GetRdbCredentials(ctx)
+	pg, rdbCredLease, stopLoggingPoolSize, err := initializer.InitPostgres(vault, cfg)
 	if err != nil {
-		log.Fatal(ctx, "unable to retrieve database credentials from vault", "error", err.Error())
+		log.Error(ctx, "failed to init Postgres", "error", err.Error())
+		return
 	}
-
-	pg := rdb.NewOrGetSingleton(cfg, rdbCred)
 	defer pg.Close()
+	defer stopLoggingPoolSize()
 
-	loggingPoolSizeCtx, stopLogging := context.WithCancel(ctx)
-	pg.LoggingPoolSize(loggingPoolSizeCtx)
-	defer stopLogging()
-
-	if err := pg.Ping(ctx); err != nil {
-		log.Error(ctx, "database ping failed", "error", err.Error())
-		return
-	}
-
-	err = migration.CheckAll(cfg, pg.Conn())
+	redisRepo, err := initializer.InitRedis(vault, cfg)
 	if err != nil {
-		log.Error(ctx, "The database is not up-to-date", "error", err.Error())
+		log.Error(ctx, "failed to init Redis", "error", err.Error())
 		return
 	}
+	defer redisRepo.Close(ctx)
 
 	var wg sync.WaitGroup
 	renewLeaseCtx, stopRenew := context.WithCancel(ctx)
 	wg.Add(1)
 	go func() {
 		vault.PeriodicallyRenewLeases(
-			renewLeaseCtx,
-			authToken,
-			rdbCredLease,
-			pg.RetryConn,
+			renewLeaseCtx, authToken,
+			rdbCredLease, pg.RetryConn,
 		)
 		wg.Done()
 	}()
@@ -72,7 +60,7 @@ func main() {
 		Handler: router,
 	}
 
-	err = initializer.MountAll(pg, router, cfg)
+	err = initializer.MountAll(cfg, pg, redisRepo, router)
 	if err != nil {
 		log.Fatal(ctx, "failed to mount dependencies", "error", err.Error())
 	}

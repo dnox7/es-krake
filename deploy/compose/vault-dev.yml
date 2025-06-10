@@ -14,10 +14,14 @@ services:
       - ESK_RDB_MASTER_PASSWORD=123456
       - ESK_RDB_CONN_URL=postgres://krake:123456@esk-rdb:5432/esk_dev_1?sslmode=disable
       - ESK_RDB_NAME=esk_dev_1
+      - REDIS_APP_USER=esk
+      - REDIS_APP_PASSWORD=esk123
+      - REDIS_ADMIN_USER=admin
+      - REDIS_ADMIN_PASSWORD=admin123
     volumes:
       - vault-data:/vault
       - ./policies:/vault/policies
-      - ../../scripts/init-vault-dev.sh:/entrypoint.sh
+      - ../../scripts/vault-dev-entrypoint.sh:/entrypoint.sh
     networks:
         - esk-rdb
     cap_add:
@@ -25,7 +29,7 @@ services:
     entrypoint: ["/entrypoint.sh"]
 
 volumes:
-  vault-data: 
+  vault-data :
     name: vault-data
 
 networks:

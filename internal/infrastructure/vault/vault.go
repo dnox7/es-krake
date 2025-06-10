@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/dpe27/es-krake/config"
@@ -14,13 +15,21 @@ import (
 	"github.com/hashicorp/vault/api/auth/approle"
 )
 
+const (
+	secretMountPath               = "secret"
+	errUnexpectedSecretKeyTypeFmt = "unexpected secret key type for %q field"
+)
+
 type vaultParams struct {
 	// connection parameters
 	address      string
 	roleID       string
 	secretIDFile string
 
-	rdbCredentialsPath string
+	rdbCredentialsPath   string
+	redisCredentialsPath string
+	redisUsernameKey     string
+	redisPasswordKey     string
 }
 
 type Vault struct {
@@ -32,10 +41,13 @@ type Vault struct {
 func NewVaultAppRoleClient(ctx context.Context, cfg *config.Config) (*Vault, *vault.Secret, error) {
 	logger := log.With("service", "vault")
 	params := vaultParams{
-		address:            cfg.Vault.Address,
-		roleID:             cfg.Vault.RoleID,
-		secretIDFile:       cfg.Vault.SecretIDFile,
-		rdbCredentialsPath: cfg.Vault.RdbCredentialsPath,
+		address:              cfg.Vault.Address,
+		roleID:               cfg.Vault.RoleID,
+		secretIDFile:         cfg.Vault.SecretIDFile,
+		rdbCredentialsPath:   cfg.Vault.RdbCredentialsPath,
+		redisCredentialsPath: cfg.Vault.RedisCredentialsPath,
+		redisUsernameKey:     cfg.Vault.RedisUsernameKey,
+		redisPasswordKey:     cfg.Vault.RedisPasswordKey,
 	}
 
 	logger.Info(ctx, "connecting to vault @", "address", params.address)
@@ -100,19 +112,54 @@ func (v *Vault) GetRdbCredentials(ctx context.Context) (*config.RdbCredentials, 
 	v.logger.Info(ctx, "getting database credentials from vault")
 	lease, err := v.client.Logical().ReadWithContext(ctx, v.params.rdbCredentialsPath)
 	if err != nil {
-		return nil, nil, fmt.Errorf("unable to read secret: %w", err)
+		return nil, nil, fmt.Errorf("unable to read rdb secret: %w", err)
 	}
 
 	bytes, err := json.Marshal(lease.Data)
 	if err != nil {
-		return nil, nil, fmt.Errorf("malformed credentials returned: %w", err)
+		return nil, nil, fmt.Errorf("malformed rdb credentials returned: %w", err)
 	}
 
 	credentials := &config.RdbCredentials{}
 	if err := json.Unmarshal(bytes, credentials); err != nil {
-		return nil, nil, fmt.Errorf("unable to unmarshal credentials: %w", err)
+		return nil, nil, fmt.Errorf("unable to unmarshal rdb credentials: %w", err)
 	}
 
-	v.logger.Info(ctx, "getting database credentials from vault: success!")
+	v.logger.Info(ctx, "getting rdb credentials from vault: success")
 	return credentials, lease, nil
+}
+
+func (v *Vault) GetRedisCredentials(ctx context.Context) (*config.RedisCredentials, error) {
+	v.logger.Info(ctx, "getting redis credentials from vault")
+	secret, err := v.client.KVv2(secretMountPath).Get(ctx, v.params.redisCredentialsPath)
+	if err != nil {
+		v.logger.Error(ctx, "can not get from kv-v2")
+		return nil, fmt.Errorf("unable to read rdb secret: %w", err)
+	}
+
+	username, ok := secret.Data[v.params.redisUsernameKey]
+	if !ok {
+		return nil, errors.New("unable to get redis username")
+	}
+
+	usernameStr, ok := username.(string)
+	if !ok {
+		return nil, fmt.Errorf(errUnexpectedSecretKeyTypeFmt, v.params.redisUsernameKey)
+	}
+
+	password, ok := secret.Data[v.params.redisPasswordKey]
+	if !ok {
+		return nil, errors.New("unable to get redis password")
+	}
+
+	passwordStr, ok := password.(string)
+	if !ok {
+		return nil, fmt.Errorf(errUnexpectedSecretKeyTypeFmt, v.params.redisPasswordKey)
+	}
+	v.logger.Debug(ctx, "get redis credentials: success!", "username", usernameStr, "password", passwordStr)
+
+	return &config.RedisCredentials{
+		Username: usernameStr,
+		Password: passwordStr,
+	}, nil
 }

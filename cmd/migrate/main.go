@@ -8,7 +8,7 @@ import (
 	"github.com/dpe27/es-krake/config"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb/migration"
-	vaultcli "github.com/dpe27/es-krake/internal/infrastructure/vault"
+	"github.com/dpe27/es-krake/internal/initializer"
 	"github.com/dpe27/es-krake/pkg/log"
 )
 
@@ -18,9 +18,10 @@ func main() {
 	ctx := context.Background()
 	log.Initialize(os.Stdout, cfg, []string{})
 
-	vault, _, err := vaultcli.NewVaultAppRoleClient(ctx, cfg)
+	vault, _, err := initializer.InitVault(ctx, cfg)
 	if err != nil {
-		log.Fatal(ctx, "unable to initialize vault connection", "address", cfg.Vault.Address, "error", err.Error())
+		log.Error(ctx, "failed to init Vault", "error", err.Error())
+		return
 	}
 
 	rdbCred, _, err := vault.GetRdbCredentials(ctx)

@@ -57,7 +57,7 @@ func (v *Vault) PeriodicallyRenewLeases(
 			}
 			authToken = newToken
 		case expiringRdbCredentials:
-			v.logger.Info(ctx, "rdb credentials: can no longer be renewed; wil fetch new credentials and reconnect")
+			v.logger.Info(ctx, "rdb credentials: can no longer be renewed; will fetch new credentials and reconnect")
 			newCred, newSecret, err := v.GetRdbCredentials(ctx)
 			if err != nil {
 				log.Fatal(ctx, "failed to fetch rdb credentials", "error", err.Error())
