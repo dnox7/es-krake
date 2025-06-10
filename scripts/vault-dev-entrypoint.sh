@@ -74,4 +74,10 @@ vault write database/static-roles/postgres-migrate-role \
     username="esk_dev_migrator" \
     rotation_period="20m"
 
+vault kv put secret/redis \
+    app_user="$REDIS_APP_USER" \
+    app_user_password="$REDIS_APP_PASSWORD" \
+    admin_user="$REDIS_ADMIN_USER" \
+    admin_user_password="$REDIS_ADMIN_PASSWORD" > /dev/null 2>&1
+
 wait $VAULT_PID

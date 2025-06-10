@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
 if
@@ -13,8 +13,8 @@ CONFIG_FILE="/usr/local/etc/redis/redis.conf"
 
 cat <<EOF >"$ACL_FILE"
 user default off
-user $REDIS_APP_USER on >"$REDIS_APP_PASSWORD" allcommands ~* -@dangerous
-user $REDIS_ADMIN_USER on >"$REDIS_ADMIN_PASSWORD" allcommands allkeys
+user $REDIS_APP_USER on >$REDIS_APP_PASSWORD allcommands ~* -@dangerous
+user $REDIS_ADMIN_USER on >$REDIS_ADMIN_PASSWORD allcommands allkeys
 EOF
 
 exec redis-server "$CONFIG_FILE" "$@"

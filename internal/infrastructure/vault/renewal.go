@@ -16,9 +16,8 @@ type (
 )
 
 const (
-	authTokeLeaseType         leaseType = "auth_token"
-	rdbCredentialsLeaseType   leaseType = "rdb_credentials"
-	redisCredentialsLeaseType leaseType = "redis_credentials"
+	authTokeLeaseType       leaseType = "auth_token"
+	rdbCredentialsLeaseType leaseType = "rdb_credentials"
 
 	renewType leaseEventType = iota
 	doneType
@@ -27,7 +26,6 @@ const (
 	exitRequested
 	expiringAuthToken
 	expiringRdbCredentials
-	expiringRedisCredentials
 )
 
 func (v *Vault) PeriodicallyRenewLeases(
@@ -35,8 +33,6 @@ func (v *Vault) PeriodicallyRenewLeases(
 	authToken *vault.Secret,
 	rdbCredentialsLease *vault.Secret,
 	rdbReconnectFunc func(cred *config.RdbCredentials) error,
-	redisCredentialsLease *vault.Secret,
-	redisReconnectFunc func(ctx context.Context, cred *config.RedisCredentials) error,
 ) {
 	v.logger.Info(ctx, "renew/recreate secrets loops: bein")
 	defer v.logger.Info(ctx, "renew/recreate secret loops: end")
@@ -72,15 +68,6 @@ func (v *Vault) PeriodicallyRenewLeases(
 				log.Fatal(ctx, "failed to reconnect rdb", "error", err.Error())
 			}
 			rdbCredentialsLease = newSecret
-		case expiringRedisCredentials:
-			v.logger.Info(ctx, "redis credentials: can no longer be renewed; will fetch new credentials and reconnect")
-			newCred, newSecret, err := v.GetRedisCredentials(ctx)
-
-			err = redisReconnectFunc(ctx, newCred)
-			if err != nil {
-				log.Fatal(ctx, "failed to fetch redis credentials", "error", err.Error())
-			}
-			redisCredentialsLease = newSecret
 		}
 	}
 }
@@ -161,8 +148,6 @@ func (v *Vault) wrapErr(lt leaseType) renewResult {
 		return expiringAuthToken
 	case rdbCredentialsLeaseType:
 		return expiringRdbCredentials
-	case redisCredentialsLeaseType:
-		return expiringRedisCredentials
 	default:
 		return renewError
 	}

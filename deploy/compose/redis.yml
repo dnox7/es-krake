@@ -14,8 +14,13 @@ services:
       - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
       - ../../scripts/redis-entrypoint.sh:/entrypoint.sh
       - redis-data:/data
+    networks:
+      - redis
     entrypoint: ["/entrypoint.sh"]
 
 volumes:
   redis-data:
-    name: redis-data
+
+networks:
+  redis:
+    driver: bridge

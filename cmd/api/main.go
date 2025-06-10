@@ -32,7 +32,7 @@ func main() {
 		return
 	}
 
-	redisRepo, redisCredLease, err := initializer.InitRedis(vault, cfg)
+	redisRepo, err := initializer.InitRedis(vault, cfg)
 	defer redisRepo.Close(ctx)
 	if err != nil {
 		log.Error(ctx, "failed to init Redis", "error", err.Error())
@@ -46,7 +46,6 @@ func main() {
 		vault.PeriodicallyRenewLeases(
 			renewLeaseCtx, authToken,
 			rdbCredLease, pg.RetryConn,
-			redisCredLease, redisRepo.RetryConn,
 		)
 		wg.Done()
 	}()

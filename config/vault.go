@@ -7,4 +7,6 @@ type vault struct {
 
 	RdbCredentialsPath   string `env:"VAULT_RDB_CREDENTIALS_PATH"   env-required:"true"`
 	RedisCredentialsPath string `env:"VAULT_REDIS_CREDENTIALS_PATH" env-required:"true"`
+	RedisUsernameKey     string `env:"VAULT_REDIS_USERNAME_KEY"     env-required:"true"`
+	RedisPasswordKey     string `env:"VAULT_REDIS_PASSWORD_KEY"     env-required:"true"`
 }

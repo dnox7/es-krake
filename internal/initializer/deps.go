@@ -57,21 +57,13 @@ func InitPostgres(
 	return pg, credLease, stopLogging, nil
 }
 
-func InitRedis(
-	v *vaultcli.Vault,
-	cfg *config.Config,
-) (
-	redisRepo *redis.RedisRepo,
-	credLease *vault.Secret,
-	err error,
-) {
+func InitRedis(v *vaultcli.Vault, cfg *config.Config) (*redis.RedisRepo, error) {
 	ctx := context.Background()
-	var cred *config.RedisCredentials
-	cred, credLease, err = v.GetRedisCredentials(ctx)
+	cred, err := v.GetRedisCredentials(ctx)
 	if err != nil {
-		return nil, nil, fmt.Errorf("unable to retrieve redis credentials from vault: %w", err)
+		return nil, fmt.Errorf("unable to retrieve redis credentials from vault: %w", err)
 	}
 
-	redisRepo = redis.NewRedisRespository(ctx, cfg, cred)
-	return redisRepo, credLease, nil
+	redisRepo := redis.NewRedisRespository(ctx, cfg, cred)
+	return redisRepo, nil
 }
