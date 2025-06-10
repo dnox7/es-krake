@@ -46,12 +46,8 @@ gen-migration:
 run-rdb:
 	docker compose -f deploy/compose/rdb.yml up -d
 
-.PHONY: stop-rdb
-stop-rdb:
-	docker compose -f deploy/compose/rdb.yml stop
-
-.PHONY: clean-rdb
-clean-rdb:
+.PHONY: down-rdb
+down-rdb:
 	docker compose -f deploy/compose/rdb.yml down --volumes
 
 .PHONY: run-kc
