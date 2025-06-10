@@ -2,11 +2,11 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
 
+	"github.com/dpe27/es-krake/internal/domain/auth/cachekey"
 	"github.com/dpe27/es-krake/internal/domain/auth/entity"
 	"github.com/dpe27/es-krake/internal/domain/auth/repository"
 	domainService "github.com/dpe27/es-krake/internal/domain/auth/service"
@@ -38,10 +38,10 @@ func (a *accessOperationService) GetOperationsWithAccessReqCode(
 	ctx context.Context,
 	code string,
 ) ([]entity.AccessOperation, error) {
-	cacheKey := "access_operations:access_requirement_code:" + code
+	key := cachekey.OperationsByAccessRequirementCode(code)
 
 	var ops []entity.AccessOperation
-	err := a.redisRepo.GetString(ctx, cacheKey, &ops)
+	err := a.redisRepo.GetJSON(ctx, key, &ops)
 	if err == nil {
 		return ops, nil
 	}
@@ -67,11 +67,6 @@ func (a *accessOperationService) GetOperationsWithAccessReqCode(
 		return nil, err
 	}
 
-	opsBytes, err := json.Marshal(ops)
-	if err != nil {
-		return nil, err
-	}
-
-	err = a.redisRepo.SetString(ctx, cacheKey, opsBytes, time.Hour)
-	return ops, err
+	_ = a.redisRepo.SetJSON(ctx, key, ops, time.Hour)
+	return ops, nil
 }

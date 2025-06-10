@@ -2,11 +2,11 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
 
+	"github.com/dpe27/es-krake/internal/domain/auth/cachekey"
 	"github.com/dpe27/es-krake/internal/domain/auth/entity"
 	"github.com/dpe27/es-krake/internal/domain/auth/repository"
 	domainService "github.com/dpe27/es-krake/internal/domain/auth/service"
@@ -38,10 +38,10 @@ func (p *permService) GetPermissionsWithRoleID(
 	ctx context.Context,
 	roleID int,
 ) ([]entity.Permission, error) {
-	cacheKey := "perrmissions_with_role_id:" + string(roleID)
+	key := cachekey.PermsByRoleID(roleID)
 
 	var perms []entity.Permission
-	err := p.redisRepo.GetString(ctx, cacheKey, &perms)
+	err := p.redisRepo.GetJSON(ctx, key, &perms)
 	if err == nil {
 		return perms, nil
 	}
@@ -69,11 +69,6 @@ func (p *permService) GetPermissionsWithRoleID(
 		return nil, err
 	}
 
-	bytes, err := json.Marshal(perms)
-	if err != nil {
-		return nil, err
-	}
-
-	err = p.redisRepo.SetString(ctx, cacheKey, bytes, time.Hour)
-	return perms, err
+	_ = p.redisRepo.SetJSON(ctx, key, perms, time.Hour)
+	return perms, nil
 }
