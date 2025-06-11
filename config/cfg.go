@@ -19,6 +19,7 @@ type (
 		Keycloak *keycloak
 		Redis    redis
 		Vault    vault
+		ES       elasticseach
 	}
 
 	app struct {
