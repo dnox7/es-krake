@@ -1,6 +1,7 @@
 DEP_COMPOSE_FILES = \
 	-f deploy/compose/rdb.yml \
 	-f deploy/compose/redis.yml \
+	-f deploy/compose/mongo.yml \
 	-f deploy/compose/vault-dev.yml
 
 .PHONY: test
@@ -62,14 +63,6 @@ run-kc:
 .PHONY: stop-kc
 stop-kc:
 	docker compose -f deploy/compose/keycloak.yml stop
-
-.PHONY: run-mdb
-run-mdb:
-	docker compose -f deploy/compose/mongo.yml up -d
-
-.PHONY: down-mdb
-down-mdb:
-	docker compose -f deploy/compose/mongo.yml down --volumes
 
 .PHONY: export-realm
 export-realm:

@@ -93,8 +93,8 @@ vault write database/roles/mongo-app-role \
             } \
         ] \
     }" \
-    default_ttl="10s" \
-    max_ttl="20s"
+    default_ttl="1h" \
+    max_ttl="2h"
 
 # for redis
 vault kv put secret/redis \
