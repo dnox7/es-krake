@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 	"os"
-	"sync"
 
 	"github.com/dpe27/es-krake/config"
 	"github.com/dpe27/es-krake/internal/infrastructure"
@@ -39,20 +38,22 @@ func main() {
 	}
 	defer redisRepo.Close(ctx)
 
-	var wg sync.WaitGroup
+	mongo, mongoCredLease, err := initializer.InitMongo(vault, cfg)
+	if err != nil {
+		log.Error(ctx, "failed to init MongoDB", "error", err.Error())
+		return
+	}
+	defer mongo.Close(ctx)
+
 	renewLeaseCtx, stopRenew := context.WithCancel(ctx)
-	wg.Add(1)
 	go func() {
 		vault.PeriodicallyRenewLeases(
 			renewLeaseCtx, authToken,
 			rdbCredLease, pg.RetryConn,
+			mongoCredLease, mongo.RetryConn,
 		)
-		wg.Done()
 	}()
-	defer func() {
-		stopRenew()
-		wg.Wait()
-	}()
+	defer stopRenew()
 
 	router := infrastructure.NewGinRouter(cfg)
 	server := &http.Server{
@@ -60,7 +61,7 @@ func main() {
 		Handler: router,
 	}
 
-	err = initializer.MountAll(cfg, pg, redisRepo, router)
+	err = initializer.MountAll(cfg, pg, mongo, redisRepo, router)
 	if err != nil {
 		log.Fatal(ctx, "failed to mount dependencies", "error", err.Error())
 	}

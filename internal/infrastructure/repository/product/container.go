@@ -2,6 +2,7 @@ package repository
 
 import (
 	domainRepo "github.com/dpe27/es-krake/internal/domain/product/repository"
+	mdb "github.com/dpe27/es-krake/internal/infrastructure/mongodb"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
 )
 
@@ -13,9 +14,10 @@ type RepositoryContainer struct {
 	ProductOptionRepo        domainRepo.ProductOptionRepository
 	ProductRepo              domainRepo.ProductRepository
 	ProductCategoryRepo      domainRepo.ProductCategoryRepository
+	ProductMetaRepo          domainRepo.ProductMetaRespository
 }
 
-func NewRepositoryContainer(pg *rdb.PostgreSQL) RepositoryContainer {
+func NewRepositoryContainer(pg *rdb.PostgreSQL, mongo *mdb.Mongo) RepositoryContainer {
 	return RepositoryContainer{
 		AttributeRepo:            NewAttributeRepository(pg),
 		BrandRepo:                NewBrandRepository(pg),
@@ -24,5 +26,6 @@ func NewRepositoryContainer(pg *rdb.PostgreSQL) RepositoryContainer {
 		ProductOptionRepo:        NewProductOptionRepository(pg),
 		ProductRepo:              NewProductRepository(pg),
 		ProductCategoryRepo:      NewProductCategoryRepository(pg),
+		ProductMetaRepo:          NewProductMetaRepository(mongo),
 	}
 }

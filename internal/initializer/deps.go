@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/dpe27/es-krake/config"
+	mdb "github.com/dpe27/es-krake/internal/infrastructure/mongodb"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb/migration"
 	"github.com/dpe27/es-krake/internal/infrastructure/redis"
@@ -20,10 +21,7 @@ func InitVault(ctx context.Context, cfg *config.Config) (*vaultcli.Vault, *vault
 	return v, token, nil
 }
 
-func InitPostgres(
-	v *vaultcli.Vault,
-	cfg *config.Config,
-) (
+func InitPostgres(v *vaultcli.Vault, cfg *config.Config) (
 	pg *rdb.PostgreSQL,
 	credLease *vault.Secret,
 	stopLogging context.CancelFunc,
@@ -33,7 +31,7 @@ func InitPostgres(
 	var cred *config.RdbCredentials
 	cred, credLease, err = v.GetRdbCredentials(ctx)
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("unable to retrieve database credentials from vault: %w", err)
+		return nil, nil, nil, fmt.Errorf("unable to retrieve postgres credentials from vault: %w", err)
 	}
 
 	pg = rdb.NewOrGetSingleton(cfg, cred)
@@ -45,7 +43,7 @@ func InitPostgres(
 	err = pg.Ping(ctx)
 	if err != nil {
 		stopLogging()
-		return nil, nil, nil, fmt.Errorf("database ping failed: %w", err)
+		return nil, nil, nil, fmt.Errorf("postgres ping failed: %w", err)
 	}
 
 	err = migration.CheckAll(cfg, pg.Conn())
@@ -55,6 +53,23 @@ func InitPostgres(
 	}
 
 	return pg, credLease, stopLogging, nil
+}
+
+func InitMongo(v *vaultcli.Vault, cfg *config.Config) (m *mdb.Mongo, credLease *vault.Secret, err error) {
+	ctx := context.Background()
+	var cred *config.MongoCredentials
+	cred, credLease, err = v.GetMongoCredentials(ctx)
+	if err != nil {
+		return nil, nil, fmt.Errorf("unable to retrieve mongodb credentials from vault: %w", err)
+	}
+
+	m = mdb.NewOrGetSingleton(ctx, cfg, cred)
+	err = m.Ping(ctx)
+	if err != nil {
+		return nil, nil, fmt.Errorf("mongodb ping failed: %w", err)
+	}
+
+	return m, credLease, nil
 }
 
 func InitRedis(v *vaultcli.Vault, cfg *config.Config) (*redis.RedisRepo, error) {
