@@ -12,6 +12,7 @@ type RepositoryContainer struct {
 	OptionAttributeValueRepo domainRepo.OptionAttributeValueRepository
 	ProductOptionRepo        domainRepo.ProductOptionRepository
 	ProductRepo              domainRepo.ProductRepository
+	ProductCategoryRepo      domainRepo.ProductCategoryRepository
 }
 
 func NewRepositoryContainer(pg *rdb.PostgreSQL) RepositoryContainer {
@@ -22,5 +23,6 @@ func NewRepositoryContainer(pg *rdb.PostgreSQL) RepositoryContainer {
 		OptionAttributeValueRepo: NewOptionAttributeValueRepository(pg),
 		ProductOptionRepo:        NewProductOptionRepository(pg),
 		ProductRepo:              NewProductRepository(pg),
+		ProductCategoryRepo:      NewProductCategoryRepository(pg),
 	}
 }
