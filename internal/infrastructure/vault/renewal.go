@@ -42,7 +42,6 @@ func (v *Vault) PeriodicallyRenewLeases(
 	v.monitorLease(ctx, rdbCredentialsLeaseType, rdbCredLease, func() (*vault.Secret, error) {
 		cred, lease, err := v.GetRdbCredentials(ctx)
 		if err != nil {
-
 			return nil, err
 		}
 
