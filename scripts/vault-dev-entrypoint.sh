@@ -37,8 +37,8 @@ vault write auth/approle/role/es-krake-api \
     token_type=service \
     secret_id_ttl=0m \
     secret_id_num_uses=0 \
-    token_ttl=5s \
-    token_max_ttl=12s \
+    token_ttl=1h \
+    token_max_ttl=2h \
     token_renewable=true \
     token_policies="read-app-secret,default"
 
@@ -101,7 +101,6 @@ vault kv put secret/redis \
     app_user="$REDIS_APP_USER" \
     app_user_password="$REDIS_APP_PASSWORD" \
     admin_user="$REDIS_ADMIN_USER" \
-    admin_user_password="$REDIS_ADMIN_PASSWORD" > /dev/null 2>&1
-
+    admin_user_password="$REDIS_ADMIN_PASSWORD" >/dev/null 2>&1
 
 wait $VAULT_PID

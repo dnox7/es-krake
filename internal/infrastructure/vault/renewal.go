@@ -8,11 +8,7 @@ import (
 	vault "github.com/hashicorp/vault/api"
 )
 
-type (
-	renewResult    uint
-	leaseEventType uint
-	leaseType      string
-)
+type leaseType string
 
 const (
 	authTokeLeaseType        leaseType = "auth_token"
@@ -27,13 +23,26 @@ func (v *Vault) PeriodicallyRenewLeases(
 ) {
 	v.logger.Info(ctx, "starting lease renewal watchers")
 
+	v.authRenewed = make(chan struct{})
+
 	v.monitorLease(ctx, authTokeLeaseType, authToken, func() (*vault.Secret, error) {
-		return v.login(ctx)
-	})
+		authToken, err := v.login(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		v.mu.Lock()
+		close(v.authRenewed)
+		v.authRenewed = make(chan struct{})
+		v.mu.Unlock()
+
+		return authToken, nil
+	}, v.authRenewed)
 
 	v.monitorLease(ctx, rdbCredentialsLeaseType, rdbCredLease, func() (*vault.Secret, error) {
 		cred, lease, err := v.GetRdbCredentials(ctx)
 		if err != nil {
+
 			return nil, err
 		}
 
@@ -43,7 +52,7 @@ func (v *Vault) PeriodicallyRenewLeases(
 			return nil, err
 		}
 		return lease, nil
-	})
+	}, v.authRenewed)
 
 	v.monitorLease(ctx, mongoCredetialsLeaseType, mongoCredLease, func() (*vault.Secret, error) {
 		cred, lease, err := v.GetMongoCredentials(ctx)
@@ -57,8 +66,7 @@ func (v *Vault) PeriodicallyRenewLeases(
 			return nil, err
 		}
 		return lease, nil
-	})
-
+	}, v.authRenewed)
 }
 
 func (v *Vault) monitorLease(
@@ -66,6 +74,7 @@ func (v *Vault) monitorLease(
 	leaseName leaseType,
 	secret *vault.Secret,
 	secretFunc func() (*vault.Secret, error),
+	force <-chan struct{},
 ) {
 	var err error
 	firstTime := true
@@ -106,8 +115,13 @@ func (v *Vault) monitorLease(
 				v.logger.Info(ctx, "lease renewed", "lease", string(leaseName), "duration", leaseDuration)
 			case err := <-watcher.DoneCh():
 				watcher.Stop()
-				v.logger.Warn(ctx, "lease expired or cannot be renewed", "lease", leaseName, "error", err.Error())
+				v.logger.Warn(ctx, "lease expired or cannot be renewed", "lease", leaseName, "error", err)
 				watching = false
+			case <-force:
+				if leaseName != authTokeLeaseType {
+					watcher.Stop()
+					watching = false
+				}
 			}
 		}
 		firstTime = false

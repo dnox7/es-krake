@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 	"os"
-	"sync"
 
 	"github.com/dpe27/es-krake/config"
 	"github.com/dpe27/es-krake/internal/infrastructure"
@@ -46,21 +45,15 @@ func main() {
 	}
 	defer mongo.Close(ctx)
 
-	var wg sync.WaitGroup
 	renewLeaseCtx, stopRenew := context.WithCancel(ctx)
-	wg.Add(1)
 	go func() {
 		vault.PeriodicallyRenewLeases(
 			renewLeaseCtx, authToken,
 			rdbCredLease, pg.RetryConn,
 			mongoCredLease, mongo.RetryConn,
 		)
-		wg.Done()
 	}()
-	defer func() {
-		stopRenew()
-		wg.Wait()
-	}()
+	defer stopRenew()
 
 	router := infrastructure.NewGinRouter(cfg)
 	server := &http.Server{
