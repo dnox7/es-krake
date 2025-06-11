@@ -50,7 +50,7 @@ vault secrets enable database || true
 vault write database/config/esk-rdb \
     plugin_name=postgresql-database-plugin \
     allowed_roles="postgres-app-role,postgres-migrate-role" \
-    connection_url="$ESK_RDB_CONN_URL" \
+    connection_url="postgres://{{username}}:{{password}}@esk-rdb:5432/$ESK_RDB_NAME?sslmode=disable" \
     username="$ESK_RDB_MASTER_USERNAME" \
     password="$ESK_RDB_MASTER_PASSWORD"
 
@@ -74,10 +74,34 @@ vault write database/static-roles/postgres-migrate-role \
     username="esk_dev_migrator" \
     rotation_period="20m"
 
+vault write database/config/esk-mdb \
+    plugin_name=mongodb-database-plugin \
+    allowed_roles="mongo-app-role" \
+    connection_url="mongodb://{{username}}:{{password}}@esk-mdb:27017/$ESK_MDB_NAME?tls=false" \
+    username="$ESK_MDB_MASTER_USERNAME" \
+    password="$ESK_MDB_MASTER_PASSWORD"
+
+# for mongo
+vault write database/roles/mongo-app-role \
+    db_name="esk_mdb" \
+    creation_statements="{ \
+        \"db\": \"$ESK_MDB_NAME\", \
+        \"roles\": [ \
+            { \
+                \"role\": \"readWrite\", \
+                \"db\": \"$ESK_MDB_NAME\" \
+            } \
+        ] \
+    }" \
+    default_ttl="10m" \
+    max_ttl="20m"
+
+# for redis
 vault kv put secret/redis \
     app_user="$REDIS_APP_USER" \
     app_user_password="$REDIS_APP_PASSWORD" \
     admin_user="$REDIS_ADMIN_USER" \
     admin_user_password="$REDIS_ADMIN_PASSWORD" > /dev/null 2>&1
+
 
 wait $VAULT_PID
