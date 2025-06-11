@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/dpe27/es-krake/config"
+	"github.com/dpe27/es-krake/pkg/utils"
 	vault "github.com/hashicorp/vault/api"
 )
 
@@ -23,23 +24,18 @@ func (v *Vault) PeriodicallyRenewLeases(
 ) {
 	v.logger.Info(ctx, "starting lease renewal watchers")
 
-	v.authRenewed = make(chan struct{})
+	force := utils.NewBroadcaster()
 
-	v.monitorLease(ctx, authTokeLeaseType, authToken, func() (*vault.Secret, error) {
+	go v.monitorLease(ctx, authTokeLeaseType, authToken, func() (*vault.Secret, error) {
 		authToken, err := v.login(ctx)
 		if err != nil {
 			return nil, err
 		}
-
-		v.mu.Lock()
-		close(v.authRenewed)
-		v.authRenewed = make(chan struct{})
-		v.mu.Unlock()
-
+		force.Broadcast()
 		return authToken, nil
-	}, v.authRenewed)
+	}, nil)
 
-	v.monitorLease(ctx, rdbCredentialsLeaseType, rdbCredLease, func() (*vault.Secret, error) {
+	go v.monitorLease(ctx, rdbCredentialsLeaseType, rdbCredLease, func() (*vault.Secret, error) {
 		cred, lease, err := v.GetRdbCredentials(ctx)
 		if err != nil {
 			return nil, err
@@ -51,9 +47,9 @@ func (v *Vault) PeriodicallyRenewLeases(
 			return nil, err
 		}
 		return lease, nil
-	}, v.authRenewed)
+	}, force)
 
-	v.monitorLease(ctx, mongoCredetialsLeaseType, mongoCredLease, func() (*vault.Secret, error) {
+	go v.monitorLease(ctx, mongoCredetialsLeaseType, mongoCredLease, func() (*vault.Secret, error) {
 		cred, lease, err := v.GetMongoCredentials(ctx)
 		if err != nil {
 			return nil, err
@@ -65,7 +61,7 @@ func (v *Vault) PeriodicallyRenewLeases(
 			return nil, err
 		}
 		return lease, nil
-	}, v.authRenewed)
+	}, force)
 }
 
 func (v *Vault) monitorLease(
@@ -73,10 +69,18 @@ func (v *Vault) monitorLease(
 	leaseName leaseType,
 	secret *vault.Secret,
 	secretFunc func() (*vault.Secret, error),
-	force <-chan struct{},
+	force *utils.Broadcaster,
 ) {
-	var err error
+	var (
+		err     error
+		forceCh chan struct{}
+	)
 	firstTime := true
+	if force != nil {
+		forceCh = force.Subscribe()
+		defer force.Unsubscribe(forceCh)
+	}
+
 	for {
 		if ctx.Err() != nil {
 			return
@@ -116,11 +120,10 @@ func (v *Vault) monitorLease(
 				watcher.Stop()
 				v.logger.Warn(ctx, "lease expired or cannot be renewed", "lease", leaseName, "error", err)
 				watching = false
-			case <-force:
-				if leaseName != authTokeLeaseType {
-					watcher.Stop()
-					watching = false
-				}
+			case <-forceCh:
+				v.logger.Debug(ctx, "force get credentials", "lease", leaseName)
+				watcher.Stop()
+				watching = false
 			}
 		}
 		firstTime = false
