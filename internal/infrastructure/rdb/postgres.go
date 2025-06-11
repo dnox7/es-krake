@@ -103,6 +103,7 @@ func (pg *PostgreSQL) updateDB(newDB *gorm.DB, newConn *sql.DB) {
 }
 
 func (pg *PostgreSQL) RetryConn(cred *config.RdbCredentials) error {
+	prev := pg.GormDB()
 	connAttempts := pg.params.connAttempts
 	for connAttempts > 0 {
 		err := pg.connect(cred)
@@ -113,16 +114,15 @@ func (pg *PostgreSQL) RetryConn(cred *config.RdbCredentials) error {
 			context.Background(),
 			"PostgreSQL is trying to connect",
 			"error", err.Error(),
-			"attempts left", pg.params.connAttempts,
+			"attempts left", connAttempts,
 		)
 		time.Sleep(pg.params.connTimeout)
 		connAttempts--
 	}
 
-	if pg.db == nil {
-		return fmt.Errorf("PostgreSQL (initDB): connection failed")
+	if pg.GormDB() == prev {
+		return fmt.Errorf("PostgreSQL: connection failed")
 	}
-
 	return nil
 }
 

@@ -15,7 +15,7 @@ type (
 	Config struct {
 		App      app
 		RDB      rdb
-		MDB      *mongo
+		MDB      mongo
 		Keycloak *keycloak
 		Redis    redis
 		Vault    vault

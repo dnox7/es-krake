@@ -27,6 +27,7 @@ type vaultParams struct {
 	secretIDFile string
 
 	rdbCredentialsPath   string
+	mongoCredetialsPath  string
 	redisCredentialsPath string
 	redisUsernameKey     string
 	redisPasswordKey     string
@@ -45,6 +46,7 @@ func NewVaultAppRoleClient(ctx context.Context, cfg *config.Config) (*Vault, *va
 		roleID:               cfg.Vault.RoleID,
 		secretIDFile:         cfg.Vault.SecretIDFile,
 		rdbCredentialsPath:   cfg.Vault.RdbCredentialsPath,
+		mongoCredetialsPath:  cfg.Vault.MongoCredentialsPath,
 		redisCredentialsPath: cfg.Vault.RedisCredentialsPath,
 		redisUsernameKey:     cfg.Vault.RedisUsernameKey,
 		redisPasswordKey:     cfg.Vault.RedisPasswordKey,
@@ -109,7 +111,7 @@ func (v *Vault) login(ctx context.Context) (*vault.Secret, error) {
 }
 
 func (v *Vault) GetRdbCredentials(ctx context.Context) (*config.RdbCredentials, *vault.Secret, error) {
-	v.logger.Info(ctx, "getting database credentials from vault")
+	v.logger.Info(ctx, "getting rdb credentials from vault")
 	lease, err := v.client.Logical().ReadWithContext(ctx, v.params.rdbCredentialsPath)
 	if err != nil {
 		return nil, nil, fmt.Errorf("unable to read rdb secret: %w", err)
@@ -126,6 +128,27 @@ func (v *Vault) GetRdbCredentials(ctx context.Context) (*config.RdbCredentials, 
 	}
 
 	v.logger.Info(ctx, "getting rdb credentials from vault: success")
+	return credentials, lease, nil
+}
+
+func (v *Vault) GetMongoCredentials(ctx context.Context) (*config.MongoCredentials, *vault.Secret, error) {
+	v.logger.Info(ctx, "getting mongodb credentials from vault")
+	lease, err := v.client.Logical().ReadWithContext(ctx, v.params.mongoCredetialsPath)
+	if err != nil {
+		return nil, nil, fmt.Errorf("unable to read mongodb secret: %w", err)
+	}
+
+	bytes, err := json.Marshal(lease.Data)
+	if err != nil {
+		return nil, nil, fmt.Errorf("malformed mongodb credentials returned: %w", err)
+	}
+
+	credentials := &config.MongoCredentials{}
+	if err := json.Unmarshal(bytes, credentials); err != nil {
+		return nil, nil, fmt.Errorf("unable to unmarshal mongodb credentials: %w", err)
+	}
+
+	v.logger.Info(ctx, "getting mongodb credentials from vault: success")
 	return credentials, lease, nil
 }
 
@@ -156,7 +179,6 @@ func (v *Vault) GetRedisCredentials(ctx context.Context) (*config.RedisCredentia
 	if !ok {
 		return nil, fmt.Errorf(errUnexpectedSecretKeyTypeFmt, v.params.redisPasswordKey)
 	}
-	v.logger.Debug(ctx, "get redis credentials: success!", "username", usernameStr, "password", passwordStr)
 
 	return &config.RedisCredentials{
 		Username: usernameStr,

@@ -39,6 +39,13 @@ func main() {
 	}
 	defer redisRepo.Close(ctx)
 
+	mongo, mongoCredLease, err := initializer.InitMongo(vault, cfg)
+	if err != nil {
+		log.Error(ctx, "failed to init MongoDB", "error", err.Error())
+		return
+	}
+	defer mongo.Close(ctx)
+
 	var wg sync.WaitGroup
 	renewLeaseCtx, stopRenew := context.WithCancel(ctx)
 	wg.Add(1)
@@ -46,6 +53,7 @@ func main() {
 		vault.PeriodicallyRenewLeases(
 			renewLeaseCtx, authToken,
 			rdbCredLease, pg.RetryConn,
+			mongoCredLease, mongo.RetryConn,
 		)
 		wg.Done()
 	}()
@@ -60,7 +68,7 @@ func main() {
 		Handler: router,
 	}
 
-	err = initializer.MountAll(cfg, pg, redisRepo, router)
+	err = initializer.MountAll(cfg, pg, mongo, redisRepo, router)
 	if err != nil {
 		log.Fatal(ctx, "failed to mount dependencies", "error", err.Error())
 	}

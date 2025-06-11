@@ -1,6 +1,7 @@
 package repository
 
 import (
+	mdb "github.com/dpe27/es-krake/internal/infrastructure/mongodb"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
 	authRepo "github.com/dpe27/es-krake/internal/infrastructure/repository/auth"
 	enterpriseRepo "github.com/dpe27/es-krake/internal/infrastructure/repository/enterprise"
@@ -15,11 +16,11 @@ type RepositoriesContainer struct {
 	ProductContainer    prodRepo.RepositoryContainer
 }
 
-func NewRepositoriesContainer(pg *rdb.PostgreSQL) *RepositoriesContainer {
+func NewRepositoriesContainer(pg *rdb.PostgreSQL, mongo *mdb.Mongo) *RepositoriesContainer {
 	return &RepositoriesContainer{
 		AuthContainer:       authRepo.NewRepositoryContainer(pg),
 		EnterpriseContainer: enterpriseRepo.NewRepositoryContainer(pg),
 		PlatformContainer:   platformRepo.NewRepositoryContainer(pg),
-		ProductContainer:    prodRepo.NewRepositoryContainer(pg),
+		ProductContainer:    prodRepo.NewRepositoryContainer(pg, mongo),
 	}
 }

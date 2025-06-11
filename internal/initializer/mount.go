@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/dpe27/es-krake/config"
+	mdb "github.com/dpe27/es-krake/internal/infrastructure/mongodb"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
 	"github.com/dpe27/es-krake/internal/infrastructure/redis"
 	"github.com/dpe27/es-krake/internal/infrastructure/repository"
@@ -18,10 +19,11 @@ import (
 func MountAll(
 	cfg *config.Config,
 	pg *rdb.PostgreSQL,
+	mongo *mdb.Mongo,
 	redisRepo redis.RedisRepository,
 	ginEngine *gin.Engine,
 ) error {
-	repositories := repository.NewRepositoriesContainer(pg)
+	repositories := repository.NewRepositoriesContainer(pg, mongo)
 	services := service.NewServicesContainer(repositories, redisRepo)
 	usecases := usecase.NewUsecasesContainer(repositories, services, redisRepo)
 

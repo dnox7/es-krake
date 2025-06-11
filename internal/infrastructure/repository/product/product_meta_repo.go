@@ -39,7 +39,7 @@ func (p *productMetaRepo) Create(
 		return entity.ProductMeta{}, err
 	}
 
-	coll := p.db.DB.
+	coll := p.db.Cli().
 		Database(p.db.DBName).
 		Collection(entity.ProductMetaTableName)
 
@@ -65,7 +65,7 @@ func (p *productMetaRepo) FindByConditions(
 		return nil, err
 	}
 
-	coll := p.db.DB.
+	coll := p.db.Cli().
 		Database(p.db.DBName).
 		Collection(entity.ProductMetaTableName)
 
@@ -96,7 +96,7 @@ func (p *productMetaRepo) TakeByConditions(
 	}
 
 	prodMeta := entity.ProductMeta{}
-	coll := p.db.DB.
+	coll := p.db.Cli().
 		Database(p.db.DBName).
 		Collection(entity.ProductMetaTableName)
 
@@ -116,7 +116,7 @@ func (p *productMetaRepo) UpdateByID(
 	}
 	idFilter := bson.D{{Key: "_id", Value: idUpdate}}
 
-	coll := p.db.DB.
+	coll := p.db.Cli().
 		Database(p.db.DBName).
 		Collection(entity.ProductMetaTableName)
 	opt := options.FindOneAndUpdate().SetReturnDocument(options.After)

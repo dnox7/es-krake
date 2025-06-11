@@ -6,12 +6,12 @@ until mongosh -u "$MONGO_INITDB_ROOT_USERNAME" -p "$MONGO_INITDB_ROOT_PASSWORD" 
 done
 
 mongosh -u "$MONGO_INITDB_ROOT_USERNAME" -p "$MONGO_INITDB_ROOT_PASSWORD" admin <<EOF
-    db.getSiblingDB("$MDB_NAME").createUser({
+    db.getSiblingDB("admin").createUser({
         user: "$MONGO_ADMIN_USERNAME",
         pwd: "$MONGO_ADMIN_PASSWORD",
         roles: [
-            { role: "userAdmin", db: "$MDB_NAME" },
-            { role: "readWrite", db: "$MDB_NAME" }
+            { role: "userAdminAnyDatabase", db: "admin" },
+            { role: "readWriteAnyDatabase", db: "admin" }
         ]
     });
 EOF

@@ -37,8 +37,8 @@ vault write auth/approle/role/es-krake-api \
     token_type=service \
     secret_id_ttl=0m \
     secret_id_num_uses=0 \
-    token_ttl=1h \
-    token_max_ttl=12h \
+    token_ttl=5s \
+    token_max_ttl=12s \
     token_renewable=true \
     token_policies="read-app-secret,default"
 
@@ -77,13 +77,13 @@ vault write database/static-roles/postgres-migrate-role \
 vault write database/config/esk-mdb \
     plugin_name=mongodb-database-plugin \
     allowed_roles="mongo-app-role" \
-    connection_url="mongodb://{{username}}:{{password}}@esk-mdb:27017/$ESK_MDB_NAME?tls=false" \
+    connection_url="mongodb://{{username}}:{{password}}@esk-mdb:27017/admin?tls=false" \
     username="$ESK_MDB_MASTER_USERNAME" \
     password="$ESK_MDB_MASTER_PASSWORD"
 
 # for mongo
 vault write database/roles/mongo-app-role \
-    db_name="esk_mdb" \
+    db_name="esk-mdb" \
     creation_statements="{ \
         \"db\": \"$ESK_MDB_NAME\", \
         \"roles\": [ \
@@ -93,8 +93,8 @@ vault write database/roles/mongo-app-role \
             } \
         ] \
     }" \
-    default_ttl="10m" \
-    max_ttl="20m"
+    default_ttl="10s" \
+    max_ttl="20s"
 
 # for redis
 vault kv put secret/redis \
