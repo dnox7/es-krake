@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"sync"
 
 	"github.com/dpe27/es-krake/config"
 	"github.com/dpe27/es-krake/pkg/log"
@@ -35,9 +34,6 @@ type vaultParams struct {
 }
 
 type Vault struct {
-	mu          sync.Mutex
-	authRenewed chan struct{}
-
 	client *vault.Client
 	params vaultParams
 	logger *log.Logger
