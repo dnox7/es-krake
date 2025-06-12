@@ -12,15 +12,17 @@ import (
 type leaseType string
 
 const (
-	authTokeLeaseType        leaseType = "auth_token"
-	rdbCredentialsLeaseType  leaseType = "rdb_credentials"
-	mongoCredetialsLeaseType leaseType = "mongo_credentials"
+	authTokeLeaseType                 leaseType = "auth_token"
+	rdbCredentialsLeaseType           leaseType = "rdb_credentials"
+	mongoCredetialsLeaseType          leaseType = "mongo_credentials"
+	elasticSearchCredentialsLeaseType leaseType = "elasticsearch_credentials"
 )
 
 func (v *Vault) PeriodicallyRenewLeases(
 	ctx context.Context, authToken *vault.Secret,
 	rdbCredLease *vault.Secret, rdbReconnFunc func(cred *config.RdbCredentials) error,
 	mongoCredLease *vault.Secret, mongoReconnFunc func(ctx context.Context, cred *config.MongoCredentials) error,
+	elasticCredLease *vault.Secret, elasticReconnFunc func(cred *config.ElasticSearchCredentials) error,
 ) {
 	v.logger.Info(ctx, "starting lease renewal watchers")
 
@@ -58,6 +60,20 @@ func (v *Vault) PeriodicallyRenewLeases(
 		err = mongoReconnFunc(ctx, cred)
 		if err != nil {
 			v.logger.Error(ctx, "failed to reconnect mongodb", err, err.Error())
+			return nil, err
+		}
+		return lease, nil
+	}, force)
+
+	go v.monitorLease(ctx, elasticSearchCredentialsLeaseType, elasticCredLease, func() (*vault.Secret, error) {
+		cred, lease, err := v.GetElasticSearchCredentials(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		err = elasticReconnFunc(cred)
+		if err != nil {
+			v.logger.Error(ctx, "failed to reconnet elasticsearch", "error", err)
 			return nil, err
 		}
 		return lease, nil
@@ -110,16 +126,19 @@ func (v *Vault) monitorLease(
 			case <-ctx.Done():
 				watcher.Stop()
 				return
+
 			case info := <-watcher.RenewCh():
 				leaseDuration := info.Secret.LeaseDuration
 				if info.Secret.Auth != nil {
 					leaseDuration = info.Secret.Auth.LeaseDuration
 				}
 				v.logger.Info(ctx, "lease renewed", "lease", string(leaseName), "duration", leaseDuration)
+
 			case err := <-watcher.DoneCh():
 				watcher.Stop()
 				v.logger.Warn(ctx, "lease expired or cannot be renewed", "lease", leaseName, "error", err)
 				watching = false
+
 			case <-forceCh:
 				v.logger.Debug(ctx, "force get credentials", "lease", leaseName)
 				watcher.Stop()

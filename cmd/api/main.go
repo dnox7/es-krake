@@ -40,17 +40,24 @@ func main() {
 
 	mongo, mongoCredLease, err := initializer.InitMongo(vault, cfg)
 	if err != nil {
-		log.Error(ctx, "failed to init MongoDB", "error", err.Error())
+		log.Error(ctx, "failed to init MongoDB", "error", err)
 		return
 	}
 	defer mongo.Close(ctx)
+
+	esRepo, esCredLease, err := initializer.InitElasticSearch(vault, cfg)
+	if err != nil {
+		log.Error(ctx, "failed to init elasticsearch", "error", err)
+		return
+	}
 
 	renewLeaseCtx, stopRenew := context.WithCancel(ctx)
 	go func() {
 		vault.PeriodicallyRenewLeases(
 			renewLeaseCtx, authToken,
-			rdbCredLease, pg.RetryConn,
-			mongoCredLease, mongo.RetryConn,
+			rdbCredLease, pg.Reconn,
+			mongoCredLease, mongo.Reconn,
+			esCredLease, esRepo.Reconn,
 		)
 	}()
 	defer stopRenew()

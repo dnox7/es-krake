@@ -56,6 +56,14 @@ run-deps:
 down-deps:
 	docker compose $(DEP_COMPOSE_FILES) down --volumes
 
+.PHONY: run-es
+run-es:
+	docker compose -f deploy/compose/es.yml up -d
+
+.PHONY: down-es
+down-es:
+	docker compose -f deploy/compose/es.yml down --volumes
+
 .PHONY: run-kc
 run-kc:
 	docker compose -f deploy/compose/keycloak.yml up -d

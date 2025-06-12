@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/dpe27/es-krake/config"
+	es "github.com/dpe27/es-krake/internal/infrastructure/elasticsearch"
 	mdb "github.com/dpe27/es-krake/internal/infrastructure/mongodb"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb/migration"
@@ -81,4 +82,20 @@ func InitRedis(v *vaultcli.Vault, cfg *config.Config) (*redis.RedisRepo, error) 
 
 	redisRepo := redis.NewRedisRespository(ctx, cfg, cred)
 	return redisRepo, nil
+}
+
+func InitElasticSearch(v *vaultcli.Vault, cfg *config.Config) (*es.ElasticSearch, *vault.Secret, error) {
+	ctx := context.Background()
+	cred, lease, err := v.GetElasticSearchCredentials(ctx)
+	if err != nil {
+		return nil, nil, fmt.Errorf("unable to retrieve elasticsearch credentials from vault: %w", err)
+	}
+
+	esRepo := es.NewElasticSearchRepository(cfg, cred)
+	ok, err := esRepo.Ping(ctx)
+	if err != nil || !ok {
+		return nil, nil, fmt.Errorf("elasticsearch ping failed: %w", err)
+	}
+
+	return esRepo, lease, nil
 }
