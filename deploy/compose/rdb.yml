@@ -1,6 +1,6 @@
 services:
   esk-rdb:
-    image: postgres:17-alpine3.21
+    image: quay.io/debezium/postgres:17-alpine
     container_name: esk-rdb
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "krake", "-d", "esk_dev_1"]
