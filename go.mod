@@ -4,7 +4,7 @@ go 1.23
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
-	github.com/elastic/go-elasticsearch/v9 v9.0.0
+	github.com/elastic/go-elasticsearch/v8 v8.18.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/golang-migrate/migrate/v4 v4.18.2

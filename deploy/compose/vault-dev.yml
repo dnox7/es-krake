@@ -20,6 +20,9 @@ services:
       - ESK_MDB_NAME=esk_mdb_dev_1
       - ESK_MDB_MASTER_USERNAME=esk_admin
       - ESK_MDB_MASTER_PASSWORD=esk_admin123456
+      - ESK_ESDB_USERNAME=esk_vault
+      - ESK_ESDB_PASSWORD=esk_vault123456
+      - ESK_ESDB_URL=http://es-db:9200
     volumes:
       - vault-data:/vault
       - ./policies:/vault/policies
@@ -27,6 +30,7 @@ services:
     networks:
         - esk-rdb
         - esk-mdb
+        - elastic
     cap_add:
       - IPC_LOCK
     entrypoint: ["/entrypoint.sh"]
@@ -39,4 +43,6 @@ networks:
   esk-rdb:
     external: true
   esk-mdb:
+    external: true
+  elastic:
     external: true

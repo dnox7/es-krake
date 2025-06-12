@@ -6,7 +6,7 @@ import (
 
 	"github.com/dpe27/es-krake/config"
 	"github.com/dpe27/es-krake/pkg/log"
-	"github.com/elastic/go-elasticsearch/v9"
+	"github.com/elastic/go-elasticsearch/v8"
 )
 
 type ElasticSearch struct {

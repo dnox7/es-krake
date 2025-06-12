@@ -5,12 +5,12 @@ import (
 	"fmt"
 
 	"github.com/dpe27/es-krake/pkg/utils"
-	"github.com/elastic/go-elasticsearch/v9/esapi"
-	"github.com/elastic/go-elasticsearch/v9/typedapi/core/bulk"
-	"github.com/elastic/go-elasticsearch/v9/typedapi/core/count"
-	"github.com/elastic/go-elasticsearch/v9/typedapi/core/index"
-	"github.com/elastic/go-elasticsearch/v9/typedapi/core/search"
-	"github.com/elastic/go-elasticsearch/v9/typedapi/indices/create"
+	"github.com/elastic/go-elasticsearch/v8/esapi"
+	"github.com/elastic/go-elasticsearch/v8/typedapi/core/bulk"
+	"github.com/elastic/go-elasticsearch/v8/typedapi/core/count"
+	"github.com/elastic/go-elasticsearch/v8/typedapi/core/index"
+	"github.com/elastic/go-elasticsearch/v8/typedapi/core/search"
+	"github.com/elastic/go-elasticsearch/v8/typedapi/indices/create"
 )
 
 type ElasticSearchRepository interface {
