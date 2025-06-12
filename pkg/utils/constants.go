@@ -11,6 +11,8 @@ const (
 	DefaultPageNo   = 1
 	DefaultPageSize = 30
 
+	ExecutableFilePermission = 0o750
+
 	FormatYearISO     = "2006"
 	FormatDateISO     = time.DateOnly
 	FormatTimeHHMM    = "15:04"

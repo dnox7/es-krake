@@ -12,18 +12,25 @@ services:
       - VAULT_ADDR=https://127.0.0.1:8200
       - ESK_RDB_MASTER_USERNAME=krake
       - ESK_RDB_MASTER_PASSWORD=123456
-      - ESK_RDB_CONN_URL=postgres://krake:123456@esk-rdb:5432/esk_dev_1?sslmode=disable
       - ESK_RDB_NAME=esk_dev_1
       - REDIS_APP_USER=esk
       - REDIS_APP_PASSWORD=esk123
       - REDIS_ADMIN_USER=admin
       - REDIS_ADMIN_PASSWORD=admin123
+      - ESK_MDB_NAME=esk_mdb_dev_1
+      - ESK_MDB_MASTER_USERNAME=esk_admin
+      - ESK_MDB_MASTER_PASSWORD=esk_admin123456
+      - ESK_ESDB_USERNAME=esk_vault
+      - ESK_ESDB_PASSWORD=esk_vault123456
+      - ESK_ESDB_URL=http://es-db:9200
     volumes:
       - vault-data:/vault
       - ./policies:/vault/policies
       - ../../scripts/vault-dev-entrypoint.sh:/entrypoint.sh
     networks:
         - esk-rdb
+        - esk-mdb
+        - elastic
     cap_add:
       - IPC_LOCK
     entrypoint: ["/entrypoint.sh"]
@@ -34,4 +41,8 @@ volumes:
 
 networks:
   esk-rdb:
+    external: true
+  esk-mdb:
+    external: true
+  elastic:
     external: true

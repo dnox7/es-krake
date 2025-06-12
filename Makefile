@@ -1,3 +1,9 @@
+DEP_COMPOSE_FILES = \
+	-f deploy/compose/rdb.yml \
+	-f deploy/compose/redis.yml \
+	-f deploy/compose/mongo.yml \
+	-f deploy/compose/vault-dev.yml
+
 .PHONY: test
 test:
 	go test -v -race -cover ./...
@@ -42,13 +48,29 @@ gen-migration:
 	read -p "Description: " desc; \
 	migrate create -ext sql -digits 14 -dir ./migrations/$$module $$desc
 
-.PHONY: run-rdb
-run-rdb:
-	docker compose -f deploy/compose/rdb.yml up -d
+.PHONY: run-deps
+run-deps:
+	docker compose $(DEP_COMPOSE_FILES) up -d
+	
+.PHONY: down-deps
+down-deps:
+	docker compose $(DEP_COMPOSE_FILES) down --volumes
 
-.PHONY: down-rdb
-down-rdb:
-	docker compose -f deploy/compose/rdb.yml down --volumes
+.PHONY: run-minio
+run-minio:
+	docker compose -f deploy/compose/minio.yml up -d
+
+.PHONY: down-minio
+down-minio:
+	docker compose -f deploy/compose/minio.yml down --volumes
+
+.PHONY: run-es
+run-es:
+	docker compose -f deploy/compose/es.yml up -d
+
+.PHONY: down-es
+down-es:
+	docker compose -f deploy/compose/es.yml down --volumes
 
 .PHONY: run-kc
 run-kc:
@@ -58,41 +80,9 @@ run-kc:
 stop-kc:
 	docker compose -f deploy/compose/keycloak.yml stop
 
-.PHONY: run-mdb
-run-mdb:
-	docker compose -f deploy/compose/mongo.yml up -d
-
-.PHONY: stop-mdb
-stop-mdb:
-	docker compose -f deploy/compose/mongo.yml stop
-
-.PHONY: clean-mdb
-clean-mdb:
-	docker compose -f deploy/compose/mongo.yml down --volumes
-
 .PHONY: export-realm
 export-realm:
 	scripts/export-realm.sh
-
-.PHONY: run-redis
-run-redis:
-	docker compose -f deploy/compose/redis.yml up -d
-
-.PHONY: down-redis
-down-redis:
-	docker compose -f deploy/compose/redis.yml down --volumes
-
-.PHONY: run-vault
-run-vault:
-	docker compose -f deploy/compose/vault-dev.yml up -d
-
-.PHONY: stop-vault
-stop-vault:
-	docker compose -f deploy/compose/vault-dev.yml stop
-
-.PHONY: down-vault
-down-vault:
-	docker compose -f deploy/compose/vault-dev.yml down --volumes
 
 .PHONY: run-monitoring
 run-monitoring:
