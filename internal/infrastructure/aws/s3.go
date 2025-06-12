@@ -15,12 +15,6 @@ import (
 	"strings"
 	"time"
 
-	appCfg "github.com/dpe27/es-krake/config"
-	"github.com/dpe27/es-krake/pkg/file"
-	"github.com/dpe27/es-krake/pkg/log"
-	"github.com/dpe27/es-krake/pkg/utils"
-	"github.com/dpe27/es-krake/pkg/wraperror"
-
 	aws "github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	awsCredentials "github.com/aws/aws-sdk-go-v2/credentials"
@@ -28,6 +22,11 @@ import (
 	awsS3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
+	appCfg "github.com/dpe27/es-krake/config"
+	"github.com/dpe27/es-krake/pkg/file"
+	"github.com/dpe27/es-krake/pkg/log"
+	"github.com/dpe27/es-krake/pkg/utils"
+	"github.com/dpe27/es-krake/pkg/wraperror"
 )
 
 const (

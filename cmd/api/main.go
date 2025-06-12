@@ -51,6 +51,12 @@ func main() {
 		return
 	}
 
+	_, err = initializer.InitS3Repository(cfg)
+	if err != nil {
+		log.Error(ctx, err.Error())
+		return
+	}
+
 	renewLeaseCtx, stopRenew := context.WithCancel(ctx)
 	go func() {
 		vault.PeriodicallyRenewLeases(

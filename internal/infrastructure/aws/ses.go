@@ -3,14 +3,13 @@ package aws
 import (
 	"context"
 
-	appCfg "github.com/dpe27/es-krake/config"
-	"github.com/dpe27/es-krake/pkg/log"
-
 	aws "github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	awsCredentials "github.com/aws/aws-sdk-go-v2/credentials"
 	awsSes "github.com/aws/aws-sdk-go-v2/service/ses"
 	"github.com/aws/aws-sdk-go-v2/service/ses/types"
+	appCfg "github.com/dpe27/es-krake/config"
+	"github.com/dpe27/es-krake/pkg/log"
 )
 
 type SesService interface {

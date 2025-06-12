@@ -12,7 +12,7 @@ import (
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb/migration"
 	"github.com/dpe27/es-krake/internal/infrastructure/redis"
 	vaultcli "github.com/dpe27/es-krake/internal/infrastructure/vault"
-
+	"github.com/dpe27/es-krake/pkg/log"
 	vault "github.com/hashicorp/vault/api"
 )
 
@@ -107,5 +107,6 @@ func InitS3Repository(cfg *config.Config) (*aws.S3Repo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to init s3 repository: %w", err)
 	}
+	log.Debug(context.Background(), "init s3 successfully")
 	return s3Repo, nil
 }
