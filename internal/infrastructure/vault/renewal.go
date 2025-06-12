@@ -110,16 +110,19 @@ func (v *Vault) monitorLease(
 			case <-ctx.Done():
 				watcher.Stop()
 				return
+
 			case info := <-watcher.RenewCh():
 				leaseDuration := info.Secret.LeaseDuration
 				if info.Secret.Auth != nil {
 					leaseDuration = info.Secret.Auth.LeaseDuration
 				}
 				v.logger.Info(ctx, "lease renewed", "lease", string(leaseName), "duration", leaseDuration)
+
 			case err := <-watcher.DoneCh():
 				watcher.Stop()
 				v.logger.Warn(ctx, "lease expired or cannot be renewed", "lease", leaseName, "error", err)
 				watching = false
+
 			case <-forceCh:
 				v.logger.Debug(ctx, "force get credentials", "lease", leaseName)
 				watcher.Stop()

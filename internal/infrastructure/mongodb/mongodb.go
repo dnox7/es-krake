@@ -72,7 +72,7 @@ func initMongo(ctx context.Context, cfg *config.Config, cred *config.MongoCreden
 		SetSink(mongoLogger).
 		SetComponentLevel(options.LogComponentCommand, options.LogLevelDebug)
 
-	if err := m.RetryConn(ctx, cred); err != nil {
+	if err := m.Reconn(ctx, cred); err != nil {
 		return nil, err
 	}
 	return m, nil
@@ -90,7 +90,7 @@ func (m *Mongo) Cli() *mongo.Client {
 	return m.cli
 }
 
-func (m *Mongo) RetryConn(ctx context.Context, cred *config.MongoCredentials) error {
+func (m *Mongo) Reconn(ctx context.Context, cred *config.MongoCredentials) error {
 	cliCred := options.Credential{
 		AuthSource: m.params.authSource,
 		Username:   cred.Username,

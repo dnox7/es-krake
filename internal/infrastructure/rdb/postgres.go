@@ -76,7 +76,7 @@ func initPostgres(cfg *config.Config, cred *config.RdbCredentials) (*PostgreSQL,
 	}
 	pg.setGormConfig()
 
-	if err := pg.RetryConn(cred); err != nil {
+	if err := pg.Reconn(cred); err != nil {
 		return nil, err
 	}
 
@@ -102,7 +102,7 @@ func (pg *PostgreSQL) updateDB(newDB *gorm.DB, newConn *sql.DB) {
 	pg.conn = newConn
 }
 
-func (pg *PostgreSQL) RetryConn(cred *config.RdbCredentials) error {
+func (pg *PostgreSQL) Reconn(cred *config.RdbCredentials) error {
 	prev := pg.GormDB()
 	connAttempts := pg.params.connAttempts
 	for connAttempts > 0 {

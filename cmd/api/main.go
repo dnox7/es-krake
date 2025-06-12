@@ -49,8 +49,8 @@ func main() {
 	go func() {
 		vault.PeriodicallyRenewLeases(
 			renewLeaseCtx, authToken,
-			rdbCredLease, pg.RetryConn,
-			mongoCredLease, mongo.RetryConn,
+			rdbCredLease, pg.Reconn,
+			mongoCredLease, mongo.Reconn,
 		)
 	}()
 	defer stopRenew()

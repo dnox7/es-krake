@@ -2,19 +2,17 @@ package es
 
 import (
 	"context"
-	"fmt"
 	"sync"
 
 	"github.com/dpe27/es-krake/config"
 	"github.com/dpe27/es-krake/pkg/log"
-	"github.com/dpe27/es-krake/pkg/utils"
-	"github.com/elastic/go-elasticsearch/v8"
+	"github.com/elastic/go-elasticsearch/v9"
 )
 
 type ElasticSearch struct {
 	mu     sync.RWMutex
 	logger *log.Logger
-	client *elasticsearch.Client
+	client *elasticsearch.TypedClient
 	params esParams
 }
 
@@ -59,7 +57,7 @@ func initElasticSearch(cfg *config.Config, cred *config.ElasticSearchCredentials
 }
 
 func (e *ElasticSearch) Reconn(cred *config.ElasticSearchCredentials) error {
-	newCli, err := elasticsearch.NewClient(elasticsearch.Config{
+	cli, err := elasticsearch.NewTypedClient(elasticsearch.Config{
 		Addresses:         e.params.addresses,
 		Username:          cred.Username,
 		Password:          cred.Password,
@@ -71,35 +69,22 @@ func (e *ElasticSearch) Reconn(cred *config.ElasticSearchCredentials) error {
 		return err
 	}
 
-	e.setCli(newCli)
+	e.setCli(cli)
 	return nil
 }
 
-func (e *ElasticSearch) setCli(newCli *elasticsearch.Client) {
+func (e *ElasticSearch) setCli(newCli *elasticsearch.TypedClient) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 	e.client = newCli
 }
 
-func (e *ElasticSearch) cli() *elasticsearch.Client {
+func (e *ElasticSearch) cli() *elasticsearch.TypedClient {
 	e.mu.RLock()
 	defer e.mu.RUnlock()
 	return e.client
 }
 
-func (e *ElasticSearch) Ping(ctx context.Context) error {
-	resp, err := e.cli().Ping()
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if err := resp.Body.Close(); err != nil {
-			e.logger.Error(ctx, utils.ErrorCloseResponseBody, "error", err.Error())
-		}
-	}()
-
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
-	}
-	return nil
+func (e *ElasticSearch) Ping(ctx context.Context) (bool, error) {
+	return e.cli().Ping().Do(ctx)
 }
