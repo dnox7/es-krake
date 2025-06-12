@@ -73,7 +73,7 @@ func (v *Vault) PeriodicallyRenewLeases(
 
 		err = elasticReconnFunc(cred)
 		if err != nil {
-			v.logger.Error(ctx, "failed to reconnet elasticsearch", "error", err)
+			v.logger.Error(ctx, "failed to reconnect elasticsearch", "error", err)
 			return nil, err
 		}
 		return lease, nil

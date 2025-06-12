@@ -56,6 +56,14 @@ run-deps:
 down-deps:
 	docker compose $(DEP_COMPOSE_FILES) down --volumes
 
+.PHONY: run-minio
+run-minio:
+	docker compose -f deploy/compose/minio.yml up -d
+
+.PHONY: down-minio
+down-minio:
+	docker compose -f deploy/compose/minio.yml down --volumes
+
 .PHONY: run-es
 run-es:
 	docker compose -f deploy/compose/es.yml up -d

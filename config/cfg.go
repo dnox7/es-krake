@@ -20,6 +20,8 @@ type (
 		Redis    redis
 		Vault    vault
 		ES       elasticseach
+		S3       s3
+		SES      *ses
 	}
 
 	app struct {
