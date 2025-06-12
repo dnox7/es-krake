@@ -5,12 +5,14 @@ import (
 	"fmt"
 
 	"github.com/dpe27/es-krake/config"
+	"github.com/dpe27/es-krake/internal/infrastructure/aws"
 	es "github.com/dpe27/es-krake/internal/infrastructure/elasticsearch"
 	mdb "github.com/dpe27/es-krake/internal/infrastructure/mongodb"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb/migration"
 	"github.com/dpe27/es-krake/internal/infrastructure/redis"
 	vaultcli "github.com/dpe27/es-krake/internal/infrastructure/vault"
+
 	vault "github.com/hashicorp/vault/api"
 )
 
@@ -98,4 +100,12 @@ func InitElasticSearch(v *vaultcli.Vault, cfg *config.Config) (*es.ElasticSearch
 	}
 
 	return esRepo, lease, nil
+}
+
+func InitS3Repository(cfg *config.Config) (*aws.S3Repo, error) {
+	s3Repo, err := aws.NewS3Repository(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to init s3 repository: %w", err)
+	}
+	return s3Repo, nil
 }

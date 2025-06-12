@@ -15,9 +15,11 @@ import (
 	"strings"
 	"time"
 
-    "github.com/dpe27/es-krake/pkg/file"
-    "github.com/dpe27/es-krake/pkg/log"
-    "github.com/dpe27/es-krake/pkg/wraperror"
+	appCfg "github.com/dpe27/es-krake/config"
+	"github.com/dpe27/es-krake/pkg/file"
+	"github.com/dpe27/es-krake/pkg/log"
+	"github.com/dpe27/es-krake/pkg/utils"
+	"github.com/dpe27/es-krake/pkg/wraperror"
 
 	aws "github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -31,9 +33,7 @@ import (
 const (
 	PublicPresignedUrlExpiryTime  = 7 * 24 * time.Hour
 	PrivatePresignedUrlExpiryTime = 7 * 24 * time.Hour
-)
 
-const (
 	MaxS3UploadPartsCount  = 10_000            // Hard limit of the S3 API
 	DefaultS3PartSize      = int64(30_000_000) // Defaulting to 30Mb
 	ProgressReportInterval = time.Second * 5
@@ -44,6 +44,11 @@ const (
 
 	MaxDurationWaiter time.Duration = 30 * time.Second
 	codeNotFound                    = "NotFound"
+)
+
+var (
+	ErrS3ObjectNotFound = errors.New("s3 object not found")
+	ErrInvalidS3Bucket  = errors.New("invalid s3 bucket")
 )
 
 type CustomFile struct {
@@ -60,59 +65,47 @@ type FileInfo struct {
 }
 
 type S3Repository interface {
+	NormalizeDirPath(path string) string
+
 	BucketExists(ctx context.Context, bucket string) (bool, error)
+	ObjectExists(ctx context.Context, bucket, path string) (bool, error)
+	ObjectExistsAndLastModified(ctx context.Context, bucket, path string) (bool, *time.Time, error)
+
 	PublicUrl(ctx context.Context, bucket string, path string) (string, error)
 	UploadUrl(ctx context.Context, bucket string, path string) (*file.FileUploadInformation, error)
-	NormalizePath(path string) string
-	NormalizeDirPath(path string) string
-	ListFiles(ctx context.Context, bucket string, path string) (map[string]types.Object, error)
-	PutMultipartFromStream(
-		ctx context.Context,
-		logger *log.Logger,
-		fileInfo FileInfo,
-		onProgress func(processedBytes int64),
-	) error
-	GetFileReaderAt(
-		ctx context.Context,
-		bucket string,
-		path string,
-	) io.ReaderAt
-	GetFileReader(
-		ctx context.Context,
-		bucket string,
-		path string,
-	) (
-		reader io.ReadCloser,
-		fileSize int64,
-		mimeType *string,
-		err error,
-	)
-	RenameImagePath(ctx context.Context, bucket, srcPath, desPath string) error
-	MultipartUploadUrl(ctx context.Context, bucket, path, filename, mimeType string, fileSize int64) (*file.MultipartUploadInformation, *string, error)
-	CompleteMultipartUpload(ctx context.Context, bucket, path, uploadID string, fileSize int64) error
-	GenerateMultipartUploadUrl(ctx context.Context, bucket, path, uploadID string, partNumber, partSize, fileSize int64) ([]file.PartUploadInformation, error)
-	AbortMultipartUpload(ctx context.Context, bucket, path, uploadID string) error
-	DeleteAllFilesInPath(ctx context.Context, bucket, path string) error
-	DeleteFile(ctx context.Context, bucket, path string) error
-	ObjectExists(ctx context.Context, bucket, path string) (bool, error)
-	DeleteUrl(ctx context.Context, bucket, path string) (*file.FileUploadInformation, error)
-	UploadFileToInternal(ctx context.Context, filename, path string, body []byte, contentType string) error
 	NonExistPublicUrl(ctx context.Context, bucket string, path string) (string, error)
+	DeleteUrl(ctx context.Context, bucket, path string) (*file.FileUploadInformation, error)
+
 	GetHeadObject(ctx context.Context, bucket, path string) (*awsS3.HeadObjectOutput, error)
-	GenerateCloudFrontUrlWithTimeStamp(ctx context.Context, bucket string, domain, path *string) (*string, error)
-	DeleteMultipleFile(ctx context.Context, bucket string, imagePaths []string) error
-	GenerateCloudFrontUrlWithCDN(ctx context.Context, bucket string, domain, path *string) (*string, error)
-	GetContentTypeAndUrlWithCDN(ctx context.Context, bucket string, domain, path *string) (*string, *string, error)
+	GetFileReader(ctx context.Context, bucket string, path string) (reader io.ReadCloser, fileSize int64, mimeType *string, err error)
+	RenameImagePath(ctx context.Context, bucket, srcPath, desPath string) error
+	ListFiles(ctx context.Context, bucket string, path string) (map[string]types.Object, error)
+
 	GetContentTypeAndUrl(ctx context.Context, bucket string, domain, path *string) (*string, *string, error)
-	DownloadFile(ctx context.Context, bucket string, key string) (*os.File, error)
-	UploadFile(ctx context.Context, bucket string, key string, file *os.File) error
+	GetContentTypeAndUrlWithCDN(ctx context.Context, bucket string, domain, path *string) (*string, *string, error)
+
+	DeleteFile(ctx context.Context, bucket, path string) error
 	DeleteFilesInPath(ctx context.Context, bucket string, path string) error
-	GenerateCloudFrontUrlForAudio(domain, path *string) (*string, error)
-	UploadFileMultipart(ctx context.Context, bucket string, key string, file *os.File) error
-	UploadFileWithContext(ctx context.Context, bucket string, key string, customFile CustomFile) error
-	ObjectExistsAndLastModified(ctx context.Context, bucket, path string) (bool, *time.Time, error)
-	GenerateCloudFrontUrlCDNWithoutTime(domain, path *string) (*string, error)
+	DeleteMultipleFile(ctx context.Context, bucket string, imagePaths []string) error
+	DeleteAllFilesInPath(ctx context.Context, bucket, path string) error
+
+	AbortMultipartUpload(ctx context.Context, bucket, path, uploadID string) error
+	CompleteMultipartUpload(ctx context.Context, bucket, path, uploadID string, fileSize int64) error
+	PutMultipartFromStream(ctx context.Context, logger *log.Logger, fileInfo FileInfo, onProgress func(processedBytes int64)) error
+	MultipartUploadUrl(ctx context.Context, bucket, path, filename, mimeType string, fileSize int64) (*file.MultipartUploadInformation, *string, error)
+	UploadFile(ctx context.Context, bucket string, key string, file *os.File) error
 	UploadFileStream(ctx context.Context, bucket string, key string, streamData *io.PipeReader, contentType string, filename string) error
+	UploadFileMultipart(ctx context.Context, bucket string, key string, file *os.File) error
+	UploadFileToInternal(ctx context.Context, filename, path string, body []byte, contentType string) error
+	UploadFileWithContext(ctx context.Context, bucket string, key string, customFile CustomFile) error
+
+	GenerateMultipartUploadUrl(ctx context.Context, bucket, path, uploadID string, partNumber, partSize, fileSize int64) ([]file.PartUploadInformation, error)
+	GenerateCloudFrontUrlWithCDN(ctx context.Context, bucket string, domain, path *string) (*string, error)
+	GenerateCloudFrontUrlForAudio(domain, path *string) (*string, error)
+	GenerateCloudFrontUrlWithTimeStamp(ctx context.Context, bucket string, domain, path *string) (*string, error)
+	GenerateCloudFrontUrlCDNWithoutTime(domain, path *string) (*string, error)
+
+	DownloadFile(ctx context.Context, bucket string, key string) (*os.File, error)
 	DownloadFileToLocal(ctx context.Context, bucket string, key string, outputFile string) (string, error)
 }
 
@@ -124,65 +117,42 @@ type S3Repo struct {
 	s3Uploader                *awsS3Manager.Uploader
 }
 
-// newS3Client comment
-// en: create a new s3 client
-func newS3Client(cfg aws.Config, s3Ops awsS3.Options, logger awsLogger, clientLogMode aws.ClientLogMode) *awsS3.Client {
-	client := awsS3.NewFromConfig(cfg, func(options *awsS3.Options) {
-		options.BaseEndpoint = s3Ops.BaseEndpoint
-		options.UsePathStyle = s3Ops.UsePathStyle
-		options.EndpointOptions.DisableHTTPS = s3Ops.EndpointOptions.DisableHTTPS
-		options.Logger = logger
-		options.ClientLogMode = clientLogMode
-	})
-	return client
-}
-
-func NewS3Repository(br *BaseRepository) (*S3Repository, error) {
-	var s3Ops awsS3.Options
-
-	var cfg aws.Config
-	var err error
-	if os.Getenv("S3_AUTOCONFIG") == utils.TrueStatusString {
-		cfg, err = config.LoadDefaultConfig(
-			context.Background(),
-			config.WithRegion(os.Getenv("S3_REGION")),
-		)
-	} else {
-		cfg, err = config.LoadDefaultConfig(
-			context.Background(),
-			config.WithRegion(os.Getenv("S3_REGION")),
-			config.WithCredentialsProvider(awsCredentials.NewStaticCredentialsProvider(
-				os.Getenv("S3_CREDENTIALS_ID"),
-				os.Getenv("S3_CREDENTIALS_SECRET"),
-				os.Getenv("S3_CREDENTIALS_TOKEN"),
-			)),
-		)
-		s3Ops = awsS3.Options{
-			BaseEndpoint: aws.String(os.Getenv("S3_ENDPOINT")),
-			UsePathStyle: os.Getenv("S3_FORCE_PATH_STYLE") == utils.TrueStatusString,
-		}
-		s3Ops.EndpointOptions.DisableHTTPS = os.Getenv("S3_DISABLE_SSL") == utils.TrueStatusString
-	}
+func NewS3Repository(cfg *appCfg.Config) (*S3Repo, error) {
+	awsCfg, err := config.LoadDefaultConfig(
+		context.Background(),
+		config.WithRegion(cfg.S3.Region),
+		config.WithCredentialsProvider(awsCredentials.NewStaticCredentialsProvider(
+			cfg.S3.CredentialsID,
+			cfg.S3.CredentialsSecret,
+			cfg.S3.CredentialsToken,
+		)),
+	)
 	if err != nil {
 		return nil, err
 	}
 
+	s3Ops := awsS3.Options{
+		BaseEndpoint: &cfg.S3.Endpoint,
+		UsePathStyle: cfg.S3.ForcePathStype,
+	}
+	s3Ops.EndpointOptions.DisableHTTPS = cfg.S3.DisableSSL
+
 	client := newS3Client(
-		cfg,
+		awsCfg,
 		s3Ops,
 		awsLogger{logger: log.With("service", "aws-s3-api")},
 		aws.LogRequest|aws.LogResponseWithBody|aws.LogRetries,
 	)
 
 	clientWithOnlyErrorLogger := newS3Client(
-		cfg,
+		awsCfg,
 		s3Ops,
 		awsLogger{logger: log.With("service", "aws-s3-api-only-error-logger")},
 		aws.LogRequest|aws.LogResponse|aws.LogRetries,
 	)
 
 	presignClient := awsS3.NewPresignClient(newS3Client(
-		cfg,
+		awsCfg,
 		s3Ops,
 		awsLogger{logger: log.With("service", "aws-s3-api-presign")},
 		aws.LogRequest|aws.LogResponseWithBody|aws.LogRetries,
@@ -201,6 +171,17 @@ func NewS3Repository(br *BaseRepository) (*S3Repository, error) {
 			uploader.Concurrency = defaultConcurrent
 		}),
 	}, nil
+}
+
+func newS3Client(cfg aws.Config, s3Ops awsS3.Options, logger awsLogger, clientLogMode aws.ClientLogMode) *awsS3.Client {
+	client := awsS3.NewFromConfig(cfg, func(options *awsS3.Options) {
+		options.BaseEndpoint = s3Ops.BaseEndpoint
+		options.UsePathStyle = s3Ops.UsePathStyle
+		options.EndpointOptions.DisableHTTPS = s3Ops.EndpointOptions.DisableHTTPS
+		options.Logger = logger
+		options.ClientLogMode = clientLogMode
+	})
+	return client
 }
 
 func (sr *S3Repo) BucketExists(ctx context.Context, bucket string) (bool, error) {
@@ -288,7 +269,7 @@ func (sr *S3Repo) PublicUrl(ctx context.Context, bucket, path string) (string, e
 		return "", err
 	}
 	if !isExist {
-		return "", utils.ErrS3ObjectNotFound
+		return "", ErrS3ObjectNotFound
 	}
 
 	req, err := sr.presignClient.PresignGetObject(ctx, &awsS3.GetObjectInput{
@@ -315,25 +296,12 @@ func (sr *S3Repo) UploadUrl(ctx context.Context, bucket, path string) (*file.Fil
 	}, err
 }
 
-// Normalizes the path (removing any leading slash)
-func (sr *S3Repo) NormalizePath(path string) string {
-	if len(path) > 0 && path[0] == '/' {
-		path = path[1:]
-	}
-
-	return path
-}
-
 // Normalizes the path with a slash at the end, but no leading slash.
 // S3 directories needs a slash at the end, otherwise it can match
 // partial file names, since S3 only have keys (not directories)
 func (sr *S3Repo) NormalizeDirPath(path string) string {
-	path = sr.NormalizePath(path)
-	if len(path) > 0 && path[len(path)-1] != '/' {
-		path += "/"
-	}
-
-	return path
+	path = utils.TrimLeadingSlash(path)
+	return utils.EnsureTrailingSlash(path)
 }
 
 // Returns a list of files in the given S3 directory
@@ -459,7 +427,7 @@ func (sr *S3Repo) PutMultipartFromStream(
 	fileInfo FileInfo,
 	onProgress func(processedBytes int64),
 ) error {
-	path := sr.NormalizePath(fileInfo.Path)
+	path := utils.TrimLeadingSlash(fileInfo.Path)
 
 	uploadsList, err := sr.client.ListMultipartUploads(ctx, &awsS3.ListMultipartUploadsInput{
 		Bucket: aws.String(fileInfo.Bucket),
@@ -573,22 +541,6 @@ func (sr *S3Repo) PutMultipartFromStream(
 	return err
 }
 
-// Allows reading a file in chunks via a standard io interface.
-// Subsequent API calls are performed by pkg/io/s3_reader_at.go
-// (so are the error cases)
-func (sr *S3Repo) GetFileReaderAt(
-	ctx context.Context,
-	bucket string,
-	path string,
-) io.ReaderAt {
-	return customIo.NewS3FileReaderAt(
-		ctx,
-		sr.clientWithOnlyErrorLogger,
-		bucket,
-		sr.NormalizePath(path),
-	)
-}
-
 func (sr *S3Repo) GetFileReader(
 	ctx context.Context,
 	bucket string,
@@ -652,7 +604,7 @@ func (sr *S3Repo) MultipartUploadUrl(ctx context.Context, bucket, path, filename
 		return nil, nil, err
 	}
 	if !existed {
-		return nil, nil, wraperror.NewApiDisplayableError(
+		return nil, nil, wraperror.NewAPIError(
 			http.StatusInternalServerError,
 			"bucket did not existed",
 			errors.New("bucket "+bucket+" dis not existed"),
@@ -790,7 +742,7 @@ func (sr *S3Repo) DeleteAllFilesInPath(ctx context.Context, bucket, path string)
 		return err
 	}
 	if !existed {
-		return wraperror.NewApiDisplayableError(
+		return wraperror.NewAPIError(
 			http.StatusInternalServerError,
 			"bucket did not existed",
 			errors.New("bucket "+bucket+" dis not existed"),
@@ -822,13 +774,13 @@ func (sr *S3Repo) DeleteAllFilesInPath(ctx context.Context, bucket, path string)
 }
 
 func (sr *S3Repo) DeleteFile(ctx context.Context, bucket, path string) error {
-	path = sr.NormalizePath(path)
+	path = utils.TrimLeadingSlash(path)
 	existed, err := sr.BucketExists(ctx, bucket)
 	if err != nil {
 		return err
 	}
 	if !existed {
-		return errors.New(utils.ErrInvalidS3Bucket)
+		return ErrInvalidS3Bucket
 	}
 
 	_, err = sr.client.DeleteObject(ctx, &awsS3.DeleteObjectInput{
@@ -872,7 +824,7 @@ func (sr *S3Repo) UploadFileToInternal(ctx context.Context, filename, path strin
 }
 
 func (sr *S3Repo) NonExistPublicUrl(ctx context.Context, bucket, path string) (string, error) {
-	req, err := fur.presignClient.PresignGetObject(ctx, &awsS3.GetObjectInput{
+	req, err := sr.presignClient.PresignGetObject(ctx, &awsS3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(path),
 	}, func(po *awsS3.PresignOptions) {
@@ -899,7 +851,7 @@ func (fur *S3Repo) GenerateCloudFrontUrlWithTimeStamp(ctx context.Context, bucke
 		return nil, err
 	}
 
-	urlPath, err := url.Parse(urlParsed.Scheme + "://" + urlParsed.Host + utils.NormalizeRelativePath(*path))
+	urlPath, err := url.Parse(urlParsed.Scheme + "://" + urlParsed.Host + utils.EnsureLeadingSlash(*path))
 	if err != nil {
 		return nil, err
 	}
@@ -930,7 +882,7 @@ func (fur *S3Repo) GenerateCloudFrontUrlWithTimeStamp(ctx context.Context, bucke
 	v.Add("time", fmt.Sprintf("%d", lastObject.LastModified.Unix()))
 	urlPath.RawQuery = v.Encode()
 
-	return utils.NewStringPointer(urlPath.String()), nil
+	return utils.ToPointer(urlPath.String()), nil
 }
 
 func (fur *S3Repo) DeleteMultipleFile(ctx context.Context, bucket string, imagePaths []string) error {
@@ -983,7 +935,7 @@ func (fur *S3Repo) GenerateCloudFrontUrlWithCDN(ctx context.Context, bucket stri
 	} else {
 		urlBuilder += prefixCDN
 	}
-	urlBuilder += urlParsed.Domain + "." + urlParsed.TLD + utils.NormalizeRelativePath(*path)
+	urlBuilder += urlParsed.Domain + "." + urlParsed.TLD + utils.EnsureLeadingSlash(*path)
 
 	urlPath, err := url.Parse(urlBuilder)
 	if err != nil {
@@ -993,7 +945,7 @@ func (fur *S3Repo) GenerateCloudFrontUrlWithCDN(ctx context.Context, bucket stri
 	v.Add("time", fmt.Sprintf("%d", lastObject.LastModified.Unix()))
 	urlPath.RawQuery = v.Encode()
 
-	return utils.NewStringPointer(urlPath.String()), nil
+	return utils.ToPointer(urlPath.String()), nil
 }
 
 // GetContentTypeAndUrlWithCDN comment
@@ -1056,7 +1008,7 @@ func (fur *S3Repo) GetContentTypeAndUrlWithCDN(ctx context.Context, bucket strin
 		urlBuilder += prefixCDN
 	}
 	// en: append domain and TLD to URL.
-	urlBuilder += urlParsed.Domain + "." + urlParsed.TLD + utils.NormalizeRelativePath(*path)
+	urlBuilder += urlParsed.Domain + "." + urlParsed.TLD + utils.EnsureLeadingSlash(*path)
 
 	// en: Parse constructed URL to ensure it's valid
 	urlPath, err := url.Parse(urlBuilder)
@@ -1071,7 +1023,7 @@ func (fur *S3Repo) GetContentTypeAndUrlWithCDN(ctx context.Context, bucket strin
 	urlPath.RawQuery = v.Encode()
 
 	// en: Return the constructed URL and the content_type of object
-	return utils.NewStringPointer(urlPath.String()), lastObject.ContentType, nil
+	return utils.ToPointer(urlPath.String()), lastObject.ContentType, nil
 }
 
 // DownloadFile comment.
@@ -1175,12 +1127,12 @@ func (fur *S3Repo) GenerateCloudFrontUrlForAudio(domain, path *string) (*string,
 		return nil, err
 	}
 
-	urlPath, err := url.Parse(urlParsed.Scheme + "://" + urlParsed.Host + utils.NormalizeRelativePath(*path))
+	urlPath, err := url.Parse(urlParsed.Scheme + "://" + urlParsed.Host + utils.EnsureLeadingSlash(*path))
 	if err != nil {
 		return nil, err
 	}
 
-	return utils.NewStringPointer(urlPath.String()), nil
+	return utils.ToPointer(urlPath.String()), nil
 }
 
 // UploadFileWithContext comment.
@@ -1188,7 +1140,7 @@ func (fur *S3Repo) GenerateCloudFrontUrlForAudio(domain, path *string) (*string,
 func (fur *S3Repo) UploadFileWithContext(ctx context.Context, bucket string, key string, customFile CustomFile) error {
 	fileName := filepath.Base(customFile.File.Name())
 	if customFile.ContentType == nil {
-		customFile.ContentType = utils.NewStringPointer(mime.TypeByExtension(filepath.Ext(fileName)))
+		customFile.ContentType = utils.ToPointer(mime.TypeByExtension(filepath.Ext(fileName)))
 	}
 	contentDisposition := fmt.Sprintf(`attachment;filename="%v"`, fileName)
 	_, err := fur.clientWithOnlyErrorLogger.PutObject(ctx, &awsS3.PutObjectInput{
@@ -1219,14 +1171,14 @@ func (fur *S3Repo) GenerateCloudFrontUrlCDNWithoutTime(domain, path *string) (*s
 	} else {
 		urlBuilder += prefixCDN
 	}
-	urlBuilder += urlParsed.Domain + "." + urlParsed.TLD + utils.NormalizeRelativePath(*path)
+	urlBuilder += urlParsed.Domain + "." + urlParsed.TLD + utils.EnsureLeadingSlash(*path)
 
 	urlPath, err := url.Parse(urlBuilder)
 	if err != nil {
 		return nil, err
 	}
 
-	return utils.NewStringPointer(urlPath.String()), nil
+	return utils.ToPointer(urlPath.String()), nil
 }
 
 // UploadFileStream comment.
@@ -1260,7 +1212,7 @@ func (fur *S3Repo) GetContentTypeAndUrl(ctx context.Context, bucket string, doma
 	}
 
 	// en: construct the full URL path using the normalized path.
-	urlPath, err := url.Parse(urlParsed.Scheme + "://" + urlParsed.Host + utils.NormalizeRelativePath(*path))
+	urlPath, err := url.Parse(urlParsed.Scheme + "://" + urlParsed.Host + utils.EnsureLeadingSlash(*path))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -1299,7 +1251,7 @@ func (fur *S3Repo) GetContentTypeAndUrl(ctx context.Context, bucket string, doma
 	urlPath.RawQuery = v.Encode() // en: encode the query parameters back into the URL
 
 	// en: Return the constructed URL and the content_type of the object
-	return utils.NewStringPointer(urlPath.String()), lastObject.ContentType, nil
+	return utils.ToPointer(urlPath.String()), lastObject.ContentType, nil
 }
 
 // DownloadFileToLocal comment.

@@ -2,17 +2,18 @@ package aws
 
 import (
 	"context"
-	"os"
+
+	appCfg "github.com/dpe27/es-krake/config"
+	"github.com/dpe27/es-krake/pkg/log"
 
 	aws "github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	awsCredentials "github.com/aws/aws-sdk-go-v2/credentials"
 	awsSes "github.com/aws/aws-sdk-go-v2/service/ses"
 	"github.com/aws/aws-sdk-go-v2/service/ses/types"
-	"github.com/dpe27/es-krake/pkg/log"
 )
 
-type SesRepositoryInterface interface {
+type SesService interface {
 	SendEmail(
 		ctx context.Context,
 		from string,
@@ -49,59 +50,37 @@ type SesRepositoryInterface interface {
 	) (*awsSes.DeleteTemplateOutput, error)
 }
 
-type SesRepository struct {
-	service *awsSes.Client
+type Ses struct {
+	cli                  *awsSes.Client
+	configurationSetName string
 }
 
-// NewSesRepository comment
-// en: create an instance of SesRepository
-// en: with aws session and aws ses service
-func NewSesRepository() (SesRepositoryInterface, error) {
-	var err error
-	var cfg aws.Config
-
-	if os.Getenv("SES_AUTOCONFIG") == "true" {
-		cfg, err = config.LoadDefaultConfig(
-			context.Background(),
-			config.WithRegion(os.Getenv("SES_REGION")),
-			config.WithLogger(awsLogger{logger: log.With("service", "aws-ses-api")}),
-			config.WithClientLogMode(aws.LogRequest|aws.LogResponseWithBody|aws.LogRetries),
-		)
-	} else {
-		cfg, err = config.LoadDefaultConfig(
-			context.Background(),
-			config.WithRegion(os.Getenv("SES_REGION")),
-			config.WithCredentialsProvider(awsCredentials.NewStaticCredentialsProvider(
-				os.Getenv("SES_CREDENTIALS_ID"),
-				os.Getenv("SES_CREDENTIALS_SECRET"),
-				os.Getenv("SES_CREDENTIALS_TOKEN"),
-			)),
-			config.WithLogger(awsLogger{logger: log.With("service", "aws-ses-api")}),
-			config.WithClientLogMode(aws.LogRequest|aws.LogResponseWithBody|aws.LogRetries),
-		)
-	}
+func NewSesService(cfg *appCfg.Config) (*Ses, error) {
+	awsCfg, err := config.LoadDefaultConfig(
+		context.Background(),
+		config.WithRegion(cfg.SES.Region),
+		config.WithCredentialsProvider(awsCredentials.NewStaticCredentialsProvider(
+			cfg.SES.CredentialsID,
+			cfg.SES.CredentialsSecret,
+			cfg.SES.CredentialsToken,
+		)),
+		config.WithLogger(awsLogger{logger: log.With("service", "aws-ses-api")}),
+		config.WithClientLogMode(aws.LogRequest|aws.LogResponseWithBody|aws.LogRetries),
+	)
 	if err != nil {
 		return nil, err
 	}
 
-	client := awsSes.NewFromConfig(cfg)
+	client := awsSes.NewFromConfig(awsCfg)
 
-	return &SesRepository{
-		service: client,
+	return &Ses{
+		cli: client,
 	}, nil
-}
-
-func (sr *SesRepository) getConfigurationSetName() *string {
-	name := os.Getenv("SES_CONFIGURATION_SET")
-	if name == "" {
-		return nil
-	}
-	return aws.String(name)
 }
 
 // SendEmail comment
 // en: send single email through ses
-func (sr *SesRepository) SendEmail(
+func (sr *Ses) SendEmail(
 	ctx context.Context,
 	from string,
 	to string,
@@ -124,8 +103,8 @@ func (sr *SesRepository) SendEmail(
 		}
 	}
 
-	return sr.service.SendEmail(ctx, &awsSes.SendEmailInput{
-		ConfigurationSetName: sr.getConfigurationSetName(),
+	return sr.cli.SendEmail(ctx, &awsSes.SendEmailInput{
+		ConfigurationSetName: &sr.configurationSetName,
 		Destination: &types.Destination{
 			ToAddresses: []string{
 				to,
@@ -144,15 +123,15 @@ func (sr *SesRepository) SendEmail(
 
 // SendBulkTemplatedEmailWithContext comment
 // en: send bulk email with defined template :templateName
-func (sr *SesRepository) SendBulkTemplatedEmailWithContext(
+func (sr *Ses) SendBulkTemplatedEmailWithContext(
 	ctx context.Context,
 	templateName string,
 	defaultTemplateData string,
 	from string,
 	destinations []types.BulkEmailDestination,
 ) (*awsSes.SendBulkTemplatedEmailOutput, error) {
-	return sr.service.SendBulkTemplatedEmail(ctx, &awsSes.SendBulkTemplatedEmailInput{
-		ConfigurationSetName: sr.getConfigurationSetName(),
+	return sr.cli.SendBulkTemplatedEmail(ctx, &awsSes.SendBulkTemplatedEmailInput{
+		ConfigurationSetName: &sr.configurationSetName,
 		Destinations:         destinations,
 		DefaultTemplateData:  aws.String(defaultTemplateData),
 		Source:               aws.String(from),
@@ -162,14 +141,14 @@ func (sr *SesRepository) SendBulkTemplatedEmailWithContext(
 
 // CreateTemplateMail comment
 // en: create template mail in ses
-func (sr *SesRepository) CreateTemplateMail(
+func (sr *Ses) CreateTemplateMail(
 	ctx context.Context,
 	templateName string,
 	htmlBody string,
 	htmlText string,
 	subject string,
 ) (*awsSes.CreateTemplateOutput, error) {
-	return sr.service.CreateTemplate(ctx, &awsSes.CreateTemplateInput{
+	return sr.cli.CreateTemplate(ctx, &awsSes.CreateTemplateInput{
 		Template: &types.Template{
 			TemplateName: aws.String(templateName),
 			HtmlPart:     aws.String(htmlBody),
@@ -181,14 +160,14 @@ func (sr *SesRepository) CreateTemplateMail(
 
 // UpdateTemplateMail comment
 // en: update template mail in ses
-func (sr *SesRepository) UpdateTemplateMail(
+func (sr *Ses) UpdateTemplateMail(
 	ctx context.Context,
 	templateName string,
 	htmlBody string,
 	htmlText string,
 	subject string,
 ) (*awsSes.UpdateTemplateOutput, error) {
-	return sr.service.UpdateTemplate(ctx, &awsSes.UpdateTemplateInput{
+	return sr.cli.UpdateTemplate(ctx, &awsSes.UpdateTemplateInput{
 		Template: &types.Template{
 			TemplateName: aws.String(templateName),
 			HtmlPart:     aws.String(htmlBody),
@@ -200,11 +179,11 @@ func (sr *SesRepository) UpdateTemplateMail(
 
 // DeleteTemplateMail comment
 // en: delete template mail in ses
-func (sr *SesRepository) DeleteTemplateMail(
+func (sr *Ses) DeleteTemplateMail(
 	ctx context.Context,
 	templateName string,
 ) (*awsSes.DeleteTemplateOutput, error) {
-	return sr.service.DeleteTemplate(ctx, &awsSes.DeleteTemplateInput{
+	return sr.cli.DeleteTemplate(ctx, &awsSes.DeleteTemplateInput{
 		TemplateName: aws.String(templateName),
 	})
 }
