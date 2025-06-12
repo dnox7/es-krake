@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 	"os"
-	"sync"
 
 	"github.com/dpe27/es-krake/config"
 	"github.com/dpe27/es-krake/internal/infrastructure"
@@ -39,20 +38,35 @@ func main() {
 	}
 	defer redisRepo.Close(ctx)
 
-	var wg sync.WaitGroup
+	mongo, mongoCredLease, err := initializer.InitMongo(vault, cfg)
+	if err != nil {
+		log.Error(ctx, "failed to init MongoDB", "error", err)
+		return
+	}
+	defer mongo.Close(ctx)
+
+	esRepo, esCredLease, err := initializer.InitElasticSearch(vault, cfg)
+	if err != nil {
+		log.Error(ctx, "failed to init elasticsearch", "error", err)
+		return
+	}
+
+	_, err = initializer.InitS3Repository(cfg)
+	if err != nil {
+		log.Error(ctx, err.Error())
+		return
+	}
+
 	renewLeaseCtx, stopRenew := context.WithCancel(ctx)
-	wg.Add(1)
 	go func() {
 		vault.PeriodicallyRenewLeases(
 			renewLeaseCtx, authToken,
-			rdbCredLease, pg.RetryConn,
+			rdbCredLease, pg.Reconn,
+			mongoCredLease, mongo.Reconn,
+			esCredLease, esRepo.Reconn,
 		)
-		wg.Done()
 	}()
-	defer func() {
-		stopRenew()
-		wg.Wait()
-	}()
+	defer stopRenew()
 
 	router := infrastructure.NewGinRouter(cfg)
 	server := &http.Server{
@@ -60,7 +74,7 @@ func main() {
 		Handler: router,
 	}
 
-	err = initializer.MountAll(cfg, pg, redisRepo, router)
+	err = initializer.MountAll(cfg, pg, mongo, redisRepo, router)
 	if err != nil {
 		log.Fatal(ctx, "failed to mount dependencies", "error", err.Error())
 	}
