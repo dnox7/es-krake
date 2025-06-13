@@ -85,10 +85,17 @@ func SetNoContentResponse(c *gin.Context) {
 	c.JSON(http.StatusNoContent, nil)
 }
 
+func SetErrorResponseWithStatus(c *gin.Context, statusCode int, msg, detail, debugInfo interface{}) {
+	c.JSON(
+		statusCode,
+		NewErrorResponse(msg, detail, debugInfo),
+	)
+}
+
 func SetNotFoundResponse(c *gin.Context, msg, detail, debugInfo interface{}) {
 	c.JSON(
 		http.StatusNotFound,
-		NewErrorResponse(msg, debugInfo, debugInfo),
+		NewErrorResponse(msg, detail, debugInfo),
 	)
 }
 

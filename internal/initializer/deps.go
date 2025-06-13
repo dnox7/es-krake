@@ -8,6 +8,7 @@ import (
 	"github.com/dpe27/es-krake/internal/infrastructure/aws"
 	es "github.com/dpe27/es-krake/internal/infrastructure/elasticsearch"
 	mdb "github.com/dpe27/es-krake/internal/infrastructure/mongodb"
+	"github.com/dpe27/es-krake/internal/infrastructure/notify"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb/migration"
 	"github.com/dpe27/es-krake/internal/infrastructure/redis"
@@ -109,4 +110,8 @@ func InitS3Repository(cfg *config.Config) (*aws.S3Repo, error) {
 	}
 	log.Debug(context.Background(), "init s3 successfully")
 	return s3Repo, nil
+}
+
+func InitDiscordNotifier(cfg *config.Config) notify.DiscordNotifier {
+	return notify.NewDiscordNotifier(cfg.Discord.WebhookUrl, nil)
 }

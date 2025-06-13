@@ -11,7 +11,7 @@ type PlatformHandler struct {
 	graphql graphql.Schema
 }
 
-func NewPlatformHandler(debug bool, schema graphql.Schema) *PlatformHandler {
+func NewPlatformHandler(schema graphql.Schema, debug bool) *PlatformHandler {
 	return &PlatformHandler{
 		logger:  log.With("handler", "platform_handler"),
 		debug:   debug,

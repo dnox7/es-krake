@@ -1,7 +1,7 @@
 package query
 
 import (
-	"github.com/dpe27/es-krake/internal/interfaces/graphql/output"
+	"github.com/dpe27/es-krake/internal/interfaces/api/graphql/output"
 	usecase "github.com/dpe27/es-krake/internal/usecase/auth"
 	"github.com/graphql-go/graphql"
 )

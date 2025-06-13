@@ -1,40 +1,38 @@
 package initializer
 
 import (
-	"fmt"
-
 	"github.com/dpe27/es-krake/config"
 	mdb "github.com/dpe27/es-krake/internal/infrastructure/mongodb"
+	"github.com/dpe27/es-krake/internal/infrastructure/notify"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
 	"github.com/dpe27/es-krake/internal/infrastructure/redis"
 	"github.com/dpe27/es-krake/internal/infrastructure/repository"
 	"github.com/dpe27/es-krake/internal/infrastructure/service"
-	"github.com/dpe27/es-krake/internal/interfaces/graphql"
-	"github.com/dpe27/es-krake/internal/interfaces/handler"
-	"github.com/dpe27/es-krake/internal/interfaces/router"
+	"github.com/dpe27/es-krake/internal/interfaces/batch/handler"
+	"github.com/dpe27/es-krake/internal/interfaces/batch/jobs"
+	"github.com/dpe27/es-krake/internal/interfaces/batch/router"
 	"github.com/dpe27/es-krake/internal/usecase"
 	"github.com/gin-gonic/gin"
 )
 
-func MountAll(
+func MountBatch(
 	cfg *config.Config,
 	pg *rdb.PostgreSQL,
 	mongo *mdb.Mongo,
 	redisRepo redis.RedisRepository,
+	notifier notify.DiscordNotifier,
 	ginEngine *gin.Engine,
 ) error {
 	repositories := repository.NewRepositoriesContainer(pg, mongo)
 	services := service.NewServicesContainer(repositories, redisRepo)
 	usecases := usecase.NewUsecasesContainer(repositories, services, redisRepo)
+	batchContainer := jobs.NewBatchContainer(&usecases)
 
-	schema, err := graphql.NewGraphQLSchema(&usecases)
-	if err != nil {
-		return fmt.Errorf("failed to create GraphQL schema: %v", err)
-	}
+	batchHandler := handler.NewBatchHandler(
+		batchContainer, notifier,
+		cfg.App.LogLevel == "DEBUG",
+	)
 
-	debug := cfg.App.LogLevel == "DEBUG"
-	httpHandler := handler.NewHTTPHandler(debug, schema)
-
-	router.BindPlatformRoute(ginEngine.Group("/pf"), httpHandler.PF)
+	router.BindBatchRoutes(ginEngine.Group("/"), batchHandler)
 	return nil
 }

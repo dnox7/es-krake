@@ -1,7 +1,7 @@
 package router
 
 import (
-	"github.com/dpe27/es-krake/internal/interfaces/handler/pf"
+	"github.com/dpe27/es-krake/internal/interfaces/api/handler/pf"
 	"github.com/gin-gonic/gin"
 )
 
