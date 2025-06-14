@@ -15,9 +15,14 @@ type (
 	Config struct {
 		App      app
 		RDB      rdb
-		MDB      *mongo
+		MDB      mongo
 		Keycloak *keycloak
+		Redis    redis
 		Vault    vault
+		ES       elasticseach
+		S3       s3
+		SES      *ses
+		Discord  discord
 	}
 
 	app struct {
@@ -26,6 +31,10 @@ type (
 		Env      string `env:"APP_ENV"     env-required:"true"`
 		Port     string `env:"APP_PORT"    env-required:"true"`
 		LogLevel string `env:"LOG_LEVEL"   env-required:"true"`
+	}
+
+	discord struct {
+		WebhookUrl string `env:"DISCORD_WEBHOOK_URL" env-required:"true"`
 	}
 )
 

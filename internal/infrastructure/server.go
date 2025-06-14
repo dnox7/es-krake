@@ -25,6 +25,7 @@ func NewGinRouter(cfg *config.Config) *gin.Engine {
 		middleware.Recovery(),
 		middleware.AccessControlHeaders(),
 		middleware.GinCustomRecovery(),
+		middleware.LoggingMiddleware(),
 	)
 
 	router.GET("/", func(c *gin.Context) {

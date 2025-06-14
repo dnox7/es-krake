@@ -1,0 +1,35 @@
+services:
+  esk-mdb:
+    image: mongo
+    container_name: esk-mdb
+    restart: on-failure:3
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: 123456
+      MONGO_ADMIN_USERNAME: esk_admin
+      MONGO_ADMIN_PASSWORD: esk_admin123456
+      MDB_NAME: esk_mdb_dev_1
+    volumes:
+      - ../../scripts/mongo-initdb.sh:/docker-entrypoint-initdb.d/mongo.sh:ro
+      - mongo-data:/data/db
+      - mongo-data-config:/data/configdb
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh mongo:27017/test --quiet
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - esk-mdb
+
+volumes:
+  mongo-data:
+    name: mongo-data
+  mongo-data-config:
+    name: mongo-data-config
+
+networks:
+  esk-mdb:
+    name: esk-mdb
+    driver: bridge

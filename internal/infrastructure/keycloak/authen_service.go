@@ -339,6 +339,7 @@ func (a *authenService) PostFlowCopy(
 	)
 	if err != nil {
 		a.logger.Error(ctx, utils.ErrorCreateReq, "error", err.Error())
+		return err
 	}
 
 	req.Header.Add(nethttp.HeaderContentType, nethttp.MIMEApplicationJSON)

@@ -1,0 +1,43 @@
+services:
+  es-db:
+    image: docker.elastic.co/elasticsearch/elasticsearch:sha256-fff57a996ea17bad3163108f6f3221c7f5a43cac20bffea5082c49eb4d7950e5
+    container_name: es-db
+    environment:
+      - node.name=es01
+      - cluster.name=es-esk
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=true
+      - ELASTIC_PASSWORD=esadmin123456
+    volumes:
+      - es-data01:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - elastic
+
+  es-init:
+    image: curlimages/curl:latest
+    container_name: es-init
+    depends_on:
+      - es-db
+    volumes:
+      - ../../scripts/es-initdb.sh:/entrypoint.sh
+    environment:
+      - ES_URL=http://es-db:9200
+      - ES_ADMIN=elastic
+      - ES_ADMIN_PASSWORD=esadmin123456
+      - ES_VAULT_USER=esk_vault
+      - ES_VAULT_PASSWORD=esk_vault123456
+    networks:
+        - elastic
+    entrypoint: ["sh", "/entrypoint.sh"]
+
+volumes:
+  es-data01:
+    name: es-data01
+
+networks:
+  elastic:
+    driver: bridge
+    name: elastic

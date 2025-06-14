@@ -1,3 +1,9 @@
+DEP_COMPOSE_FILES = \
+	-f deploy/compose/rdb.yml \
+	-f deploy/compose/redis.yml \
+	-f deploy/compose/mongo.yml \
+	-f deploy/compose/vault-dev.yml
+
 .PHONY: test
 test:
 	go test -v -race -cover ./...
@@ -42,50 +48,46 @@ gen-migration:
 	read -p "Description: " desc; \
 	migrate create -ext sql -digits 14 -dir ./migrations/$$module $$desc
 
-.PHONY: run-rdb
-run-rdb:
-	docker compose -f deploy/compose/rdb.yaml up -d
+.PHONY: run-deps
+run-deps:
+	docker compose $(DEP_COMPOSE_FILES) up -d
+	
+.PHONY: down-deps
+down-deps:
+	docker compose $(DEP_COMPOSE_FILES) down --volumes
 
-.PHONY: stop-rdb
-stop-rdb:
-	docker compose -f deploy/compose/rdb.yaml stop
+.PHONY: run-minio
+run-minio:
+	docker compose -f deploy/compose/minio.yml up -d
 
-.PHONY: clean-rdb
-clean-rdb:
-	docker compose -f deploy/compose/rdb.yaml down --volumes
+.PHONY: down-minio
+down-minio:
+	docker compose -f deploy/compose/minio.yml down --volumes
+
+.PHONY: run-es
+run-es:
+	docker compose -f deploy/compose/es.yml up -d
+
+.PHONY: down-es
+down-es:
+	docker compose -f deploy/compose/es.yml down --volumes
 
 .PHONY: run-kc
 run-kc:
-	docker compose -f deploy/compose/keycloak.yaml up -d
+	docker compose -f deploy/compose/keycloak.yml up -d
 
 .PHONY: stop-kc
 stop-kc:
-	docker compose -f deploy/compose/keycloak.yaml stop
-
-.PHONY: run-mdb
-run-mdb:
-	docker compose -f deploy/compose/mongo.yaml up -d
-
-.PHONY: stop-mdb
-stop-mdb:
-	docker compose -f deploy/compose/mongo.yaml stop
-
-.PHONY: clean-mdb
-clean-mdb:
-	docker compose -f deploy/compose/mongo.yaml down --volumes
+	docker compose -f deploy/compose/keycloak.yml stop
 
 .PHONY: export-realm
 export-realm:
 	scripts/export-realm.sh
 
-.PHONY: run-vault
-run-vault:
-	docker compose -f deploy/compose/vault-dev.yaml up -d
+.PHONY: run-monitoring
+run-monitoring:
+	docker compose -f deploy/compose/monitoring.yml up -d
 
-.PHONY: stop-vault
-stop-vault:
-	docker compose -f deploy/compose/vault-dev.yaml stop
-
-.PHONY: down-vault
-down-vault:
-	docker compose -f deploy/compose/vault-dev.yaml down --volumes
+.PHONY: down-monitoring
+down-monitoring:
+	docker compose -f deploy/compose/monitoring.yml down --volumes
