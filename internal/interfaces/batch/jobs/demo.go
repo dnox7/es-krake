@@ -6,8 +6,7 @@ import (
 	"github.com/dpe27/es-krake/internal/interfaces/batch/dto"
 )
 
-type simpleBatch struct {
-}
+type simpleBatch struct{}
 
 func newSimpleBatch() *simpleBatch {
 	return &simpleBatch{}

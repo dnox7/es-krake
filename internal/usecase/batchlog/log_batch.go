@@ -19,7 +19,6 @@ func (blu *BatchLogUsecase) LogBatchStarting(
 	logType, err := blu.deps.BatchLogTypeRepo.TakeByConditions(ctx, map[string]interface{}{
 		"type": event.Type,
 	}, nil)
-
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return entity.BatchLog{}, fmt.Errorf(
