@@ -1,8 +1,8 @@
 package graphql
 
 import (
-	"github.com/dpe27/es-krake/internal/interfaces/graphql/output"
-	"github.com/dpe27/es-krake/internal/interfaces/graphql/query"
+	"github.com/dpe27/es-krake/internal/interfaces/api/graphql/output"
+	"github.com/dpe27/es-krake/internal/interfaces/api/graphql/query"
 	"github.com/dpe27/es-krake/internal/usecase"
 	"github.com/graphql-go/graphql"
 )

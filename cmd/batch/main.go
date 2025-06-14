@@ -57,6 +57,8 @@ func main() {
 		return
 	}
 
+	discordNotifier := initializer.InitDiscordNotifier(cfg)
+
 	renewLeaseCtx, stopRenew := context.WithCancel(ctx)
 	go func() {
 		vault.PeriodicallyRenewLeases(
@@ -74,7 +76,12 @@ func main() {
 		Handler: router,
 	}
 
-	err = initializer.MountAPI(cfg, pg, mongo, redisRepo, router)
+	err = initializer.MountBatch(
+		cfg,
+		pg, mongo, redisRepo,
+		discordNotifier,
+		router,
+	)
 	if err != nil {
 		log.Fatal(ctx, "failed to mount dependencies", "error", err.Error())
 	}

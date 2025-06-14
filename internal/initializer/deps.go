@@ -7,7 +7,9 @@ import (
 	"github.com/dpe27/es-krake/config"
 	"github.com/dpe27/es-krake/internal/infrastructure/aws"
 	es "github.com/dpe27/es-krake/internal/infrastructure/elasticsearch"
+	"github.com/dpe27/es-krake/internal/infrastructure/httpclient"
 	mdb "github.com/dpe27/es-krake/internal/infrastructure/mongodb"
+	"github.com/dpe27/es-krake/internal/infrastructure/notify"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb/migration"
 	"github.com/dpe27/es-krake/internal/infrastructure/redis"
@@ -109,4 +111,12 @@ func InitS3Repository(cfg *config.Config) (*aws.S3Repo, error) {
 	}
 	log.Debug(context.Background(), "init s3 successfully")
 	return s3Repo, nil
+}
+
+func InitDiscordNotifier(cfg *config.Config) notify.DiscordNotifier {
+	opts := httpclient.ClientOptBuilder().
+		ServiceName("discord_notifier").
+		Build()
+	cli := httpclient.NewHttpClient(opts)
+	return notify.NewDiscordNotifier(cfg.Discord.WebhookUrl, cli)
 }
