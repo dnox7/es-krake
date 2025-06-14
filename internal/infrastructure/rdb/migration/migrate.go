@@ -28,8 +28,9 @@ const (
 )
 
 var migrationTables = map[string]string{
-	"auth":    "schema_migrations_auth",
-	"product": "schema_migrations_product",
+	"auth":     "schema_migrations_auth",
+	"product":  "schema_migrations_product",
+	"batchlog": "schema_migrations_batchlog",
 }
 
 func getSortedMigrationTableKeys() []string {

@@ -57,6 +57,14 @@ func (h *BatchHander) Batch(c *gin.Context) {
 		nethttp.SetNotFoundResponse(c, msg, nil, nil)
 	}
 
+	batchLog, err := h.usecases.LogBatchStarting(c, event)
+	if err != nil {
+		h.logger.Error(c, "Error while logging batch start", "type", event.Type, "error", err)
+		nethttp.SetGenericErrorResponse(c, err, h.debug)
+		return
+	}
+	event.BatchLogID = batchLog.ID
+
 	var batchErr error
 	func() {
 		defer func() {
@@ -67,6 +75,17 @@ func (h *BatchHander) Batch(c *gin.Context) {
 		}()
 		batchErr = batch.Run(c, event)
 	}()
+
+	batchLog, loggingErr := h.usecases.LogBatchEnded(c, batchLog, batchErr)
+	if loggingErr != nil {
+		h.logger.Error(
+			c, fmt.Sprintf(
+				"Error while saving the batch result in the batch_logs table for ID = %v",
+				batchLog.ID,
+			),
+			"error", loggingErr,
+		)
+	}
 
 	if batchErr != nil {
 		var returnStatus int

@@ -10,7 +10,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func (au AuthUsecase) GetAllRoleTypes(ctx context.Context) ([]entity.RoleType, error) {
+func (au *AuthUsecase) GetAllRoleTypes(ctx context.Context) ([]entity.RoleType, error) {
 	key := cachekey.AllRoleTypesKey()
 
 	var roleTypes []entity.RoleType
@@ -32,7 +32,7 @@ func (au AuthUsecase) GetAllRoleTypes(ctx context.Context) ([]entity.RoleType, e
 	return roleTypes, err
 }
 
-func (au AuthUsecase) GetRoleTypeByID(ctx context.Context, ID int) (entity.RoleType, error) {
+func (au *AuthUsecase) GetRoleTypeByID(ctx context.Context, ID int) (entity.RoleType, error) {
 	key := cachekey.RoleTypeByIDKey(ID)
 
 	var roleType entity.RoleType

@@ -29,7 +29,9 @@ func MountBatch(
 	batchContainer := jobs.NewBatchContainer(&usecases)
 
 	batchHandler := handler.NewBatchHandler(
-		batchContainer, notifier,
+		batchContainer,
+		usecases.BatchLogUsecase,
+		notifier,
 		cfg.App.LogLevel == "DEBUG",
 	)
 
