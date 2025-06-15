@@ -15,6 +15,7 @@ type RepositoryContainer struct {
 	RolePermissionRepo             domainRepo.RolePermissionRepository
 	RoleTypeRepo                   domainRepo.RoleTypeRepository
 	OtpRepo                        domainRepo.OtpRepository
+	LoginHistoryRepo               domainRepo.LoginHistoryRepository
 }
 
 func NewRepositoryContainer(pg *rdb.PostgreSQL) RepositoryContainer {
@@ -28,5 +29,6 @@ func NewRepositoryContainer(pg *rdb.PostgreSQL) RepositoryContainer {
 		RolePermissionRepo:             NewRolePermissionRepository(pg),
 		RoleTypeRepo:                   NewRoleTypeRepository(pg),
 		OtpRepo:                        NewOtpRepository(pg),
+		LoginHistoryRepo:               NewLoginHistoryRepository(pg),
 	}
 }

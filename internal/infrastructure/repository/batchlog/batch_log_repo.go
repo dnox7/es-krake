@@ -59,7 +59,11 @@ func (b *batchLogRepo) Create(
 }
 
 // TakeByConditions implements repository.BatchLogRepository.
-func (b *batchLogRepo) TakeByConditions(ctx context.Context, conditions map[string]interface{}, spec specification.Base) (entity.BatchLog, error) {
+func (b *batchLogRepo) TakeByConditions(
+	ctx context.Context,
+	conditions map[string]interface{},
+	spec specification.Base,
+) (entity.BatchLog, error) {
 	gormScopes, err := gormScope.ToGormScopes(spec)
 	if err != nil {
 		b.logger.Error(ctx, err.Error())
@@ -75,7 +79,11 @@ func (b *batchLogRepo) TakeByConditions(ctx context.Context, conditions map[stri
 }
 
 // Update implements repository.BatchLogRepository.
-func (b *batchLogRepo) Update(cxt context.Context, batchLog entity.BatchLog, attributesToUpdate map[string]interface{}) (entity.BatchLog, error) {
+func (b *batchLogRepo) Update(
+	cxt context.Context,
+	batchLog entity.BatchLog,
+	attributesToUpdate map[string]interface{},
+) (entity.BatchLog, error) {
 	err := utils.MapToStruct(attributesToUpdate, &batchLog)
 	if err != nil {
 		b.logger.Error(cxt, utils.ErrorMapToStruct, "error", err.Error())
