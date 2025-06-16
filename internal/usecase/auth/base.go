@@ -2,13 +2,20 @@ package usecase
 
 import (
 	"github.com/dpe27/es-krake/internal/domain/auth/repository"
+	"github.com/dpe27/es-krake/internal/domain/auth/service"
 	"github.com/dpe27/es-krake/internal/infrastructure/redis"
 	"github.com/dpe27/es-krake/pkg/log"
 )
 
 type AuthUsecaseDeps struct {
-	RoleTypeRepo repository.RoleTypeRepository
-	Cache        redis.RedisRepository
+	RoleTypeRepo   repository.RoleTypeRepository
+	PermissionRepo repository.PermissionRepository
+	RoleRepo       repository.RoleRepository
+
+	PermissionService      service.PermissionService
+	AccessOperationService service.AccessOperationService
+
+	Cache redis.RedisRepository
 }
 
 type AuthUsecase struct {

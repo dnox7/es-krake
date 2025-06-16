@@ -10,6 +10,12 @@ func NewOutputTypes(usecases *usecase.UsecasesContainer) map[string]*graphql.Obj
 
 	for _, graphqlType := range []*graphql.Object{
 		RoleTypeOutput(),
+		AccessOperationOutput(),
+		PlatformAccountOutput(outputTypes, usecases.AuthUsecase, usecases.PlatformUsecase),
+		PermissionOutput(outputTypes, usecases.AuthUsecase),
+		RoleOutput(outputTypes, usecases.AuthUsecase),
+		DepartmentOutput(),
+		LoginHistoryOutput(),
 	} {
 		outputTypes[graphqlType.Name()] = graphqlType
 	}

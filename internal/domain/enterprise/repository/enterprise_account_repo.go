@@ -8,8 +8,6 @@ import (
 	"github.com/dpe27/es-krake/internal/domain/shared/transaction"
 )
 
-const EnterpriseAccountTableName = "enterprise_accounts"
-
 type EnterpriseAccountRepository interface {
 	TakeByConditions(ctx context.Context, conditions map[string]interface{}, spec specification.Base) (entity.EnterpriseAccount, error)
 

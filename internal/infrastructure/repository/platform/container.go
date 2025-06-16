@@ -7,12 +7,12 @@ import (
 
 type RepositoryContainer struct {
 	DepartmentRepo  domainRepo.DepartmentRepository
-	PlatformAccRepo domainRepo.PlatformAccountRepository
+	PlatformAccountRepo domainRepo.PlatformAccountRepository
 }
 
 func NewRepositoryContainer(pg *rdb.PostgreSQL) RepositoryContainer {
 	return RepositoryContainer{
 		DepartmentRepo:  NewDepartmentRepository(pg),
-		PlatformAccRepo: NewPlatformAccountRepository(pg),
+		PlatformAccountRepo: NewPlatformAccountRepository(pg),
 	}
 }

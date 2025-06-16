@@ -6,11 +6,13 @@ import (
 	"github.com/dpe27/es-krake/internal/infrastructure/service"
 	authUC "github.com/dpe27/es-krake/internal/usecase/auth"
 	batchLogUC "github.com/dpe27/es-krake/internal/usecase/batchlog"
+	platformUC "github.com/dpe27/es-krake/internal/usecase/platform"
 )
 
 type UsecasesContainer struct {
 	AuthUsecase     authUC.AuthUsecase
 	BatchLogUsecase batchLogUC.BatchLogUsecase
+	PlatformUsecase platformUC.PlatformUsecase
 }
 
 func NewUsecasesContainer(
@@ -20,13 +22,22 @@ func NewUsecasesContainer(
 ) UsecasesContainer {
 	return UsecasesContainer{
 		AuthUsecase: authUC.NewAuthUsecase(&authUC.AuthUsecaseDeps{
-			RoleTypeRepo: repositories.AuthContainer.RoleTypeRepo,
-			Cache:        redisRepo,
+			RoleTypeRepo:           repositories.AuthContainer.RoleTypeRepo,
+			PermissionRepo:         repositories.AuthContainer.PermissionRepo,
+			RoleRepo:               repositories.AuthContainer.RoleRepo,
+			PermissionService:      services.AuthContainer.PermissionService,
+			AccessOperationService: services.AuthContainer.AccessOperationService,
+			Cache:                  redisRepo,
 		}),
 		BatchLogUsecase: batchLogUC.NewBatchLogUsecase(&batchLogUC.BatchLogUsecaseDeps{
 			BatchLogRepo:     repositories.BatchLogContainer.BatchLogRepo,
 			BatchLogTypeRepo: repositories.BatchLogContainer.BatchLogTypeRepo,
 			Cache:            redisRepo,
+		}),
+		PlatformUsecase: platformUC.NewPlatformUsecase(&platformUC.PlatformUsecaseDeps{
+			PlatformAccountRepo: repositories.PlatformContainer.PlatformAccountRepo,
+			DepartmentRepo:      repositories.PlatformContainer.DepartmentRepo,
+			Cache:               redisRepo,
 		}),
 	}
 }
