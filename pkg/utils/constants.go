@@ -3,10 +3,10 @@ package utils
 import "time"
 
 const (
-	ErrorInputRequired = "ERR001"
-	ErrorInputFail     = "ERR002"
-	ErrorEmailFail     = "ERR003"
-	ErrorPasswordFail  = "ERROO4"
+	ErrorInputRequired = "error missing required input"
+	ErrorInputFail     = "error input failed"
+	ErrorEmailFail     = "error email failed"
+	ErrorPasswordFail  = "error password failed"
 
 	DefaultPageNo   = 1
 	DefaultPageSize = 30

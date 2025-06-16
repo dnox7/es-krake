@@ -36,5 +36,6 @@ func MountAPI(
 	)
 
 	router.BindPlatformRoute(ginEngine.Group("/pf"), httpHandler.PF)
+	router.BindEnterpriseRoute(ginEngine.Group("/ent"), httpHandler.Ent)
 	return nil
 }

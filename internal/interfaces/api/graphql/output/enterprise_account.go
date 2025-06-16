@@ -1,69 +1,67 @@
 package output
 
 import (
-	"github.com/dpe27/es-krake/internal/domain/platform/entity"
+	"github.com/dpe27/es-krake/internal/domain/enterprise/entity"
 	authUC "github.com/dpe27/es-krake/internal/usecase/auth"
-	platformUC "github.com/dpe27/es-krake/internal/usecase/platform"
 	"github.com/dpe27/es-krake/pkg/utils"
 	"github.com/graphql-go/graphql"
 )
 
-func PlatformAccountOutput(
+func EnterpriseAccountOutput(
 	types map[string]*graphql.Object,
 	authUsecase authUC.AuthUsecase,
-	platformUsecase platformUC.PlatformUsecase,
 ) *graphql.Object {
 	return graphql.NewObject(graphql.ObjectConfig{
-		Name: "platform_account",
+		Name: "enterprise_account",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: AnyInt,
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-					return params.Source.(entity.PlatformAccount).ID, nil
+					return params.Source.(entity.EnterpriseAccount).ID, nil
 				},
 			},
 			"kc_user_id": &graphql.Field{
 				Type: graphql.String,
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-					return params.Source.(entity.PlatformAccount).KcUserID, nil
+					return params.Source.(entity.EnterpriseAccount).KcUserID, nil
 				},
 			},
 			"role_id": &graphql.Field{
 				Type: AnyInt,
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-					return params.Source.(entity.PlatformAccount).RoleID, nil
+					return params.Source.(entity.EnterpriseAccount).RoleID, nil
 				},
 			},
-			"department_id": &graphql.Field{
+			"enterprise_id": &graphql.Field{
 				Type: AnyInt,
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-					return params.Source.(entity.PlatformAccount).DepartmentID, nil
+					return params.Source.(entity.EnterpriseAccount).EnterpriseID, nil
 				},
 			},
 			"has_password": &graphql.Field{
 				Type: graphql.Boolean,
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-					return params.Source.(entity.PlatformAccount).HasPassword, nil
+					return params.Source.(entity.EnterpriseAccount).HasPassword, nil
 				},
 			},
 			"notes": &graphql.Field{
 				Type: graphql.String,
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-					return params.Source.(entity.PlatformAccount).Notes, nil
+					return params.Source.(entity.EnterpriseAccount).Notes, nil
 				},
 			},
 			"created_at": &graphql.Field{
 				Type: graphql.String,
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-					created_at := params.Source.(entity.PlatformAccount).CreatedAt
-					return utils.ToDateTimeSQL(&created_at), nil
+					createdAt := params.Source.(entity.EnterpriseAccount).CreatedAt
+					return utils.ToDateTimeSQL(&createdAt), nil
 				},
 			},
 			"updated_at": &graphql.Field{
 				Type: graphql.String,
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-					updated_at := params.Source.(entity.PlatformAccount).UpdatedAt
-					return utils.ToDateTimeSQL(&updated_at), nil
+					updatedAt := params.Source.(entity.EnterpriseAccount).UpdatedAt
+					return utils.ToDateTimeSQL(&updatedAt), nil
 				},
 			},
 			"role": &graphql.Field{
@@ -71,16 +69,7 @@ func PlatformAccountOutput(
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					return authUsecase.GetRoleByIDWithPermissions(
 						params.Context,
-						params.Source.(entity.PlatformAccount).RoleID,
-					)
-				},
-			},
-			"department": &graphql.Field{
-				Type: types["department"],
-				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-					return platformUsecase.GetDepartmentByID(
-						params.Context,
-						params.Source.(entity.PlatformAccount).DepartmentID,
+						params.Source.(entity.EnterpriseAccount).RoleID,
 					)
 				},
 			},

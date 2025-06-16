@@ -3,6 +3,7 @@ package output
 import (
 	"github.com/dpe27/es-krake/internal/domain/auth/entity"
 	usecase "github.com/dpe27/es-krake/internal/usecase/auth"
+	"github.com/dpe27/es-krake/pkg/utils"
 	"github.com/graphql-go/graphql"
 )
 
@@ -35,13 +36,15 @@ func PermissionOutput(
 			"created_at": &graphql.Field{
 				Type: graphql.String,
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-					return params.Source.(entity.Permission).CreatedAt, nil
+					createdAt := params.Source.(entity.Permission).CreatedAt
+					return utils.ToDateTimeSQL(&createdAt), nil
 				},
 			},
 			"updated_at": &graphql.Field{
 				Type: graphql.String,
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-					return params.Source.(entity.Permission).UpdatedAt, nil
+					updatedAt := params.Source.(entity.Permission).UpdatedAt
+					return utils.ToDateTimeSQL(&updatedAt), nil
 				},
 			},
 		},

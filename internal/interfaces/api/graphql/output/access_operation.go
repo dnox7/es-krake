@@ -2,6 +2,7 @@ package output
 
 import (
 	"github.com/dpe27/es-krake/internal/domain/auth/entity"
+	"github.com/dpe27/es-krake/pkg/utils"
 	"github.com/graphql-go/graphql"
 )
 
@@ -36,13 +37,15 @@ func AccessOperationOutput() *graphql.Object {
 			"created_at": &graphql.Field{
 				Type: graphql.String,
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-					return params.Source.(entity.AccessOperation).CreatedAt, nil
+					createdAt := params.Source.(entity.AccessOperation).CreatedAt
+					return utils.ToDateTimeSQL(&createdAt), nil
 				},
 			},
 			"updated_at": &graphql.Field{
 				Type: graphql.String,
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-					return params.Source.(entity.AccessOperation).UpdatedAt, nil
+					updatedAt := params.Source.(entity.AccessOperation).UpdatedAt
+					return utils.ToDateTimeSQL(&updatedAt), nil
 				},
 			},
 		},
