@@ -13,6 +13,6 @@ type BatchLogRepository interface {
 	CountByConditions(ctx context.Context, conditions map[string]interface{}, spec specification.Base) (int64, error)
 
 	Create(ctx context.Context, attributes map[string]interface{}) (entity.BatchLog, error)
-	
+
 	Update(cxt context.Context, batchLog entity.BatchLog, attributesToUpdate map[string]interface{}) (entity.BatchLog, error)
 }

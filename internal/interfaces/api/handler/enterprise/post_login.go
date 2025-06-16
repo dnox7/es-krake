@@ -23,6 +23,4 @@ func (h *EnterpriseHandler) PostLogin(c *gin.Context) {
 	// 	nethttp.SetGenericErrorResponse(c, err, h.debug)
 	// 	return
 	// }
-
-	
 }

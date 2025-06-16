@@ -84,7 +84,7 @@ func (s *snsProviderService) GetTokenByAuthCode(
 		ctx,
 		http.MethodPost,
 		u.String(),
-		strings.NewReader(url.Values(data).Encode()),
+		strings.NewReader(data.Encode()),
 	)
 	if err != nil {
 		s.logger.Error(ctx, utils.ErrorCreateReq, "error", err.Error())

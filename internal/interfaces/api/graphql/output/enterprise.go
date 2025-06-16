@@ -3,7 +3,6 @@ package output
 import (
 	"github.com/dpe27/es-krake/internal/domain/enterprise/entity"
 	"github.com/dpe27/es-krake/pkg/utils"
-
 	"github.com/graphql-go/graphql"
 )
 
