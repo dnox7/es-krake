@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS batch_log_types (
+    CREATE TABLE IF NOT EXISTS batch_log_types (
     id serial PRIMARY KEY,
     batch_log_type_id integer NOT NULL,
     event_id integer NOT NULL,

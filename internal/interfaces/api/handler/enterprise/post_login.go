@@ -18,11 +18,11 @@ func (h *EnterpriseHandler) PostLogin(c *gin.Context) {
 		return
 	}
 
-	input, err := nethttp.GetInputAsMap(c)
-	if err != nil {
-		nethttp.SetGenericErrorResponse(c, err, h.debug)
-		return
-	}
+	// input, err := nethttp.GetInputAsMap(c)
+	// if err != nil {
+	// 	nethttp.SetGenericErrorResponse(c, err, h.debug)
+	// 	return
+	// }
 
 	
 }

@@ -25,8 +25,11 @@ func NewUsecasesContainer(
 			RoleTypeRepo:           repositories.AuthContainer.RoleTypeRepo,
 			PermissionRepo:         repositories.AuthContainer.PermissionRepo,
 			RoleRepo:               repositories.AuthContainer.RoleRepo,
+			PlatformAccountRepo:    repositories.PlatformContainer.PlatformAccountRepo,
 			PermissionService:      services.AuthContainer.PermissionService,
 			AccessOperationService: services.AuthContainer.AccessOperationService,
+			KcTokenService:         services.KeycloakContainer.TokenService,
+			KcClientService:        services.KeycloakContainer.ClientService,
 			Cache:                  redisRepo,
 		}),
 		BatchLogUsecase: batchLogUC.NewBatchLogUsecase(&batchLogUC.BatchLogUsecaseDeps{

@@ -24,7 +24,7 @@ func MountBatch(
 	ginEngine *gin.Engine,
 ) error {
 	repositories := repository.NewRepositoriesContainer(pg, mongo)
-	services := service.NewServicesContainer(repositories, redisRepo)
+	services := service.NewServicesContainer(cfg, repositories, redisRepo)
 	usecases := usecase.NewUsecasesContainer(repositories, services, redisRepo)
 	batchContainer := jobs.NewBatchContainer(&usecases)
 

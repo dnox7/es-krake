@@ -6,13 +6,15 @@ import (
 )
 
 type RepositoryContainer struct {
-	DepartmentRepo  domainRepo.DepartmentRepository
-	PlatformAccountRepo domainRepo.PlatformAccountRepository
+	DepartmentRepo                      domainRepo.DepartmentRepository
+	PlatformAccountRepo                 domainRepo.PlatformAccountRepository
+	PlatformAccountEnterpriseAccessRepo domainRepo.PlatformAccountEnterpriseAccessRepository
 }
 
 func NewRepositoryContainer(pg *rdb.PostgreSQL) RepositoryContainer {
 	return RepositoryContainer{
-		DepartmentRepo:  NewDepartmentRepository(pg),
-		PlatformAccountRepo: NewPlatformAccountRepository(pg),
+		DepartmentRepo:                      NewDepartmentRepository(pg),
+		PlatformAccountRepo:                 NewPlatformAccountRepository(pg),
+		PlatformAccountEnterpriseAccessRepo: NewPlatformAccountEnterpriseAccessRepo(pg),
 	}
 }

@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS enterprise_accounts (
+    id BIGSERIAL PRIMARY KEY,
+    enterprise_id BIGINT NOT NULL,
+    account_id BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL
+);

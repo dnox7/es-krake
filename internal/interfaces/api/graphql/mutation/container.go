@@ -10,7 +10,16 @@ func NewMutationsContainer(
 	outputTypes map[string]*graphql.Object,
 ) *graphql.Object {
 	return graphql.NewObject(graphql.ObjectConfig{
-		Name:   "Mutation",
-		Fields: graphql.Fields{},
+		Name: "Mutation",
+		Fields: graphql.Fields{
+			"post_login_platform": PostLoginPlatform(
+				outputTypes,
+				usecases.AuthUsecase,
+			),
+			"post_login_enterprise": PostLoginEnterprise(
+				outputTypes,
+				usecases.AuthUsecase,
+			),
+		},
 	})
 }

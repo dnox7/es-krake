@@ -24,7 +24,7 @@ func MountAPI(
 	ginEngine *gin.Engine,
 ) error {
 	repositories := repository.NewRepositoriesContainer(pg, mongo)
-	services := service.NewServicesContainer(repositories, redisRepo)
+	services := service.NewServicesContainer(cfg, repositories, redisRepo)
 	usecases := usecase.NewUsecasesContainer(repositories, services, redisRepo)
 	schema, err := graphql.NewGraphQLSchema(&usecases)
 	if err != nil {
