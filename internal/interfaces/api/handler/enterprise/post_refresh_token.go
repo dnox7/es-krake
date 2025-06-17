@@ -1,6 +1,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -10,7 +11,7 @@ import (
 	"github.com/graphql-go/graphql"
 )
 
-func (h *EnterpriseHandler) PostLogin(c *gin.Context) {
+func (h *EnterpriseHandler) PostRefreshTokenEnterprise(c *gin.Context) {
 	enterpriseID := c.Param("enterprise_id")
 	_, err := strconv.Atoi(enterpriseID)
 	if err != nil {
@@ -20,43 +21,37 @@ func (h *EnterpriseHandler) PostLogin(c *gin.Context) {
 		return
 	}
 
-	input, err := nethttp.GetInputAsMap(c)
-	if err != nil {
-		nethttp.SetGenericErrorResponse(c, err, h.debug)
-		return
+	cookiesInfo := make(map[string]interface{})
+	cookies := c.Request.Cookies()
+	for _, cookie := range cookies {
+		cookiesInfo[cookie.Name] = cookie.Value
 	}
 
-	validationRes, err := h.validator.Validate(PostEnterpriseLogin, input)
+	jsonCookies, err := json.Marshal(cookiesInfo)
 	if err != nil {
 		nethttp.SetGenericErrorResponse(c, err, h.debug)
-		return
-	}
-
-	if validationRes != nil {
-		nethttp.SetJSONValidationErrorResponse(c, h.validator, validationRes)
 		return
 	}
 
 	res := graphql.Do(graphql.Params{
-		Context:    c,
-		Schema:     h.graphql,
-		RootObject: input,
+		Context: c,
+		Schema:  h.graphql,
+		VariableValues: map[string]interface{}{
+			"enterprise_id": enterpriseID,
+			"cookies":       string(jsonCookies),
+		},
 		RequestString: `
-			mutation ($enterprise_id: AnyInt!) {
-				post_login_enterprise(enterprise_id: $enterprise_id) {
+			mutation ($enterprise_id: AnyInt!, $cookies: String!) {
+				post_refresh_token_enterprise(enterprise_id: $enterprise_id, cookies: $cookies) {
 					access_token
 					refresh_token
 					refresh_expires_in
 					realm_name
-					enterprise_account {
-						id
-					}
 					permissions {
 						id
 						name
 					}
 				}
-			}
 		`,
 	})
 
@@ -65,13 +60,13 @@ func (h *EnterpriseHandler) PostLogin(c *gin.Context) {
 		return
 	}
 
-	resData := utils.GetSubMap(res.Data, "post_login_enterprise")
+	resData := utils.GetSubMap(res.Data, "post_refresh_token_enterprise")
 	c.SetSameSite(http.SameSiteNoneMode)
 	c.SetCookie(
 		resData["realm_name"].(string),
 		resData["refresh_token"].(string),
 		resData["refresh_expires_in"].(int),
-		"/ent/auth",
+		"/ent/"+enterpriseID+"/auth",
 		"",
 		true,
 		true,
@@ -81,5 +76,9 @@ func (h *EnterpriseHandler) PostLogin(c *gin.Context) {
 	delete(resData, "refresh_token")
 	delete(resData, "refresh_expires_in")
 
+	resData["link"] = map[string]interface{}{
+		"refresh": "/ent/" + enterpriseID + "/auth/refresh",
+		"logout":  "/ent/" + enterpriseID + "/auth/logout",
+	}
 	nethttp.SetOKReponse(c, resData)
 }

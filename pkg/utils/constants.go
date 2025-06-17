@@ -3,10 +3,14 @@ package utils
 import "time"
 
 const (
-	ErrorInputRequired = "error missing required input"
-	ErrorInputFail     = "error input failed"
-	ErrorEmailFail     = "error email failed"
-	ErrorPasswordFail  = "error password failed"
+	ErrorInputRequired                   = "error missing required input"
+	ErrorInputFail                       = "error input failed"
+	ErrorEmailFail                       = "error email failed"
+	ErrorPasswordFail                    = "error password failed"
+	ErrorCheckMaxLengthUnder50Characters = "error check max length under 50 characters"
+	ErrorInputCharacterLimit             = "error input character limit"
+	ErrorInputByteLimit                  = "error input byte limit"
+	ErrorInvalidDomain                   = "error invalid domain"
 
 	DefaultPageNo   = 1
 	DefaultPageSize = 30

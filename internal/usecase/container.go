@@ -30,6 +30,7 @@ func NewUsecasesContainer(
 			AccessOperationService: services.AuthContainer.AccessOperationService,
 			KcTokenService:         services.KeycloakContainer.TokenService,
 			KcClientService:        services.KeycloakContainer.ClientService,
+			KcUserService:          services.KeycloakContainer.UserService,
 			Cache:                  redisRepo,
 		}),
 		BatchLogUsecase: batchLogUC.NewBatchLogUsecase(&batchLogUC.BatchLogUsecaseDeps{

@@ -2,23 +2,26 @@ package ent
 
 import (
 	"github.com/dpe27/es-krake/pkg/log"
+	"github.com/dpe27/es-krake/pkg/validator"
 	"github.com/graphql-go/graphql"
 )
 
 const (
-	PostLogin = "enterprise/post_login.json"
+	PostEnterpriseLogin = "enterprise/post_enterprise_login.json"
 )
 
 type EnterpriseHandler struct {
-	logger  *log.Logger
-	debug   bool
-	graphql graphql.Schema
+	logger    *log.Logger
+	graphql   graphql.Schema
+	validator *validator.JsonSchemaValidator
+	debug     bool
 }
 
-func NewEnterpriseHandler(schema graphql.Schema, debug bool) *EnterpriseHandler {
+func NewEnterpriseHandler(schema graphql.Schema, debug bool, validator *validator.JsonSchemaValidator) *EnterpriseHandler {
 	return &EnterpriseHandler{
-		logger:  log.With("handler", "enterprise_handler"),
-		debug:   debug,
-		graphql: schema,
+		logger:    log.With("handler", "enterprise_handler"),
+		debug:     debug,
+		graphql:   schema,
+		validator: validator,
 	}
 }

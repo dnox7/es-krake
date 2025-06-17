@@ -12,7 +12,9 @@ import (
 	"github.com/dpe27/es-krake/internal/interfaces/api/graphql"
 	"github.com/dpe27/es-krake/internal/interfaces/api/handler"
 	"github.com/dpe27/es-krake/internal/interfaces/api/router"
+	"github.com/dpe27/es-krake/internal/interfaces/middleware"
 	"github.com/dpe27/es-krake/internal/usecase"
+	"github.com/dpe27/es-krake/pkg/validator"
 	"github.com/gin-gonic/gin"
 )
 
@@ -23,6 +25,11 @@ func MountAPI(
 	redisRepo redis.RedisRepository,
 	ginEngine *gin.Engine,
 ) error {
+	inputValidator, err := validator.NewJsonSchemaValidator(cfg)
+	if err != nil {
+		return fmt.Errorf("failed to create input validator: %v", err)
+	}
+
 	repositories := repository.NewRepositoriesContainer(pg, mongo)
 	services := service.NewServicesContainer(cfg, repositories, redisRepo)
 	usecases := usecase.NewUsecasesContainer(repositories, services, redisRepo)
@@ -32,10 +39,22 @@ func MountAPI(
 	}
 
 	httpHandler := handler.NewHTTPHandler(
-		schema, cfg.App.LogLevel == "DEBUG",
+		schema,
+		cfg.App.LogLevel == "DEBUG",
+		inputValidator,
 	)
 
-	router.BindPlatformRoute(ginEngine.Group("/pf"), httpHandler.PF)
-	router.BindEnterpriseRoute(ginEngine.Group("/ent"), httpHandler.Ent)
+	authenMiddleware := middleware.NewAuthenMiddleware(cfg, services.KeycloakContainer.KeyService)
+	permMiddleware := middleware.NewPermMiddleware(
+		services.AuthContainer.AccessOperationService,
+		repositories.AuthContainer.AccessRequirementRepo,
+		repositories.EnterpriseContainer.EnterpriseAccountRepo,
+		repositories.PlatformContainer.PlatformAccountRepo,
+		services.AuthContainer.PermissionService,
+		repositories.AuthContainer.RoleRepo,
+	)
+	
+	router.BindPlatformRoute(ginEngine.Group("/pf"), httpHandler.Pf, authenMiddleware, permMiddleware)
+	router.BindEnterpriseRoute(ginEngine.Group("/ent"), httpHandler.Ent, authenMiddleware, permMiddleware)
 	return nil
 }

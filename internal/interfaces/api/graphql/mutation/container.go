@@ -20,6 +20,12 @@ func NewMutationsContainer(
 				outputTypes,
 				usecases.AuthUsecase,
 			),
+			"post_logout_platform": PostLogoutPlatform(
+				usecases.AuthUsecase,
+			),
+			"post_logout_enterprise": PostLogoutEnterprise(
+				usecases.AuthUsecase,
+			),
 		},
 	})
 }

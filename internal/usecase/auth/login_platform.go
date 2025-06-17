@@ -13,18 +13,21 @@ import (
 
 const ErrorPlatformLoginFailed = "failed to login platform"
 
-type LoginPlatformResponse struct {
+type PlatformAuthToken struct {
 	Token       kcdto.TokenEndpointResp
+	RealmName   string
 	Permissions []entity.Permission
 }
 
-func (u *AuthUsecase) LoginPlatform(ctx context.Context, username, password string) (*LoginPlatformResponse, error) {
+func (u *AuthUsecase) LoginPlatform(ctx context.Context, username, password string) (*PlatformAuthToken, error) {
 	platformClient := u.deps.KcClientService.GetPlatformClient()
+	realmName := platformClient["realm_name"]
+	clientID := platformClient["client_id"]
 
 	tokenResp, err := u.deps.KcTokenService.GetTokenWithPassword(
 		ctx,
-		platformClient["realm_name"].(string),
-		platformClient["client_id"].(string),
+		realmName,
+		clientID,
 		username,
 		password,
 	)
@@ -58,8 +61,9 @@ func (u *AuthUsecase) LoginPlatform(ctx context.Context, username, password stri
 		return nil, err
 	}
 
-	return &LoginPlatformResponse{
+	return &PlatformAuthToken{
 		Token:       tokenResp,
+		RealmName:   realmName,
 		Permissions: permissions,
 	}, nil
 }

@@ -10,7 +10,7 @@ func PostLoginPlatform(
 	authUsecase usecase.AuthUsecase,
 ) *graphql.Field {
 	return &graphql.Field{
-		Type: outputTypes["platform_login"],
+		Type: outputTypes["platform_auth_token"],
 		Name: "post_login_platform",
 		Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 			email := params.Source.(map[string]interface{})["email"].(string)

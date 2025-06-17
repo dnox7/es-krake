@@ -20,7 +20,7 @@ import (
 const clientPath = "/clients"
 
 type KcClientService interface {
-	GetPlatformClient() map[string]interface{}
+	GetPlatformClient() map[string]string
 	GetClientList(ctx context.Context, conditions map[string]string, realm, token string) ([]kcdto.KcClient, error)
 	PostClient(ctx context.Context, body map[string]interface{}, realm, token string) error
 	PutClient(ctx context.Context, body map[string]interface{}, realm, uuid, token string) error
@@ -39,8 +39,8 @@ func NewKcClientService(base BaseKcService) KcClientService {
 }
 
 // GetPlatformClient implements KcClientService.
-func (c *clientService) GetPlatformClient() map[string]interface{} {
-	return map[string]interface{}{
+func (c *clientService) GetPlatformClient() map[string]string {
+	return map[string]string{
 		"client_id":  os.Getenv("KEYCLOAK_PLATFORM_CLIENT_ID"),
 		"realm_name": os.Getenv("KEYCLOAK_PLATFORM_REALM_NAME"),
 	}

@@ -14,14 +14,14 @@ import (
 
 const ErrorLoginEnterpriseFailed = "failed to login enterprise"
 
-type LoginEnterpriseResponse struct {
+type EnterpriseAuthToken struct {
 	Token             kcdto.TokenEndpointResp
 	EnterpriseAccount *enterpriseEntities.EnterpriseAccount
 	RealmName         string
 	Permissions       []authEntities.Permission
 }
 
-func (u *AuthUsecase) LoginEnterprise(ctx context.Context, enterpriseID int, username, password string) (*LoginEnterpriseResponse, error) {
+func (u *AuthUsecase) LoginEnterprise(ctx context.Context, enterpriseID int, username, password string) (*EnterpriseAuthToken, error) {
 	enterprise, err := u.deps.EnterpriseRepo.TakeByConditions(ctx, map[string]interface{}{
 		"id":        enterpriseID,
 		"is_active": true,
@@ -31,11 +31,10 @@ func (u *AuthUsecase) LoginEnterprise(ctx context.Context, enterpriseID int, use
 	}
 
 	platformClient := u.deps.KcClientService.GetPlatformClient()
-
 	platformTokenResp, err := u.deps.KcTokenService.GetTokenWithPassword(
 		ctx,
-		platformClient["realm_name"].(string),
-		platformClient["client_id"].(string),
+		platformClient["realm_name"],
+		platformClient["client_id"],
 		username,
 		password,
 	)
@@ -72,10 +71,10 @@ func (u *AuthUsecase) LoginEnterprise(ctx context.Context, enterpriseID int, use
 			return nil, err
 		}
 
-		return &LoginEnterpriseResponse{
+		return &EnterpriseAuthToken{
 			Token:             platformTokenResp,
 			EnterpriseAccount: nil,
-			RealmName:         platformClient["realm_name"].(string),
+			RealmName:         platformClient["realm_name"],
 			Permissions:       permissions,
 		}, nil
 	}
@@ -119,7 +118,7 @@ func (u *AuthUsecase) LoginEnterprise(ctx context.Context, enterpriseID int, use
 		return nil, err
 	}
 
-	return &LoginEnterpriseResponse{
+	return &EnterpriseAuthToken{
 		Token:             enterpriseTokenResp,
 		EnterpriseAccount: &enterpriseAccount,
 		RealmName:         enterprise.KcRealmName,

@@ -26,6 +26,7 @@ type AuthUsecaseDeps struct {
 
 	KcTokenService  keycloak.KcTokenService
 	KcClientService keycloak.KcClientService
+	KcUserService   keycloak.KcUserService
 
 	Cache redis.RedisRepository
 }
