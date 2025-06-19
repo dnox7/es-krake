@@ -10,5 +10,5 @@ import (
 type GenderRepository interface {
 	FindByConditions(ctx context.Context, conditions map[string]interface{}, spec specification.Base) ([]entity.Gender, error)
 
-	TakeByCondition(ctx context.Context, conditions map[string]interface{}, spec specification.Base) (entity.Gender, error)
+	TakeByConditions(ctx context.Context, conditions map[string]interface{}, spec specification.Base) (entity.Gender, error)
 }
