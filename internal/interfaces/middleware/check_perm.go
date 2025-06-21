@@ -24,7 +24,7 @@ const (
 	ErrAccessReqCodeNotFound = "access_requirement_code does not exists"
 )
 
-type permMiddleware struct {
+type PermMiddleware struct {
 	logger                 *log.Logger
 	accessOperationService authService.AccessOperationService
 	accessRequirementRepo  authRepo.AccessRequirementRepository
@@ -41,8 +41,8 @@ func NewPermMiddleware(
 	pfAccRepo platformRepo.PlatformAccountRepository,
 	permService authService.PermissionService,
 	roleRepo authRepo.RoleRepository,
-) *permMiddleware {
-	return &permMiddleware{
+) *PermMiddleware {
+	return &PermMiddleware{
 		logger:                 log.With("middleware", "check_permission"),
 		accessOperationService: accessOpService,
 		accessRequirementRepo:  accessReqRepo,
@@ -53,13 +53,13 @@ func NewPermMiddleware(
 	}
 }
 
-func (pm *permMiddleware) CheckPfPerm() gin.HandlerFunc {
+func (pm *PermMiddleware) CheckPfPerm() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		pm.checkPerm(c, true)
 	}
 }
 
-func (pm *permMiddleware) CheckEntPerm() gin.HandlerFunc {
+func (pm *PermMiddleware) CheckEntPerm() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		pm.checkPerm(c, false)
 	}
@@ -70,7 +70,7 @@ type taskErr struct {
 	err error
 }
 
-func (pm *permMiddleware) checkPerm(c *gin.Context, isPfAcc bool) {
+func (pm *PermMiddleware) checkPerm(c *gin.Context, isPfAcc bool) {
 	var (
 		wg          sync.WaitGroup
 		permissions []authEntities.Permission
@@ -121,7 +121,7 @@ func (pm *permMiddleware) checkPerm(c *gin.Context, isPfAcc bool) {
 	}
 }
 
-func (pm *permMiddleware) getPermssionsFromKcUserID(c *gin.Context, isPfAcc bool) ([]authEntities.Permission, error) {
+func (pm *PermMiddleware) getPermssionsFromKcUserID(c *gin.Context, isPfAcc bool) ([]authEntities.Permission, error) {
 	kcUserID, err := getKcUserIDFromReq(c)
 	if err != nil {
 		return nil, err
@@ -167,7 +167,7 @@ func (pm *permMiddleware) getPermssionsFromKcUserID(c *gin.Context, isPfAcc bool
 	return pm.permissionService.GetPermissionsWithRoleID(c, roleID)
 }
 
-func (pm *permMiddleware) getReqOperationsFromReq(c *gin.Context) ([]authEntities.AccessOperation, error) {
+func (pm *PermMiddleware) getReqOperationsFromReq(c *gin.Context) ([]authEntities.AccessOperation, error) {
 	var accessReqCode string
 	for key, code := range routeMatcherIndex {
 		pattern, err := parsePatternKey(key)

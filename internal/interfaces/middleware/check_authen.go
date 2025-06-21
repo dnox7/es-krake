@@ -14,7 +14,7 @@ import (
 	jwtV5 "github.com/golang-jwt/jwt/v5"
 )
 
-type authenMiddleware struct {
+type AuthenMiddleware struct {
 	logger       *log.Logger
 	cfg          *config.Config
 	kcKeyService keycloak.KcKeyService
@@ -23,15 +23,15 @@ type authenMiddleware struct {
 func NewAuthenMiddleware(
 	cfg *config.Config,
 	kcKeyService keycloak.KcKeyService,
-) *authenMiddleware {
-	return &authenMiddleware{
+) *AuthenMiddleware {
+	return &AuthenMiddleware{
 		logger:       log.With("middleware", "check_authentication"),
 		cfg:          cfg,
 		kcKeyService: kcKeyService,
 	}
 }
 
-func (am *authenMiddleware) CheckAuthentication() gin.HandlerFunc {
+func (am *AuthenMiddleware) CheckAuthentication() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenStr := getTokenFromReq(c)
 		if tokenStr == "" {

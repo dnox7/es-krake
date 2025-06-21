@@ -13,15 +13,18 @@ const (
 
 	adminRealmPath = "/auth/admin/realms"
 	realmPath      = "/auth/realms"
+
+	masterRealm = "master"
 )
 
 type BaseKcService interface {
 	Client() httpclient.HttpClient
 
-	ClientID() string
-	ClientSecret() string
 	AccessTokenLifespan() uint
 	RefreshTokenLifespan() uint
+
+	masterRealmClientID() string
+	masterRealmClientSecret() string
 
 	AdminApiBaseUrl() string
 	AdminRealmUrl(realm string) string
@@ -50,19 +53,20 @@ func NewBaseKcSevice(cfg *config.Config, cli httpclient.HttpClient) BaseKcServic
 	}
 }
 
-// Client implements BaseKcService.
-func (b *baseKcService) Client() httpclient.HttpClient {
-	return b.client
-}
-
-// ClientID implements BaseKcService.
-func (b *baseKcService) ClientID() string {
+// masterRealmClientID implements BaseKcService.
+func (b *baseKcService) masterRealmClientID() string {
 	return b.clientID
 }
 
-// ClientSecret implements BaseKcService.
-func (b *baseKcService) ClientSecret() string {
+// masterRealmClientSecret implements BaseKcService.
+
+func (b *baseKcService) masterRealmClientSecret() string {
 	return b.clientSecret
+}
+
+// Client implements BaseKcService.
+func (b *baseKcService) Client() httpclient.HttpClient {
+	return b.client
 }
 
 // AccessTokenLifespan implements BaseKcService.

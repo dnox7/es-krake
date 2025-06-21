@@ -9,9 +9,11 @@ import (
 
 	"github.com/dpe27/es-krake/pkg/log"
 	"github.com/dpe27/es-krake/pkg/utils"
+	"github.com/dpe27/es-krake/pkg/validator"
 	"github.com/dpe27/es-krake/pkg/wraperror"
 	"github.com/gin-gonic/gin"
 	"github.com/graphql-go/graphql/gqlerrors"
+	"github.com/xeipuuv/gojsonschema"
 	"gorm.io/gorm"
 )
 
@@ -74,7 +76,7 @@ func AbortWithRequestTimeoutResponse(c *gin.Context, msg, detail, debugInfo inte
 	)
 }
 
-func SetOKReponse(c *gin.Context, data interface{}) {
+func SetOKResponse(c *gin.Context, data interface{}) {
 	c.JSON(
 		http.StatusOK,
 		&BaseSuccessResponse{Data: data},
@@ -153,6 +155,42 @@ func SetGenericErrorResponse(c *gin.Context, finalErr error, debug bool) {
 		}
 		SetInternalServerErrorResponse(c, utils.ErrorInternalServer, nil, debugInfo)
 	}
+}
+
+func SetJSONValidationErrorResponse(
+	c *gin.Context,
+	validator *validator.JsonSchemaValidator,
+	res *gojsonschema.Result,
+) {
+	SetJSONValidationWithCustomErrorResponse(
+		c, validator, res,
+		func(resErr gojsonschema.ResultError) string {
+			return ""
+		},
+	)
+}
+
+func SetJSONValidationWithCustomErrorResponse(
+	c *gin.Context,
+	validator *validator.JsonSchemaValidator,
+	res *gojsonschema.Result,
+	getErr func(resErr gojsonschema.ResultError) string,
+) {
+	messages := make(map[string]string)
+	details := make([]map[string]interface{}, 0)
+	for _, err := range res.Errors() {
+		field := validator.GetErrorField(err)
+		detail := validator.GetErrorDetails(err)
+		msg := getErr(err)
+		if msg != "" {
+			msg = validator.GetCustomErrorMessage(err)
+		}
+
+		messages[field] = msg
+		details = append(details, detail)
+	}
+
+	SetBadRequestResponse(c, messages, details, nil)
 }
 
 func ResponseCSV(c *gin.Context, statusCode int, fileName string, data []byte) {

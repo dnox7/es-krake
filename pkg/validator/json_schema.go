@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/dpe27/es-krake/config"
+	"github.com/dpe27/es-krake/pkg/utils"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -14,11 +16,18 @@ type JsonSchemaValidator struct {
 	schemas  map[string]*gojsonschema.Schema
 }
 
-func NewJsonSchemaValidator() (*JsonSchemaValidator, error) {
+func NewJsonSchemaValidator(cfg *config.Config) (*JsonSchemaValidator, error) {
 	validator := &JsonSchemaValidator{
-		basePath: os.Getenv("PE_SCHEMAS_PATH") + "/" + os.Getenv("PE_SERVICE_NAME"),
+		basePath: cfg.App.SchemasPath + "/" + cfg.App.ServiceName,
 		schemas:  make(map[string]*gojsonschema.Schema),
 	}
+
+	gojsonschema.FormatCheckers.Add("date-time", NonStandardDatetimeFormatChecker{})
+	gojsonschema.FormatCheckers.Add("strong-password", StrongPassswordChecker{})
+	gojsonschema.FormatCheckers.Add("domain", DomainChecker{})
+	gojsonschema.FormatCheckers.Add("url", UrlChecker{})
+	gojsonschema.FormatCheckers.Add("id-sns", IDSnSChecker{})
+	gojsonschema.FormatCheckers.Add("string_with_max_length", MaxLengthChecker{})
 
 	err := validator.loadDirSchemas("")
 	if err != nil {
@@ -38,7 +47,7 @@ func (validator *JsonSchemaValidator) Validate(
 
 	schema, exists := validator.schemas[schemaFile]
 	if !exists {
-		return nil, fmt.Errorf("The schema '%v' was not found for json validation", schemaFile)
+		return nil, fmt.Errorf("the schema '%v' was not found for json validation", schemaFile)
 	}
 
 	dataLoader := gojsonschema.NewGoLoader(data)
@@ -118,20 +127,44 @@ func (validator *JsonSchemaValidator) GetErrorField(
 	return field
 }
 
-// func (validator *JsonSchemaValidator) GetCustomErrorMessage(
-// 	res gojsonschema.ResultError,
-// ) string {
-// 	details := res.Details()
-// 	format, formatExists := details["format"]
-//
-// 	if res.Type() == "format" && formatExists {
-// 		switch format {
-// 		case "email", "idn-email":
-// 			return utils.ErrEmailFail
-// 		case "password", "strong-password":
-// 			return utils.ErrPasswordFail
-// 		}
-// 	}
-//
-// 	return utils.ErrInputFail
-// }
+func (validator *JsonSchemaValidator) GetCustomErrorMessage(
+	res gojsonschema.ResultError,
+) string {
+	details := res.Details()
+	format, formatExists := details["format"]
+
+	if res.Type() == "format" && formatExists {
+		switch format {
+		case "email", "idn-email":
+			return utils.ErrorEmailFail
+		case "password", "strong-password":
+			return utils.ErrorPasswordFail
+		case "string_with_max_length":
+			return utils.ErrorCheckMaxLengthUnder50Characters
+		case "domain":
+			return utils.ErrorInvalidDomain
+		}
+	}
+
+	if res.Type() == "required" {
+		return utils.ErrorInputRequired
+	}
+
+	minVal, minValExists := details["min"]
+	if res.Type() == "string_gte" && minValExists {
+		if minVal == 1 {
+			return utils.ErrorInputFail
+		}
+	}
+
+	_, maxValExists := details["max"]
+	if res.Type() == "string_lte" && maxValExists {
+		return utils.ErrorInputCharacterLimit
+	}
+
+	if res.Type() == "max_length_byte" {
+		return utils.ErrorInputByteLimit
+	}
+
+	return utils.ErrorInputFail
+}

@@ -57,6 +57,12 @@ func main() {
 		return
 	}
 
+	ses, err := initializer.InitSes(cfg)
+	if err != nil {
+		log.Error(ctx, "failed to init ses", "error", err)
+		return
+	}
+
 	renewLeaseCtx, stopRenew := context.WithCancel(ctx)
 	go func() {
 		vault.PeriodicallyRenewLeases(
@@ -74,7 +80,7 @@ func main() {
 		Handler: router,
 	}
 
-	err = initializer.MountAPI(cfg, pg, mongo, redisRepo, router)
+	err = initializer.MountAPI(cfg, pg, mongo, redisRepo, ses, router)
 	if err != nil {
 		log.Fatal(ctx, "failed to mount dependencies", "error", err.Error())
 	}

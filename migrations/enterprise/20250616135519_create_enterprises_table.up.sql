@@ -1,0 +1,15 @@
+CREATE TABLE IF NOT EXISTS enterprises (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    address VARCHAR(255) NOT NULL,
+    phone VARCHAR(25) NOT NULL,
+    fax VARCHAR(50) NOT NULL,
+    mail_address VARCHAR(255) NOT NULL,
+    mail_signature VARCHAR(255) NOT NULL,
+    thumbnail_path VARCHAR(255),
+    website_url VARCHAR(255),
+    notes VARCHAR(255),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+);

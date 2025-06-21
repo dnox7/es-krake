@@ -2,6 +2,7 @@ package initializer
 
 import (
 	"github.com/dpe27/es-krake/config"
+	"github.com/dpe27/es-krake/internal/infrastructure/aws"
 	mdb "github.com/dpe27/es-krake/internal/infrastructure/mongodb"
 	"github.com/dpe27/es-krake/internal/infrastructure/notify"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
@@ -20,12 +21,13 @@ func MountBatch(
 	pg *rdb.PostgreSQL,
 	mongo *mdb.Mongo,
 	redisRepo redis.RedisRepository,
+	ses aws.SesService,
 	notifier notify.DiscordNotifier,
 	ginEngine *gin.Engine,
 ) error {
 	repositories := repository.NewRepositoriesContainer(pg, mongo)
-	services := service.NewServicesContainer(repositories, redisRepo)
-	usecases := usecase.NewUsecasesContainer(repositories, services, redisRepo)
+	services := service.NewServicesContainer(cfg, ses, repositories, redisRepo)
+	usecases := usecase.NewUsecasesContainer(pg, repositories, services, redisRepo)
 	batchContainer := jobs.NewBatchContainer(&usecases)
 
 	batchHandler := handler.NewBatchHandler(

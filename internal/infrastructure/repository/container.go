@@ -5,6 +5,7 @@ import (
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
 	authRepo "github.com/dpe27/es-krake/internal/infrastructure/repository/auth"
 	batchLog "github.com/dpe27/es-krake/internal/infrastructure/repository/batchlog"
+	buyerRepo "github.com/dpe27/es-krake/internal/infrastructure/repository/buyer"
 	enterpriseRepo "github.com/dpe27/es-krake/internal/infrastructure/repository/enterprise"
 	platformRepo "github.com/dpe27/es-krake/internal/infrastructure/repository/platform"
 	prodRepo "github.com/dpe27/es-krake/internal/infrastructure/repository/product"
@@ -16,6 +17,7 @@ type RepositoriesContainer struct {
 	PlatformContainer   platformRepo.RepositoryContainer
 	ProductContainer    prodRepo.RepositoryContainer
 	BatchLogContainer   batchLog.RepositoryContainer
+	BuyerContainer      buyerRepo.RepositoryContainer
 }
 
 func NewRepositoriesContainer(pg *rdb.PostgreSQL, mongo *mdb.Mongo) *RepositoriesContainer {
@@ -25,5 +27,6 @@ func NewRepositoriesContainer(pg *rdb.PostgreSQL, mongo *mdb.Mongo) *Repositorie
 		PlatformContainer:   platformRepo.NewRepositoryContainer(pg),
 		ProductContainer:    prodRepo.NewRepositoryContainer(pg, mongo),
 		BatchLogContainer:   batchLog.NewRepositoryContainer(pg),
+		BuyerContainer:      buyerRepo.NewRepositoryContainer(pg),
 	}
 }
