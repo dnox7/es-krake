@@ -29,7 +29,7 @@ func (au *AuthUsecase) GetAllRoleTypes(ctx context.Context) ([]entity.RoleType, 
 	}
 
 	_ = au.deps.Cache.SetJSON(ctx, key, roleTypes, time.Hour)
-	return roleTypes, err
+	return roleTypes, nil
 }
 
 func (au *AuthUsecase) GetRoleTypeByID(ctx context.Context, ID int) (entity.RoleType, error) {

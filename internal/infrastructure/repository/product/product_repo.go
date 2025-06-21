@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/dpe27/es-krake/internal/domain/product/entity"
@@ -51,7 +52,7 @@ func (p *productRepo) CreateWithTx(
 ) (entity.Product, error) {
 	gormTx, ok := tx.GetTx().(*gorm.DB)
 	if !ok {
-		return entity.Product{}, fmt.Errorf(utils.ErrorGetTx)
+		return entity.Product{}, errors.New(utils.ErrorGetTx)
 	}
 
 	product := entity.Product{}

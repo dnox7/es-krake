@@ -57,6 +57,12 @@ func main() {
 		return
 	}
 
+	ses, err := initializer.InitSes(cfg)
+	if err != nil {
+		log.Error(ctx, "failed to init ses", "error", err)
+		return
+	}
+
 	discordNotifier := initializer.InitDiscordNotifier(cfg)
 
 	renewLeaseCtx, stopRenew := context.WithCancel(ctx)
@@ -78,7 +84,7 @@ func main() {
 
 	err = initializer.MountBatch(
 		cfg,
-		pg, mongo, redisRepo,
+		pg, mongo, redisRepo, ses,
 		discordNotifier,
 		router,
 	)

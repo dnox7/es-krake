@@ -26,11 +26,13 @@ type (
 	}
 
 	app struct {
-		Name     string `env:"APP_NAME"    env-required:"true"`
-		Version  string `env:"APP_VERSION" env-required:"true"`
-		Env      string `env:"APP_ENV"     env-required:"true"`
-		Port     string `env:"APP_PORT"    env-required:"true"`
-		LogLevel string `env:"LOG_LEVEL"   env-required:"true"`
+		Name        string `env:"APP_NAME"     env-required:"true"`
+		Version     string `env:"APP_VERSION"  env-required:"true"`
+		Env         string `env:"APP_ENV"      env-required:"true"`
+		Port        string `env:"APP_PORT"     env-required:"true"`
+		LogLevel    string `env:"LOG_LEVEL"    env-required:"true"`
+		ServiceName string `env:"SERVICE_NAME" env-required:"true"`
+		SchemasPath string `env:"SCHEMAS_PATH" env-required:"true"`
 	}
 
 	discord struct {

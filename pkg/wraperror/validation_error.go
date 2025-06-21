@@ -2,16 +2,16 @@ package wraperror
 
 import "net/http"
 
-type validationError struct {
+type ValidationError struct {
 	messages map[string]interface{}
 	Err      error
 }
 
-func ValidationError(
+func NewValidationError(
 	messages map[string]interface{},
 	err error,
-) *validationError {
-	return &validationError{
+) *ValidationError {
+	return &ValidationError{
 		messages: messages,
 		Err: NewAPIError(
 			http.StatusBadRequest,
@@ -21,10 +21,10 @@ func ValidationError(
 	}
 }
 
-func (e *validationError) Error() string {
+func (e *ValidationError) Error() string {
 	return e.Err.Error()
 }
 
-func (e *validationError) Unwrap() error {
+func (e *ValidationError) Unwrap() error {
 	return e.Err
 }
