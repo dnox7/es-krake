@@ -1,4 +1,4 @@
-package ent
+package buyer
 
 import (
 	"github.com/dpe27/es-krake/pkg/log"
@@ -7,19 +7,20 @@ import (
 )
 
 const (
-	PostEnterpriseLogin = "enterprise/post_login.json"
+	PostBuyerLogin  = "buyer/post_login.json"
+	PostBuyerSignup = "buyer/post_signup.json"
 )
 
-type EnterpriseHandler struct {
+type BuyerHandler struct {
 	logger    *log.Logger
 	graphql   graphql.Schema
 	validator *validator.JsonSchemaValidator
 	debug     bool
 }
 
-func NewEnterpriseHandler(schema graphql.Schema, debug bool, validator *validator.JsonSchemaValidator) *EnterpriseHandler {
-	return &EnterpriseHandler{
-		logger:    log.With("handler", "enterprise_handler"),
+func NewBuyerHandler(schema graphql.Schema, debug bool, validator *validator.JsonSchemaValidator) *BuyerHandler {
+	return &BuyerHandler{
+		logger:    log.With("handler", "buyer_handler"),
 		debug:     debug,
 		graphql:   schema,
 		validator: validator,

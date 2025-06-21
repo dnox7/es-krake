@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/dpe27/es-krake/config"
+	"github.com/dpe27/es-krake/internal/infrastructure/aws"
 	mdb "github.com/dpe27/es-krake/internal/infrastructure/mongodb"
 	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
 	"github.com/dpe27/es-krake/internal/infrastructure/redis"
@@ -23,6 +24,7 @@ func MountAPI(
 	pg *rdb.PostgreSQL,
 	mongo *mdb.Mongo,
 	redisRepo redis.RedisRepository,
+	ses aws.SesService,
 	ginEngine *gin.Engine,
 ) error {
 	inputValidator, err := validator.NewJsonSchemaValidator(cfg)
@@ -31,8 +33,8 @@ func MountAPI(
 	}
 
 	repositories := repository.NewRepositoriesContainer(pg, mongo)
-	services := service.NewServicesContainer(cfg, repositories, redisRepo)
-	usecases := usecase.NewUsecasesContainer(repositories, services, redisRepo)
+	services := service.NewServicesContainer(cfg, ses, repositories, redisRepo)
+	usecases := usecase.NewUsecasesContainer(pg, repositories, services, redisRepo)
 	schema, err := graphql.NewGraphQLSchema(&usecases)
 	if err != nil {
 		return fmt.Errorf("failed to create GraphQL schema: %v", err)
@@ -53,8 +55,9 @@ func MountAPI(
 		services.AuthContainer.PermissionService,
 		repositories.AuthContainer.RoleRepo,
 	)
-	
+
 	router.BindPlatformRoute(ginEngine.Group("/pf"), httpHandler.Pf, authenMiddleware, permMiddleware)
 	router.BindEnterpriseRoute(ginEngine.Group("/ent"), httpHandler.Ent, authenMiddleware, permMiddleware)
+	router.BindBuyerRoute(ginEngine.Group("/buyer"), httpHandler.Buyer, authenMiddleware, permMiddleware)
 	return nil
 }

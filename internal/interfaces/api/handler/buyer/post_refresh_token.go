@@ -1,9 +1,8 @@
-package ent
+package buyer
 
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"github.com/dpe27/es-krake/pkg/nethttp"
 	"github.com/dpe27/es-krake/pkg/utils"
@@ -11,23 +10,14 @@ import (
 	"github.com/graphql-go/graphql"
 )
 
-func (h *EnterpriseHandler) PostRefreshTokenEnterprise(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
-	_, err := strconv.Atoi(enterpriseID)
-	if err != nil {
-		nethttp.SetBadRequestResponse(c, map[string]interface{}{
-			"enterprise_id": utils.ErrorInputFail,
-		}, nil, nil)
-		return
-	}
-
-	cookiesInfo := make(map[string]interface{})
+func (h *BuyerHandler) PostRefreshTokenBuyer(c *gin.Context) {
+	cookiesMap := make(map[string]interface{})
 	cookies := c.Request.Cookies()
 	for _, cookie := range cookies {
-		cookiesInfo[cookie.Name] = cookie.Value
+		cookiesMap[cookie.Name] = cookie.Value
 	}
 
-	jsonCookies, err := json.Marshal(cookiesInfo)
+	jsonCookies, err := json.Marshal(cookiesMap)
 	if err != nil {
 		nethttp.SetGenericErrorResponse(c, err, h.debug)
 		return
@@ -37,21 +27,17 @@ func (h *EnterpriseHandler) PostRefreshTokenEnterprise(c *gin.Context) {
 		Context: c,
 		Schema:  h.graphql,
 		VariableValues: map[string]interface{}{
-			"enterprise_id": enterpriseID,
-			"cookies":       string(jsonCookies),
+			"cookies": string(jsonCookies),
 		},
 		RequestString: `
-			mutation ($enterprise_id: AnyInt!, $cookies: String!) {
-				post_refresh_token_enterprise(enterprise_id: $enterprise_id, cookies: $cookies) {
+			mutation ($cookies: String!) {
+				post_refresh_token_buyer(cookies: $cookies) {
 					access_token
 					refresh_token
 					refresh_expires_in
 					realm_name
-					permissions {
-						id
-						name
-					}
 				}
+			}
 		`,
 	})
 
@@ -60,13 +46,13 @@ func (h *EnterpriseHandler) PostRefreshTokenEnterprise(c *gin.Context) {
 		return
 	}
 
-	resData := utils.GetSubMap(res.Data, "post_refresh_token_enterprise")
+	resData := utils.GetSubMap(res.Data, "post_refresh_token_buyer")
 	c.SetSameSite(http.SameSiteNoneMode)
 	c.SetCookie(
 		resData["realm_name"].(string),
 		resData["refresh_token"].(string),
 		resData["refresh_expires_in"].(int),
-		"/ent/"+enterpriseID+"/auth",
+		"/buyer/auth",
 		"",
 		true,
 		true,
@@ -77,8 +63,8 @@ func (h *EnterpriseHandler) PostRefreshTokenEnterprise(c *gin.Context) {
 	delete(resData, "refresh_expires_in")
 
 	resData["link"] = map[string]interface{}{
-		"refresh": "/ent/" + enterpriseID + "/auth/refresh",
-		"logout":  "/ent/" + enterpriseID + "/auth/logout",
+		"refresh": "/buyer/auth/refresh",
+		"logout":  "/buyer/auth/logout",
 	}
 	nethttp.SetOKResponse(c, resData)
 }

@@ -1,9 +1,8 @@
-package ent
+package pf
 
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"github.com/dpe27/es-krake/pkg/nethttp"
 	"github.com/dpe27/es-krake/pkg/utils"
@@ -11,16 +10,7 @@ import (
 	"github.com/graphql-go/graphql"
 )
 
-func (h *EnterpriseHandler) PostRefreshTokenEnterprise(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
-	_, err := strconv.Atoi(enterpriseID)
-	if err != nil {
-		nethttp.SetBadRequestResponse(c, map[string]interface{}{
-			"enterprise_id": utils.ErrorInputFail,
-		}, nil, nil)
-		return
-	}
-
+func (h *PlatformHandler) PostRefreshTokenPlatform(c *gin.Context) {
 	cookiesInfo := make(map[string]interface{})
 	cookies := c.Request.Cookies()
 	for _, cookie := range cookies {
@@ -37,12 +27,11 @@ func (h *EnterpriseHandler) PostRefreshTokenEnterprise(c *gin.Context) {
 		Context: c,
 		Schema:  h.graphql,
 		VariableValues: map[string]interface{}{
-			"enterprise_id": enterpriseID,
-			"cookies":       string(jsonCookies),
+			"cookies": string(jsonCookies),
 		},
 		RequestString: `
-			mutation ($enterprise_id: AnyInt!, $cookies: String!) {
-				post_refresh_token_enterprise(enterprise_id: $enterprise_id, cookies: $cookies) {
+			mutation ($cookies: String!) {
+				post_refresh_token_platform(cookies: $cookies) {
 					access_token
 					refresh_token
 					refresh_expires_in
@@ -52,6 +41,7 @@ func (h *EnterpriseHandler) PostRefreshTokenEnterprise(c *gin.Context) {
 						name
 					}
 				}
+			}
 		`,
 	})
 
@@ -60,13 +50,13 @@ func (h *EnterpriseHandler) PostRefreshTokenEnterprise(c *gin.Context) {
 		return
 	}
 
-	resData := utils.GetSubMap(res.Data, "post_refresh_token_enterprise")
+	resData := utils.GetSubMap(res.Data, "post_refresh_token_platform")
 	c.SetSameSite(http.SameSiteNoneMode)
 	c.SetCookie(
 		resData["realm_name"].(string),
 		resData["refresh_token"].(string),
 		resData["refresh_expires_in"].(int),
-		"/ent/"+enterpriseID+"/auth",
+		"/pf/auth",
 		"",
 		true,
 		true,
@@ -77,8 +67,8 @@ func (h *EnterpriseHandler) PostRefreshTokenEnterprise(c *gin.Context) {
 	delete(resData, "refresh_expires_in")
 
 	resData["link"] = map[string]interface{}{
-		"refresh": "/ent/" + enterpriseID + "/auth/refresh",
-		"logout":  "/ent/" + enterpriseID + "/auth/logout",
+		"refresh": "/pf/auth/refresh",
+		"logout":  "/pf/auth/logout",
 	}
 	nethttp.SetOKResponse(c, resData)
 }

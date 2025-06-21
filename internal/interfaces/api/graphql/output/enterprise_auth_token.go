@@ -5,7 +5,7 @@ import (
 	"github.com/graphql-go/graphql"
 )
 
-func EnterpriseAuthToken(
+func EnterpriseAuthTokenOutput(
 	outputTypes map[string]*graphql.Object,
 ) *graphql.Object {
 	return graphql.NewObject(graphql.ObjectConfig{

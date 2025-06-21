@@ -8,7 +8,7 @@ import (
 	"github.com/dpe27/es-krake/pkg/wraperror"
 )
 
-func (u *AuthUsecase) PostLogoutEnterprise(
+func (u *AuthUsecase) LogoutEnterprise(
 	ctx context.Context,
 	enterpriseID string,
 	kcUserID string,

@@ -10,6 +10,7 @@ type KcUser struct {
 	EmailVerified       bool                  `json:"emailVerified"`
 	Credentials         []KcCredential        `json:"credentials"`
 	FederatedIdentities []KcFederatedIdentity `json:"federatedIdentities"`
+	Enabled             bool                  `json:"enabled"`
 }
 
 type KcCredential struct {

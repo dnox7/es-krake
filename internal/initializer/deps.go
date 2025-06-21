@@ -113,6 +113,14 @@ func InitS3Repository(cfg *config.Config) (*aws.S3Repo, error) {
 	return s3Repo, nil
 }
 
+func InitSes(cfg *config.Config) (aws.SesService, error) {
+	ses, err := aws.NewSesService(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to init ses: %w", err)
+	}
+	return ses, nil
+}
+
 func InitDiscordNotifier(cfg *config.Config) notify.DiscordNotifier {
 	opts := httpclient.ClientOptBuilder().
 		ServiceName("discord_notifier").

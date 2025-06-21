@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	PostPlatformLogin = "platform/post_platform_login.json"
+	PostPlatformLogin = "platform/post_login.json"
 )
 
 type PlatformHandler struct {

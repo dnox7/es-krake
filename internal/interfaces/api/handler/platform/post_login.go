@@ -72,5 +72,5 @@ func (h *PlatformHandler) PostPlatformLogin(c *gin.Context) {
 		"refresh": "/pf/auth/refresh",
 		"logout":  "/pf/auth/logout",
 	}
-	nethttp.SetOKReponse(c, resData)
+	nethttp.SetOKResponse(c, resData)
 }

@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"github.com/dpe27/es-krake/internal/infrastructure/rdb"
 	"github.com/dpe27/es-krake/internal/infrastructure/redis"
 	"github.com/dpe27/es-krake/internal/infrastructure/repository"
 	"github.com/dpe27/es-krake/internal/infrastructure/service"
@@ -16,22 +17,31 @@ type UsecasesContainer struct {
 }
 
 func NewUsecasesContainer(
+	pg *rdb.PostgreSQL,
 	repositories *repository.RepositoriesContainer,
 	services *service.ServicesContainer,
 	redisRepo redis.RedisRepository,
 ) UsecasesContainer {
 	return UsecasesContainer{
 		AuthUsecase: authUC.NewAuthUsecase(&authUC.AuthUsecaseDeps{
-			RoleTypeRepo:           repositories.AuthContainer.RoleTypeRepo,
-			PermissionRepo:         repositories.AuthContainer.PermissionRepo,
-			RoleRepo:               repositories.AuthContainer.RoleRepo,
-			PlatformAccountRepo:    repositories.PlatformContainer.PlatformAccountRepo,
-			PermissionService:      services.AuthContainer.PermissionService,
-			AccessOperationService: services.AuthContainer.AccessOperationService,
-			KcTokenService:         services.KeycloakContainer.TokenService,
-			KcClientService:        services.KeycloakContainer.ClientService,
-			KcUserService:          services.KeycloakContainer.UserService,
-			Cache:                  redisRepo,
+			DB:                                  pg,
+			RoleTypeRepo:                        repositories.AuthContainer.RoleTypeRepo,
+			PermissionRepo:                      repositories.AuthContainer.PermissionRepo,
+			RoleRepo:                            repositories.AuthContainer.RoleRepo,
+			OtpRepo:                             repositories.AuthContainer.OtpRepo,
+			PlatformAccountRepo:                 repositories.PlatformContainer.PlatformAccountRepo,
+			BuyerAccountRepo:                    repositories.BuyerContainer.BuyerAccountRepo,
+			EnterpriseAccountRepo:               repositories.EnterpriseContainer.EnterpriseAccountRepo,
+			EnterpriseRepo:                      repositories.EnterpriseContainer.EnterpriseRepo,
+			PlatformAccountEnterpriseAccessRepo: repositories.PlatformContainer.PlatformAccountEnterpriseAccessRepo,
+			Cache:                               redisRepo,
+			AccessOperationService:              services.AuthContainer.AccessOperationService,
+			PermissionService:                   services.AuthContainer.PermissionService,
+			KcTokenService:                      services.KeycloakContainer.TokenService,
+			KcClientService:                     services.KeycloakContainer.ClientService,
+			KcUserService:                       services.KeycloakContainer.UserService,
+			MailService:                         services.MailService,
+			BuyerService:                        services.BuyerContainer.BuyerService,
 		}),
 		BatchLogUsecase: batchLogUC.NewBatchLogUsecase(&batchLogUC.BatchLogUsecaseDeps{
 			BatchLogRepo:     repositories.BatchLogContainer.BatchLogRepo,

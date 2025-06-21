@@ -19,7 +19,7 @@ import (
 )
 
 type KcTokenService interface {
-	GetAdminToken(ctx context.Context, realm string) (kcdto.TokenEndpointResp, error)
+	GetMasterRealmToken(ctx context.Context) (kcdto.TokenEndpointResp, error)
 	GetTokenWithClientCredentials(ctx context.Context, realm, clientID, clientSecret string) (kcdto.TokenEndpointResp, error)
 	GetTokenWithCode(ctx context.Context, realm, clientID, code, redirectURI string) (kcdto.TokenEndpointResp, error)
 	GetTokenWithPassword(ctx context.Context, realm, clientID, username, password string) (kcdto.TokenEndpointResp, error)
@@ -38,9 +38,14 @@ func NewKcTokenService(base BaseKcService) KcTokenService {
 	}
 }
 
-// GetAdminToken implements KcTokenService.
-func (t *tokenService) GetAdminToken(ctx context.Context, realm string) (kcdto.TokenEndpointResp, error) {
-	return t.GetTokenWithClientCredentials(ctx, realm, t.ClientID(), t.ClientSecret())
+// GetMasterRealmToken implements KcTokenService.
+func (t *tokenService) GetMasterRealmToken(ctx context.Context) (kcdto.TokenEndpointResp, error) {
+	return t.GetTokenWithClientCredentials(
+		ctx,
+		masterRealm,
+		t.BaseKcService.masterRealmClientID(),
+		t.BaseKcService.masterRealmClientSecret(),
+	)
 }
 
 // GetTokenWithClientCredentials implements KcTokenService.

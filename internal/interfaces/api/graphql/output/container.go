@@ -14,6 +14,9 @@ func NewOutputTypes(usecases *usecase.UsecasesContainer) map[string]*graphql.Obj
 		LoginHistoryOutput(),
 		PermissionOutput(outputTypes, usecases.AuthUsecase),
 		RoleOutput(outputTypes, usecases.AuthUsecase),
+		BuyerAuthTokenOutput(),
+		PlatformAuthTokenOutput(outputTypes),
+		EnterpriseAuthTokenOutput(outputTypes),
 
 		DepartmentOutput(),
 		PlatformAccountOutput(outputTypes, usecases.AuthUsecase, usecases.PlatformUsecase),

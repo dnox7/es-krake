@@ -76,7 +76,7 @@ func AbortWithRequestTimeoutResponse(c *gin.Context, msg, detail, debugInfo inte
 	)
 }
 
-func SetOKReponse(c *gin.Context, data interface{}) {
+func SetOKResponse(c *gin.Context, data interface{}) {
 	c.JSON(
 		http.StatusOK,
 		&BaseSuccessResponse{Data: data},
