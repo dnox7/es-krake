@@ -1,27 +1,27 @@
-Getpackage query
+package query
 
 import (
-	"github.com/dpe27/es-krake/internal/interfaces/api/graphql/output"
 	usecase "github.com/dpe27/es-krake/internal/usecase/auth"
 	"github.com/graphql-go/graphql"
 )
 
-func GetRoleType(
+func GetBuyerOtpStatus(
 	outputTypes map[string]*graphql.Object,
 	authUsecase usecase.AuthUsecase,
 ) *graphql.Field {
 	return &graphql.Field{
-		Type: outputTypes["role_type"],
-		Name: "get_role_type",
+		Type: outputTypes["otp_status"],
+		Name: "get_buyer_otp_status",
 		Args: graphql.FieldConfigArgument{
-			"role_type_id": &graphql.ArgumentConfig{
-				Type: output.AnyInt,
+			"otp": &graphql.ArgumentConfig{
+				Type: graphql.String,
 			},
 		},
 		Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-			return authUsecase.GetRoleTypeByID(
+			otp := params.Args["otp"].(string)
+			return authUsecase.CheckBuyerOtpStatus(
 				params.Context,
-				params.Args["role_type_id"].(int),
+				otp,
 			)
 		},
 	}
